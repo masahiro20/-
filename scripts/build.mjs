@@ -8,10 +8,12 @@ import { CONFIG } from '../data/config.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
+const SOURCE_NOTE = 'こども家庭庁 支援局障害児支援課 事務連絡（令和6年5月17日）「個別支援計画書の記載のポイント（参考様式版）」をもとに編集部で要約';
 
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const domainById = Object.fromEntries(DOMAINS.map((d) => [d.id, d]));
+const domainNames = (ids) => ids.map((id) => domainById[id].name).join('／');
 const pages = [];
 
 function write(path, html) {
@@ -20,15 +22,12 @@ function write(path, html) {
   writeFileSync(file, html);
 }
 
-function tag(domainId) {
-  const d = domainById[domainId];
-  return `<span class="tag tag-${d.id}">${esc(d.name)}</span>`;
-}
+const sq = (id) => `<span class="sq c-${id}" aria-hidden="true"></span>`;
 
-function cta(url, label, pendingLabel) {
+function offerLink(url, label) {
   return url
-    ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`
-    : `<span class="btn btn-disabled" aria-disabled="true">${esc(pendingLabel)}</span>`;
+    ? `<a class="btn btn-line btn-sm" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`
+    : '<span class="pending">準備中です</span>';
 }
 
 function layout({ path, title, description, body, scripts = [], jsonLd }) {
@@ -54,8 +53,11 @@ function layout({ path, title, description, body, scripts = [], jsonLd }) {
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:site_name" content="${esc(CONFIG.siteName)}">
 <meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#2f6f5e">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%232f6f5e'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif'%3E5%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#1f3b60">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23b63b27'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E6%96%87%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&display=swap">
 <link rel="stylesheet" href="${r}assets/style.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
 ${ga}
@@ -63,12 +65,15 @@ ${ga}
 <body>
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="logo" href="${r}index.html"><span class="logo-mark">5</span><span>${esc(CONFIG.siteName)}</span></a>
-    <nav class="nav">
-      <a href="${r}index.html#tool">計画を作る</a>
+    <a class="brand" href="${r}index.html">
+      <span class="brand-seal" aria-hidden="true">文</span>
+      <span class="brand-name">${esc(CONFIG.siteName)}<span class="brand-sub">${esc(CONFIG.tagline)}</span></span>
+    </a>
+    <nav class="nav" aria-label="メインメニュー">
+      <a href="${r}index.html#tool">下書きをつくる</a>
       <a href="${r}bunrei/index.html">文例集</a>
       <a href="${r}kakikata.html">書き方</a>
-      <a href="${r}checklist.html">チェックリスト</a>
+      <a href="${r}checklist.html">運営指導チェック</a>
     </nav>
   </div>
 </header>
@@ -77,15 +82,17 @@ ${body}
 </main>
 <footer class="site-footer">
   <div class="wrap">
-    <p class="footer-links">
-      <a href="${r}index.html">トップ</a>
-      <a href="${r}bunrei/index.html">5領域の文例集</a>
-      <a href="${r}kakikata.html">個別支援計画の書き方</a>
-      <a href="${r}checklist.html">運営指導前チェックリスト</a>
-      <a href="${r}about.html">運営者情報・免責事項</a>
-    </p>
-    <p class="note">掲載している文例は作成の「たたき台」です。実際の計画は、お子さまのアセスメントと本人・保護者の意向をもとに作成し、指定権者（自治体）の指導内容をご確認ください。</p>
-    <p class="note">&copy; ${new Date().getFullYear()} ${esc(CONFIG.operator)}</p>
+    <div class="footer-grid">
+      <p class="brand-name" style="margin:0">${esc(CONFIG.siteName)}</p>
+      <ul class="footer-links">
+        <li><a href="${r}index.html#tool">下書きをつくる</a></li>
+        <li><a href="${r}bunrei/index.html">5領域の文例集</a></li>
+        <li><a href="${r}kakikata.html">個別支援計画の書き方</a></li>
+        <li><a href="${r}checklist.html">運営指導前チェックリスト</a></li>
+        <li><a href="${r}about.html">運営者情報・免責事項</a></li>
+      </ul>
+    </div>
+    <p class="fine">掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向をもとに作成し、様式や記載方法は指定権者（自治体）の資料をご確認ください。<br>&copy; ${new Date().getFullYear()} ${esc(CONFIG.operator)}</p>
   </div>
 </footer>
 ${scripts.map((s) => `<script src="${r}${s}"></script>`).join('\n')}
@@ -94,83 +101,163 @@ ${scripts.map((s) => `<script src="${r}${s}"></script>`).join('\n')}
 `;
 }
 
-// ── データを JS として出力（ツール用）──
+// ── ツール用データ ──
 function buildData() {
-  const data = { domains: DOMAINS, ages: AGES, issues: ISSUES };
-  write('assets/data.js', `window.PLANNER_DATA=${JSON.stringify(data)};\n`);
+  write('assets/data.js', `window.PLANNER_DATA=${JSON.stringify({ domains: DOMAINS, ages: AGES, issues: ISSUES })};\n`);
 }
 
-// ── トップページ（作成ツール）──
-function buildIndex() {
-  const domainCards = DOMAINS.map(
-    (d) => `<a class="card domain-card domain-${d.id}" href="bunrei/${d.id}.html">
-      <h3>${esc(d.name)}</h3><p>${esc(d.desc)}</p><span class="more">文例を見る →</span></a>`,
-  ).join('\n');
+const POINTS = [
+  ['つながりを持たせる', '「利用児及び家族の生活に対する意向」→「総合的な支援の方針」→「長期目標・短期目標」→「支援目標及び具体的な支援内容等」が、ひと続きになるように書きます。'],
+  ['本人・家族・移行は必ず', '支援内容の項目は「本人支援」「家族支援」「移行支援」を必ず記載します。「地域支援・地域連携」は必要に応じて記載します（積極的な取り組みが望ましいとされています）。'],
+  ['5領域は本人支援に', '本人支援の支援内容には、関連する5領域を記載します。複数にまたがる場合は、すべて記載します。家族支援・移行支援・地域支援には5領域の記載は不要です。'],
+  ['目標の主語はこども・家族', '支援目標は、モニタリングの時点で到達しているであろう「こども本人や家族の状況」を具体的に書きます。移行支援・地域支援は、主語が事業所や関係機関になってもかまいません。'],
+  ['達成時期は最長6か月', '計画は6か月に1回以上見直すため、達成時期も最長6か月後までにします。1〜3か月で達成する目標も積極的に検討します。'],
+  ['当てはめにしない', '5領域に対応する課題や支援を当てはめるだけの計画にならないよう留意します。支援目標や支援内容が、どのこどもでも同じになることは想定されていません。'],
+];
 
+// ── トップページ ──
+function buildIndex() {
+  const sample = ISSUES.find((i) => i.id === 'kirikae');
+  const sampleDomains = [...new Set(sample.supports.flatMap((s) => s.domains))];
+  const toc = tocHtml('bunrei/');
   const faq = [
-    ['利用は無料ですか？', 'はい、文例の閲覧と計画のたたき台の作成は無料で、会員登録も不要です。'],
-    ['入力した内容はどこかに送信されますか？', 'いいえ。計画の組み立てはすべてお使いのブラウザの中で行われ、入力内容がサーバーに送信・保存されることはありません。お子さまの氏名などの個人情報を入力する必要もありません。'],
-    ['令和6年度の報酬改定に対応していますか？', '5領域（健康・生活／運動・感覚／認知・行動／言語・コミュニケーション／人間関係・社会性）との関連、本人支援・家族支援・移行支援・地域支援、インクルージョンの観点、支援の標準的な提供時間を記載できる構成にしています。様式や細かな求めは自治体によって異なるため、必ず指定権者の資料をご確認ください。'],
-    ['できあがった文章はそのまま使えますか？', '文例は「たたき台」です。お子さまの具体的な様子や数値（回数・時間など）に合わせて必ず書き換えてください。アセスメントに基づかない計画は、運営指導で指摘を受けるおそれがあります。'],
-    ['Excelの様式に貼り付けられますか？', '「表形式でコピー」を使うと、支援内容の表をExcelやGoogleスプレッドシートにそのまま貼り付けられます。'],
+    ['無料で使えますか？', 'はい。文例の閲覧と計画書の下書きづくりは無料で、会員登録もいりません。'],
+    ['入力した内容は、どこかに送られますか？', '送られません。下書きの組み立ては、すべてお使いのブラウザの中で行います。お子さまの氏名など、個人が特定できる情報を入力する必要もありません。'],
+    ['事業所の様式が参考様式と違っても使えますか？', 'はい。「Excelに貼る形でコピー」は、項目・支援目標・支援内容・達成時期・担当者・留意事項・優先順位の順で表をコピーします。事業所の様式に合わせて、必要な列だけ貼り付けてください。'],
+    ['できあがった文章をそのまま使ってもいいですか？', 'おすすめしません。文例はあくまで書き始めのための下書きです。お子さまの様子に合わせて、回数・時間・場面などを具体的に書き換えてください。下書きの文章は、画面上でクリックすればその場で直せます。'],
+    ['モニタリングの文例もありますか？', 'はい。課題ごとの文例ページに、「達成」「継続」の2パターンでモニタリング（評価）の文例を載せています。'],
   ];
 
   const body = `
 <section class="hero">
-  <div class="wrap">
-    <p class="eyebrow">放課後等デイサービス・児童発達支援の児発管・職員向け</p>
-    <h1><span class="nb">個別支援計画のたたき台を、</span><span class="nb">5領域に沿って3分で。</span></h1>
-    <p class="lead">お子さまの年齢と、気になる課題を選ぶだけ。令和6年度報酬改定で求められる<strong>5領域との関連</strong>を示した目標・支援内容の文例を組み立てます。無料・登録不要、入力内容は送信されません。</p>
-    <div class="hero-actions">
-      <a class="btn btn-lg" href="#tool">無料で計画を作る</a>
-      <a class="btn btn-ghost btn-lg" href="bunrei/index.html">文例集を見る</a>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">放課後等デイサービス・児童発達支援の児発管のみなさまへ</p>
+      <h1><span class="nb">個別支援計画を、</span><span class="nb">白紙から書かなくていい。</span></h1>
+      <p class="hero-lead">気になる課題を選ぶと、こども家庭庁の参考様式と同じ項目で下書きができます。支援内容ごとの5領域との関連性、家族支援・移行支援まで入った状態から、お子さまに合わせて書き直すだけです。</p>
+      <div class="hero-actions">
+        <a class="btn" href="#tool">下書きをつくる（無料）</a>
+        <a class="text-link" href="bunrei/index.html">文例集を目次から探す</a>
+      </div>
+      <ul class="facts">
+        <li><b>登録不要</b>・無料</li>
+        <li>入力内容は<b>送信されません</b></li>
+        <li>文例 <b>${ISSUES.length}課題</b>・モニタリング文例つき</li>
+      </ul>
     </div>
-    <ul class="hero-points">
-      <li>文例 ${ISSUES.length}課題 × 5領域</li>
-      <li>Excelに貼れる表形式コピー</li>
-      <li>個人情報の入力は不要</li>
-    </ul>
+    <div class="sample" aria-hidden="true">
+      <div class="sample-paper">
+        <p class="sample-title">個別支援計画書</p>
+        <table class="sample-table"><colgroup><col class="c-item"><col><col><col class="c-period"></colgroup>
+          <tr><th>項目</th><th>支援目標</th><th>支援内容（5領域との関連性等）</th><th>達成時期</th></tr>
+          <tr>
+            <th>本人支援</th>
+            <td>${esc(sample.shortGoals[1])}</td>
+            <td>${esc(sample.supports[1].text)}<br><span class="dom">【5領域】${esc(domainNames(sampleDomains))}</span></td>
+            <td>6か月後</td>
+          </tr>
+          <tr><th>家族支援</th><td>${esc(sample.familyGoal.slice(0, 34))}…</td><td>${esc(sample.family.slice(0, 30))}…</td><td>6か月後</td></tr>
+        </table>
+      </div>
+      <div class="redpen sample-note">
+        <span class="redpen-label">赤ペン</span>
+        <p>支援内容ごとに、関連する5領域まで書いた状態で下書きができます。</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<section id="tool" class="section tool-section">
+<section id="tool" class="tool-section">
   <div class="wrap">
-    <h2>個別支援計画のたたき台を作る</h2>
-    <p class="section-lead">氏名などの個人情報は入力しないでください。すべての処理はブラウザ内で行われます。</p>
+    <div class="section-head tool-head">
+      <div>
+        <h2 class="serif" style="margin:0;font-size:clamp(22px,3vw,28px)">計画書の下書きをつくる</h2>
+        <p class="section-sub">左で条件を選ぶと、右の計画書に文例が入ります。</p>
+      </div>
+    </div>
     <div class="tool">
-      <div class="tool-form">
-        <div class="step">
-          <h3><span class="step-no">1</span>対象の区分</h3>
-          <div class="age-options" id="ageOptions" role="radiogroup" aria-label="対象の区分"></div>
+      <div class="panel">
+        <div class="panel-block">
+          <h3 class="panel-title"><span class="no">一</span>対象</h3>
+          <div class="seg" id="ageOptions" role="group" aria-label="対象"></div>
         </div>
-        <div class="step">
-          <h3><span class="step-no">2</span>気になる課題を選ぶ<small>（1〜5つ程度）</small></h3>
-          <input type="search" id="issueSearch" class="input" placeholder="キーワードで絞り込み（例：切り替え、偏食、友だち）" aria-label="課題を絞り込み">
-          <div id="issueGroups"></div>
+        <div class="panel-block">
+          <h3 class="panel-title"><span class="no">二</span>気になる課題<small>3つ前後がおすすめ</small></h3>
+          <p class="picked-caption" id="pickedCaption" hidden>選んだ課題（上から優先順位）</p>
+          <ol class="picked" id="picked"></ol>
+          <label class="visually-hidden" for="issueSearch">課題を絞り込む</label>
+          <input type="search" id="issueSearch" class="input" placeholder="絞り込み（例：切り替え、偏食、友だち）">
+          <div class="issue-list" id="issueList"></div>
         </div>
-        <div class="step">
-          <h3><span class="step-no">3</span>任意の入力</h3>
-          <label class="field">本人の意向<textarea id="wishChild" class="input" rows="2" placeholder="例：友だちと一緒にゲームがしたい"></textarea></label>
-          <label class="field">保護者の意向<textarea id="wishParent" class="input" rows="2" placeholder="例：気持ちを切り替えて学校の準備ができるようになってほしい"></textarea></label>
-          <div class="field-row">
-            <label class="field">支援の標準的な提供時間（平日）<input id="timeWeekday" class="input" placeholder="例：14:30〜17:30"></label>
-            <label class="field">（休日・長期休暇）<input id="timeHoliday" class="input" placeholder="例：10:00〜16:00"></label>
+        <div class="panel-block">
+          <h3 class="panel-title"><span class="no">三</span>お子さまのこと<small>任意</small></h3>
+          <label class="field">好きなこと・得意なこと<span class="hint">支援の方針に書き込まれます</span><input id="likes" class="input" placeholder="例：電車、ブロック、絵を描くこと"></label>
+          <label class="field">本人・家族の意向<textarea id="wish" class="input" rows="3" placeholder="例：（本人）友だちとゲームがしたい。（保護者）学校の準備を自分でできるようになってほしい。"></textarea></label>
+          <label class="field">支援の標準的な提供時間等<input id="time" class="input" placeholder="例：月・水・金 14:30〜17:30"></label>
+          <p class="small muted" style="margin:14px 0 0">氏名など、個人が特定できる情報は入力しないでください。入力内容はこの画面の中だけで使われます。</p>
+        </div>
+      </div>
+
+      <div class="doc-area">
+        <div class="doc-bar">
+          <div class="coverage" id="coverage" aria-live="polite"></div>
+          <div class="doc-actions">
+            <button class="btn btn-sm" id="copyTable" type="button" disabled>Excelに貼る形でコピー</button>
+            <button class="btn btn-line btn-sm" id="copyText" type="button" disabled>文章でコピー</button>
+            <button class="btn btn-line btn-sm" id="printPlan" type="button" disabled>印刷</button>
           </div>
         </div>
+        <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
+        <div class="doc-scroll"><div class="doc" id="doc"></div></div>
+        <div id="warn"></div>
       </div>
-      <div class="tool-output" aria-live="polite">
-        <div class="output-head">
-          <h3>計画のたたき台</h3>
-          <div class="coverage" id="coverage"></div>
-        </div>
-        <div id="output" class="output-body"><p class="empty">左の「2」で課題を選ぶと、ここに計画のたたき台が表示されます。</p></div>
-        <div class="output-actions">
-          <button class="btn" id="copyText" type="button" disabled>文章でコピー</button>
-          <button class="btn btn-ghost" id="copyTable" type="button" disabled>表形式でコピー（Excel用）</button>
-          <button class="btn btn-ghost" id="fillDomains" type="button" disabled>不足領域を補う</button>
-          <button class="btn btn-ghost" id="printPlan" type="button" disabled>印刷</button>
-        </div>
-        <p class="toast" id="toast" role="status"></p>
+    </div>
+  </div>
+  <div class="mobile-bar" id="mobileBar"><span id="mobileCount"></span><a class="btn btn-sm" href="#doc">計画書を見る</a></div>
+  <p class="toast" id="toast" role="status"></p>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>令和6年度改定後の計画書で、押さえること</h2>
+        <p class="section-sub">国の「記載のポイント」から、書くときに迷いやすいところを抜き出しました。</p>
+      </div>
+      <a class="text-link" href="kakikata.html">書き方をくわしく読む</a>
+    </div>
+    <div class="points-grid">
+      ${POINTS.map(([t, d]) => `<div class="redpen"><span class="redpen-label">${esc(t)}</span><p>${esc(d)}</p></div>`).join('\n')}
+    </div>
+    <p class="source">出典：${esc(SOURCE_NOTE)}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>文例集 目次</h2>
+        <p class="section-sub">課題ごとに、アセスメントの視点・支援目標・支援内容・留意事項・家族支援・モニタリングの文例をまとめています。</p>
+      </div>
+    </div>
+    ${toc}
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><h2>事業所のみなさまへ</h2></div>
+    <div class="offer">
+      <div>
+        <h3>Excel様式と文例全集</h3>
+        <p>参考様式に沿ったExcelの計画書・モニタリング記録の様式と、この文例帳の全文例をまとめたセットです。</p>
+        ${offerLink(CONFIG.productUrl, '内容を見る')}
+      </div>
+      <div>
+        <h3>アセスメントのメモから下書き（事業所向け）</h3>
+        <p>面談やアセスメントのメモから、お子さまごとの計画・モニタリング・支援記録の下書きを作る事業所向けの版を準備しています。</p>
+        ${offerLink(CONFIG.waitlistUrl, '先行登録する')}
       </div>
     </div>
   </div>
@@ -178,34 +265,10 @@ function buildIndex() {
 
 <section class="section">
   <div class="wrap">
-    <h2>5領域ごとの文例集</h2>
-    <p class="section-lead">課題ごとに、短期目標・支援内容・家族支援の文例をまとめています。</p>
-    <div class="grid">${domainCards}</div>
-  </div>
-</section>
-
-<section class="section section-alt">
-  <div class="wrap">
-    <h2>事業所の書類業務をもっと軽く</h2>
-    <div class="grid grid-2">
-      <div class="card">
-        <h3>Excel様式＋文例全集</h3>
-        <p>本人支援・家族支援・移行支援まで入った個別支援計画のExcel様式と、モニタリング・支援記録の文例をまとめたテンプレート集です。</p>
-        ${cta(CONFIG.productUrl, 'テンプレート集を見る', '準備中')}
-      </div>
-      <div class="card">
-        <h3>事業所向け AI版（先行登録）</h3>
-        <p>アセスメントのメモから、お子さま一人ひとりに合わせた計画・モニタリング・支援記録の下書きをAIが作成する事業所向け版を準備しています。</p>
-        ${cta(CONFIG.waitlistUrl, '先行登録する', '準備中')}
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap narrow">
-    <h2>よくある質問</h2>
-    ${faq.map(([q, a]) => `<details class="faq"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n')}
+    <div class="section-head"><h2>よくある質問</h2></div>
+    <dl class="qa" style="max-width:780px">
+      ${faq.map(([q, a]) => `<div><dt>${esc(q)}</dt><dd>${esc(a)}</dd></div>`).join('\n')}
+    </dl>
   </div>
 </section>
 `;
@@ -213,9 +276,9 @@ function buildIndex() {
     'index.html',
     layout({
       path: 'index.html',
-      title: `個別支援計画 5領域の文例メーカー｜放デイ・児発【無料】｜${CONFIG.siteName}`,
+      title: `個別支援計画の文例と下書き作成【5領域対応・無料】放デイ・児発｜${CONFIG.siteName}`,
       description:
-        '放課後等デイサービス・児童発達支援の個別支援計画を、5領域に沿って無料で作成。年齢と課題を選ぶだけで、令和6年度報酬改定に対応した目標・支援内容の文例を組み立てます。登録不要・入力内容の送信なし。',
+        '放課後等デイサービス・児童発達支援の個別支援計画を、こども家庭庁の参考様式と同じ項目で下書き。5領域との関連性、家族支援・移行支援、モニタリングの文例まで。無料・登録不要、入力内容は送信されません。',
       body,
       scripts: ['assets/data.js', 'assets/app.js'],
       jsonLd: {
@@ -227,56 +290,80 @@ function buildIndex() {
   );
 }
 
+function tocHtml(prefix) {
+  return `<div class="toc">${DOMAINS.map(
+    (d) => `<div class="toc-group">
+    <h3><a href="${prefix}${d.id}.html">${sq(d.id)}${esc(d.name)}</a></h3>
+    <ul>${ISSUES.filter((i) => i.domain === d.id)
+      .map((i) => `<li><a href="${prefix}${i.id}.html">${esc(i.label)}</a></li>`)
+      .join('')}</ul>
+  </div>`,
+  ).join('')}</div>`;
+}
+
 // ── 課題別の文例ページ ──
-function issueSection(issue, headingLevel = 'h2') {
-  return `
-<${headingLevel}>短期目標の文例</${headingLevel}>
-<ul class="examples">${issue.shortGoals.map((g) => `<li>${esc(g)}</li>`).join('')}</ul>
-<${headingLevel}>支援内容の文例</${headingLevel}>
-<ul class="examples">${issue.supports
-    .map((s) => `<li>${esc(s.text)}<span class="tags">${s.domains.map(tag).join('')}</span></li>`)
-    .join('')}</ul>
-<${headingLevel}>家族支援の文例</${headingLevel}>
-<ul class="examples"><li>${esc(issue.family)}</li></ul>`;
+function exItem(text, extra = '') {
+  return `<li><span class="txt">${extra}${esc(text)}</span><button class="copy" type="button" data-copy="${esc(text)}">コピー</button></li>`;
 }
 
 function buildIssuePages() {
   for (const issue of ISSUES) {
     const d = domainById[issue.domain];
     const related = ISSUES.filter((i) => i.domain === issue.domain && i.id !== issue.id);
-    const longGoals = AGES.map(
-      (a) => `<li><strong>${esc(a.name)}：</strong>${esc(`${issue.longGoal}、${a.context}を自信を持って過ごすことができる。`)}</li>`,
-    ).join('');
     const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a> › <a href="index.html">文例集</a> › <a href="${d.id}.html">${esc(d.name)}</a> › ${esc(issue.label)}</nav>
-  <p class="eyebrow">${tag(d.id)}</p>
+  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="index.html">文例集</a> ／ <a href="${d.id}.html">${esc(d.name)}</a></nav>
+  <p class="domain-label c-${d.id}">${sq(d.id)}${esc(d.name)}</p>
   <h1>「${esc(issue.label)}」の個別支援計画 文例</h1>
-  <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画で使える、「${esc(issue.label)}」に関する目標と支援内容の文例です。支援内容には、関連する5領域を示しています。</p>
-  <div class="callout">
-    <p>この課題を選んだ状態で、計画のたたき台を作成できます。</p>
-    <a class="btn" href="../index.html?issues=${issue.id}#tool">この文例で計画を作る（無料）</a>
+  <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画で使える文例です。アセスメントの視点から、支援目標・支援内容（5領域との関連性つき）・留意事項・家族支援・モニタリングまで、計画書の項目の順に並べています。</p>
+
+  <div class="cta-line">
+    <p>この課題を選んだ状態で、参考様式どおりの計画書の下書きを作れます。</p>
+    <a class="btn btn-sm" href="../index.html?issues=${issue.id}#tool">この課題で下書きをつくる</a>
   </div>
+
+  <h2>アセスメントで確かめたいこと</h2>
+  <ul class="checks">${issue.assess.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+
+  <h2>支援目標（具体的な到達目標）の文例</h2>
+  <ol class="ex">${issue.shortGoals.map((g) => exItem(g)).join('')}</ol>
+
+  <h2>支援内容の文例</h2>
+  <ol class="ex">${issue.supports
+    .map(
+      (s) =>
+        `<li><span class="txt">${esc(s.text)}</span><span class="doms">5領域：${esc(domainNames(s.domains))}</span><button class="copy" type="button" data-copy="${esc(`${s.text}（${domainNames(s.domains)}）`)}">コピー</button></li>`,
+    )
+    .join('')}</ol>
+
+  <h2>留意事項の文例</h2>
+  <ol class="ex">${exItem(issue.note)}</ol>
+
+  <h2>家族支援の文例</h2>
+  <ol class="ex">${exItem(issue.familyGoal, '<span class="ex-label" style="color:var(--ink-2)">目標</span>')}${exItem(issue.family, '<span class="ex-label" style="color:var(--ink-2)">内容</span>')}</ol>
+
+  <h2>モニタリング（評価）の文例</h2>
+  <ol class="ex">${exItem(issue.monitoring.done, '<span class="ex-label done">達成</span>')}${exItem(issue.monitoring.cont, '<span class="ex-label cont">継続</span>')}</ol>
+
   <h2>長期目標の文例</h2>
-  <ul class="examples">${longGoals}</ul>
-  ${issueSection(issue)}
-  <h2>書くときのポイント</h2>
-  <ul class="points">
-    <li>「〜できる」で終わる、達成したかどうかを判断できる書き方にします。</li>
-    <li>回数・時間・声かけの量など、お子さまの現在の様子に合わせて<strong>具体的な数値</strong>に書き換えましょう。</li>
-    <li>支援内容には、5領域のどれに関わる支援なのかを明記します（令和6年度報酬改定）。</li>
-    <li>本人・保護者の意向と、アセスメントの結果とのつながりが分かるようにします。</li>
-  </ul>
-  <h2>「${esc(d.name)}」の他の文例</h2>
-  <ul class="link-list">${related.map((i) => `<li><a href="${i.id}.html">${esc(i.label)}</a></li>`).join('')}</ul>
+  <ol class="ex">${AGES.map((a) => exItem(`${issue.longGoal}、${a.context}を自信を持って過ごすことができる。`, `<span class="ex-label" style="color:var(--ink-2)">${esc(a.name)}</span>`)).join('')}</ol>
+
+  <div class="redpen" style="margin-top:40px">
+    <span class="redpen-label">赤ペン：そのまま写さないで</span>
+    <p>国の記載のポイントでは、5領域に課題や支援を「当てはめるだけ」の計画にならないよう求めています。回数・時間・場面・声かけの量など、お子さまの今の様子に合わせて数字と言葉を書き換えてください。</p>
+  </div>
+
+  <h2>「${esc(d.name)}」のほかの文例</h2>
+  <ul class="related">${related.map((i) => `<li><a href="${i.id}.html">${esc(i.label)}</a></li>`).join('')}</ul>
 </div>`;
     write(
       `bunrei/${issue.id}.html`,
       layout({
         path: `bunrei/${issue.id}.html`,
-        title: `「${issue.label}」の個別支援計画 文例（5領域対応）｜${CONFIG.siteName}`,
-        description: `放デイ・児発の個別支援計画で使える「${issue.label}」の長期目標・短期目標・支援内容・家族支援の文例。支援内容ごとに5領域との関連を明記しています。`,
+        title: `「${issue.label}」の個別支援計画 文例｜支援目標・支援内容・モニタリング【5領域】｜${CONFIG.siteName}`,
+        description: `放デイ・児発の個別支援計画で使える「${issue.label}」の文例。支援目標・支援内容（5領域との関連性つき）・留意事項・家族支援・モニタリング（達成／継続）の文例を、計画書の項目順にまとめています。`,
         body,
+        scripts: ['assets/copy.js'],
       }),
     );
   }
@@ -288,24 +375,24 @@ function buildDomainPages() {
     const issues = ISSUES.filter((i) => i.domain === d.id);
     const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a> › <a href="index.html">文例集</a> › ${esc(d.name)}</nav>
-  <h1>5領域「${esc(d.name)}」の個別支援計画 文例</h1>
+  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="index.html">文例集</a></nav>
+  <p class="domain-label c-${d.id}">${sq(d.id)}5領域</p>
+  <h1>「${esc(d.name)}」の個別支援計画 文例</h1>
   <p class="lead">${esc(d.desc)}</p>
-  <h2>「${esc(d.name)}」に関わる支援の例</h2>
-  <ul class="examples"><li>${esc(d.generic)}<span class="tags">${tag(d.id)}</span></li></ul>
+  <h2>日々の支援として書くときの文例</h2>
+  <ol class="ex">${exItem(d.generic)}</ol>
   <h2>課題別の文例</h2>
   ${issues
     .map(
-      (i) => `<section class="issue-block">
+      (i) => `<div class="issue-block">
     <h3><a href="${i.id}.html">${esc(i.label)}</a></h3>
-    <p class="muted">短期目標の例：${esc(i.shortGoals[0])}</p>
-    <p><a href="${i.id}.html">支援内容・家族支援の文例を見る →</a></p>
-  </section>`,
+    <p class="muted small">支援目標の例：${esc(i.shortGoals[0])}</p>
+  </div>`,
     )
     .join('')}
-  <div class="callout">
-    <p>課題を選ぶだけで、5領域に沿った計画のたたき台を作れます。</p>
-    <a class="btn" href="../index.html#tool">無料で計画を作る</a>
+  <div class="cta-line">
+    <p>課題を選ぶと、5領域の関連性まで入った計画書の下書きができます。</p>
+    <a class="btn btn-sm" href="../index.html#tool">下書きをつくる</a>
   </div>
 </div>`;
     write(
@@ -313,8 +400,9 @@ function buildDomainPages() {
       layout({
         path: `bunrei/${d.id}.html`,
         title: `5領域「${d.name}」の個別支援計画 文例・支援内容の例｜${CONFIG.siteName}`,
-        description: `放デイ・児発の個別支援計画で使える、5領域「${d.name}」の目標と支援内容の文例集。${issues.map((i) => i.label).slice(0, 3).join('、')}など${issues.length}の課題別にまとめています。`,
+        description: `放デイ・児発の個別支援計画で使える、5領域「${d.name}」の支援目標と支援内容の文例。${issues.map((i) => i.label).slice(0, 3).join('、')}など${issues.length}の課題別にまとめています。`,
         body,
+        scripts: ['assets/copy.js'],
       }),
     );
   }
@@ -322,26 +410,18 @@ function buildDomainPages() {
 
 function buildBunreiIndex() {
   const body = `
-<div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a> › 文例集</nav>
-  <h1>個別支援計画の文例集（5領域別）</h1>
-  <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画で使える文例を、5領域と課題ごとにまとめています。</p>
-  ${DOMAINS.map(
-    (d) => `<section class="issue-block">
-    <h2><a href="${d.id}.html">${esc(d.name)}</a></h2>
-    <p class="muted">${esc(d.desc)}</p>
-    <ul class="link-list">${ISSUES.filter((i) => i.domain === d.id)
-      .map((i) => `<li><a href="${i.id}.html">${esc(i.label)}</a></li>`)
-      .join('')}</ul>
-  </section>`,
-  ).join('')}
+<div class="wrap article">
+  <nav class="breadcrumb"><a href="../index.html">トップ</a></nav>
+  <h1>個別支援計画 文例集</h1>
+  <p class="lead">5領域と課題ごとに、アセスメントの視点・支援目標・支援内容・留意事項・家族支援・モニタリングの文例をまとめています。</p>
+  ${tocHtml('')}
 </div>`;
   write(
     'bunrei/index.html',
     layout({
       path: 'bunrei/index.html',
       title: `個別支援計画の文例集｜5領域・課題別【放デイ・児発】｜${CONFIG.siteName}`,
-      description: `放デイ・児発の個別支援計画の文例を、5領域（健康・生活／運動・感覚／認知・行動／言語・コミュニケーション／人間関係・社会性）と${ISSUES.length}の課題別に掲載。`,
+      description: `放デイ・児発の個別支援計画の文例を、5領域（健康・生活／運動・感覚／認知・行動／言語・コミュニケーション／人間関係・社会性）と${ISSUES.length}の課題別に掲載。モニタリングの文例つき。`,
       body,
     }),
   );
@@ -351,56 +431,64 @@ function buildBunreiIndex() {
 function buildGuide() {
   const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a> › 個別支援計画の書き方</nav>
-  <h1>個別支援計画の書き方｜令和6年度報酬改定の5領域対応</h1>
-  <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画は、令和6年度の報酬改定で記載すべき内容が増えました。押さえるべきポイントと、作成の流れを整理します。</p>
+  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <h1>個別支援計画の書き方<br><small class="muted" style="font-size:.6em">令和6年度報酬改定・5領域対応</small></h1>
+  <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画は、令和6年度の報酬改定で書くべき内容が増えました。国が示した「記載のポイント」に沿って、項目ごとの書き方を整理します。</p>
 
-  <h2>改定で求められるようになったこと</h2>
-  <ul class="points">
-    <li><strong>5領域との関連性</strong>：「健康・生活」「運動・感覚」「認知・行動」「言語・コミュニケーション」「人間関係・社会性」の5領域を踏まえ、支援内容がどの領域に関わるかを示します。</li>
-    <li><strong>本人支援・家族支援・移行支援</strong>：本人への支援だけでなく、家族への支援、地域への移行（インクルージョン）に向けた支援を記載します。必要に応じて地域支援・地域連携も記載します。</li>
-    <li><strong>インクルージョンの観点</strong>：地域社会への参加・包摂を踏まえた取り組みを盛り込みます。</li>
-    <li><strong>支援の標準的な提供時間等</strong>：日々の支援に係る計画時間（延長支援を行う場合はその時間）を記載します。</li>
+  <h2>計画書の項目と書き方</h2>
+  <h3>利用児及び家族の生活に対する意向</h3>
+  <p>こども本人や家族の意向を聞いたうえで、家族から得た情報や発達段階・特性をふまえて整理して書きます。本人の言葉は、できるだけそのまま残すと伝わりやすくなります。</p>
+  <h3>総合的な支援の方針</h3>
+  <p>おおむね1年を目安に、事業所としての見立てと、どのように支援していくかの方針を書きます。次の視点をふまえます。</p>
+  <ul class="plain">
+    <li>障害児支援利用計画や担当者会議で求められている、事業所の役割</li>
+    <li>支援の場面だけでなく、家庭や園・学校での生活や育ちの視点</li>
+    <li>保育所等への移行や、同年代のこどもとの仲間づくりなど、インクルージョンの視点</li>
+    <li>継続して利用している場合は、前回のモニタリング結果をふまえた視点</li>
   </ul>
-  <p class="muted">あわせて、事業所ごとに5領域との関連を明確にした「支援プログラム」を作成・公表し、届け出ることが求められています（令和7年4月以降、未公表の場合は減算の対象）。</p>
+  <h3>長期目標・短期目標</h3>
+  <p>長期目標は方針をふまえておおむね1年、短期目標は長期目標をふまえておおむね6か月で目指す目標を書きます。</p>
+  <h3>支援の標準的な提供時間等</h3>
+  <p>利用する曜日・頻度・提供時間を書きます。計画時間や延長時間は別表で定めることもできます。</p>
 
-  <h2>作成の流れ</h2>
+  <h2>支援目標及び具体的な支援内容等（表の部分）</h2>
+  <ul class="plain">
+    <li><strong>項目</strong>：「本人支援」「家族支援」「移行支援」は必ず書きます。「地域支援・地域連携」は必要に応じて書きます。</li>
+    <li><strong>支援目標</strong>：モニタリングのときに到達しているであろう「こども本人や家族の状況」を、具体的な到達目標として書きます。主語はこども本人や家族が基本です。</li>
+    <li><strong>支援内容</strong>：事業所がどのような支援・工夫・配慮をするかを具体的に書きます。本人支援では、関連する5領域をすべて書きます。</li>
+    <li><strong>達成時期</strong>：最長6か月後まで。1〜3か月で達成する目標も積極的に検討します。</li>
+    <li><strong>担当者・提供機関</strong>：主に支援する担当者の氏名や職種を書きます。関係機関と連携する場合は、連携先の機関名も書きます。</li>
+    <li><strong>留意事項</strong>：加算の算定を想定している取り組みは、加算名や頻度を書きます。家族の役割など補足があれば書きます。</li>
+    <li><strong>優先順位</strong>：本人支援の各支援内容に、取り組みの優先順位をつけます。家族支援・移行支援・地域支援には不要です。</li>
+  </ul>
+
+  <h2>目標をうまく書くコツ</h2>
   <ol class="steps">
-    <li><strong>アセスメント</strong>：本人・保護者との面談、関係機関からの情報をもとに、得意なこと・困っていることを5領域の視点で整理します。</li>
-    <li><strong>原案の作成</strong>：本人・保護者の意向をふまえ、長期目標（おおむね1年）・短期目標（おおむね6か月）・具体的な支援内容を書きます。</li>
-    <li><strong>担当者会議</strong>：支援に関わる職員で原案を検討します。</li>
-    <li><strong>説明・同意・交付</strong>：本人・保護者に説明して同意を得て、計画を交付します。</li>
-    <li><strong>モニタリング・見直し</strong>：定期的に（少なくとも6か月に1回以上）支援の効果を確認し、計画を見直します。</li>
+    <li><strong>場面と行動を書く</strong><br>「落ち着いて過ごす」ではなく、「タイマーが鳴ったら、声かけ2回以内で片付けを始めることができる」のように、場面と行動を書きます。</li>
+    <li><strong>評価できる数字を入れる</strong><br>回数・時間・声かけの量を入れると、モニタリングで「達成」「継続」を判断しやすくなります。</li>
+    <li><strong>肯定的な言葉で書く</strong><br>「〜しない」ではなく、身につけたい姿を「〜できる」で書きます。</li>
+    <li><strong>目標と支援内容を書き分ける</strong><br>目標は「こども」が主語、支援内容は「職員・事業所」の行動として書きます。</li>
   </ol>
 
-  <h2>目標の書き方のコツ</h2>
-  <ul class="points">
-    <li><strong>具体的に</strong>：「落ち着いて過ごす」ではなく「タイマーが鳴ったら、声かけ2回以内で片付けを始めることができる」のように、場面と行動を書きます。</li>
-    <li><strong>達成を判断できる形に</strong>：回数・時間・支援の量（声かけ◯回、職員と一緒に等）を入れると、モニタリングで評価しやすくなります。</li>
-    <li><strong>肯定的な表現で</strong>：「〜しない」ではなく「〜できる」と、身につけたい行動を書きます。</li>
-    <li><strong>本人が主語</strong>：目標は本人の姿、支援内容は職員の行動として書き分けます。</li>
-  </ul>
-
-  <h2>支援内容の書き方のコツ</h2>
-  <ul class="points">
-    <li>「誰が・いつ・どのように」関わるのかが分かるように書きます。</li>
-    <li>支援ごとに関連する5領域を明記します。1つの支援が複数の領域に関わることもあります。</li>
-    <li>5領域のうち、計画に出てこない領域がないかを確認します。重点でない領域も、日々の支援での関わりを記載しておくと全体像が伝わります。</li>
-  </ul>
-
-  <div class="callout">
-    <p>年齢と課題を選ぶだけで、この構成に沿ったたたき台を作れます。</p>
-    <a class="btn" href="index.html#tool">無料で計画を作る</a>
+  <div class="redpen" style="margin-top:32px">
+    <span class="redpen-label">赤ペン：当てはめにしない</span>
+    <p>5領域の視点でアセスメントを行い、5領域を網羅した支援を行うことが求められています。一方で、5領域に対応する課題や支援を当てはめるだけの計画にならないよう、また支援目標や支援内容がどのこどもでも同じにならないよう留意することとされています。</p>
   </div>
-  <p class="note">※ 様式や記載方法の細かな求めは自治体（指定権者）によって異なります。必ず指定権者の最新の資料をご確認ください。</p>
+  <p class="source">出典：${esc(SOURCE_NOTE)}</p>
+
+  <div class="cta-line">
+    <p>この構成どおりの下書きを、課題を選ぶだけで作れます。</p>
+    <a class="btn btn-sm" href="index.html#tool">下書きをつくる</a>
+  </div>
+  <p class="small muted">※ 様式や記載方法の細かな求めは、自治体（指定権者）によって異なります。必ず最新の資料をご確認ください。</p>
 </div>`;
   write(
     'kakikata.html',
     layout({
       path: 'kakikata.html',
-      title: `個別支援計画の書き方｜令和6年度報酬改定・5領域対応のポイント【放デイ・児発】｜${CONFIG.siteName}`,
+      title: `個別支援計画の書き方｜令和6年度改定の記載のポイント・5領域【放デイ・児発】｜${CONFIG.siteName}`,
       description:
-        '放課後等デイサービス・児童発達支援の個別支援計画の書き方を解説。令和6年度報酬改定で求められる5領域との関連、本人支援・家族支援・移行支援、目標の具体的な書き方のコツを紹介します。',
+        '放課後等デイサービス・児童発達支援の個別支援計画の書き方を、国の「記載のポイント」に沿って項目ごとに解説。5領域との関連性、達成時期、優先順位、担当者の書き方まで。',
       body,
     }),
   );
@@ -409,58 +497,60 @@ function buildGuide() {
 // ── 運営指導前チェックリスト ──
 function buildChecklist() {
   const groups = [
-    ['計画の内容', [
-      'アセスメントの結果（得意なこと・困りごと）が記録として残っている',
-      '本人・保護者の意向が記載されている',
-      '長期目標・短期目標が、具体的で評価できる書き方になっている',
-      '支援内容ごとに、関連する5領域が示されている',
-      '本人支援・家族支援・移行支援（必要に応じて地域支援）が記載されている',
-      'インクルージョン（地域社会への参加・包摂）の観点が盛り込まれている',
-      '支援の標準的な提供時間（延長支援がある場合はその時間）が記載されている',
+    ['計画書の中身', [
+      ['本人・家族の意向が書かれている'],
+      ['意向 → 方針 → 目標 → 支援内容が、ひと続きになっている'],
+      ['支援目標が、場面・行動・数字を含む評価できる書き方になっている'],
+      ['本人支援の支援内容ごとに、関連する5領域が書かれている', '複数にまたがる場合はすべて'],
+      ['「本人支援」「家族支援」「移行支援」が書かれている', '地域支援・地域連携は必要に応じて'],
+      ['インクルージョン（地域社会への参加・包摂）の視点が入っている'],
+      ['達成時期が6か月以内になっている'],
+      ['担当者（職種・氏名）と、連携先の機関名が書かれている'],
+      ['本人支援に優先順位がついている'],
+      ['支援の標準的な提供時間等（曜日・頻度・時間）が書かれている'],
+      ['加算を算定する取り組みは、加算名・頻度が書かれている'],
     ]],
     ['作成の手続き', [
-      '児童発達支援管理責任者が計画を作成している',
-      '原案について、担当者会議で検討した記録がある',
-      '本人・保護者に説明し、同意を得た記録（署名等）がある',
-      '同意を得た計画を保護者に交付している',
-      '計画の作成日・同意日・計画期間が明記されている',
+      ['アセスメントの記録が残っている'],
+      ['原案を担当者会議で検討した記録がある'],
+      ['本人・保護者に説明し、同意を得た記録（保護者の署名等）がある'],
+      ['同意を得た計画書を保護者に交付している'],
     ]],
     ['モニタリング・見直し', [
-      '定められた期間ごと（少なくとも6か月に1回以上）にモニタリングを行っている',
-      'モニタリングで、目標ごとの達成状況と今後の方針が記録されている',
-      'モニタリングの結果をふまえて、計画を見直している',
-      '日々の支援記録が、計画の支援内容と対応している',
+      ['6か月に1回以上、モニタリングと計画の見直しをしている'],
+      ['モニタリングで、目標ごとの達成状況が記録されている'],
+      ['日々の支援記録が、計画の支援内容と対応している'],
+      ['支援目標や支援内容が、長いあいだ同じままになっていない'],
     ]],
     ['事業所として', [
-      '5領域との関連を明確にした支援プログラムを作成・公表し、届け出ている',
-      '計画の様式が、自治体（指定権者）の最新の求めに合っている',
+      ['5領域との関連を明確にした支援プログラムを作成・公表し、届け出ている'],
+      ['計画書の様式が、指定権者の最新の求めに合っている'],
     ]],
   ];
   let n = 0;
+  const total = groups.reduce((a, [, items]) => a + items.length, 0);
   const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a> › 運営指導前チェックリスト</nav>
-  <h1>個別支援計画の運営指導前チェックリスト</h1>
-  <p class="lead">運営指導（実地指導）の前に、個別支援計画まわりの書類を確認するためのチェックリストです。チェックの状態はこの端末のブラウザにだけ保存されます。</p>
-  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-  <p class="muted" id="progressText"></p>
+  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <h1>個別支援計画 運営指導前チェックリスト</h1>
+  <p class="lead">運営指導（実地指導）の前に、個別支援計画まわりの書類を${total}項目で確認できます。チェックはこの端末のブラウザにだけ保存されます。</p>
+  <div class="progress"><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><span id="progressText"></span></div>
   ${groups
     .map(
       ([title, items]) => `<section class="check-group"><h2>${esc(title)}</h2>${items
-        .map((t) => `<label class="check"><input type="checkbox" data-key="c${n++}"><span>${esc(t)}</span></label>`)
+        .map(([t, s]) => `<label class="check"><input type="checkbox" data-key="c${n++}"><span>${esc(t)}${s ? `<small>${esc(s)}</small>` : ''}</span></label>`)
         .join('')}</section>`,
     )
     .join('')}
-  <p><button class="btn btn-ghost" id="resetChecks" type="button">チェックをすべて外す</button></p>
-  <p class="note">※ 一般的な確認項目をまとめたものです。減算の要件や必要書類は自治体によって異なるため、必ず指定権者の資料をご確認ください。</p>
+  <p style="margin-top:24px"><button class="btn btn-line btn-sm" id="resetChecks" type="button">チェックをすべて外す</button></p>
+  <p class="source">参考：${esc(SOURCE_NOTE)}。減算の要件や必要な書類は自治体によって異なるため、必ず指定権者の資料をご確認ください。</p>
 </div>`;
   write(
     'checklist.html',
     layout({
       path: 'checklist.html',
       title: `個別支援計画の運営指導前チェックリスト【放デイ・児発】｜${CONFIG.siteName}`,
-      description:
-        '放課後等デイサービス・児童発達支援の運営指導（実地指導）前に、個別支援計画・モニタリング・支援プログラムの書類を確認できる無料チェックリスト。',
+      description: `放課後等デイサービス・児童発達支援の運営指導（実地指導）前に、個別支援計画・モニタリング・支援プログラムの書類を${total}項目で確認できる無料チェックリスト。`,
       body,
       scripts: ['assets/checklist.js'],
     }),
@@ -471,26 +561,26 @@ function buildChecklist() {
 function buildAbout() {
   const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a> › 運営者情報・免責事項</nav>
-  <h1>運営者情報・免責事項・プライバシーポリシー</h1>
+  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <h1>運営者情報・免責事項</h1>
   <h2>運営者</h2>
   <p>${esc(CONFIG.operator)}</p>
   ${CONFIG.contactUrl ? `<p><a href="${esc(CONFIG.contactUrl)}" target="_blank" rel="noopener">お問い合わせフォーム</a></p>` : ''}
   <h2>このサイトについて</h2>
-  <p>${esc(CONFIG.siteName)}は、放課後等デイサービス・児童発達支援で働く方の書類作成の負担を減らすことを目的とした、個別支援計画の文例サイトです。</p>
+  <p>${esc(CONFIG.siteName)}は、放課後等デイサービス・児童発達支援で働く方の書類づくりの負担を減らすための、個別支援計画の文例サイトです。</p>
   <h2>免責事項</h2>
-  <ul class="points">
-    <li>掲載している文例は、計画作成の参考となる「たたき台」です。実際の計画は、お子さまのアセスメントと本人・保護者の意向に基づいて作成してください。</li>
+  <ul class="plain">
+    <li>掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向に基づいて作成してください。</li>
     <li>制度や様式の細かな求めは自治体（指定権者）によって異なり、改定されることがあります。最新の情報は必ず指定権者の資料をご確認ください。</li>
-    <li>当サイトの情報を利用したことによって生じた損害について、運営者は責任を負いかねます。</li>
+    <li>当サイトの情報を利用したことで生じた損害について、運営者は責任を負いかねます。</li>
   </ul>
   <h2>プライバシーポリシー</h2>
-  <ul class="points">
-    <li>計画作成ツールに入力した内容は、お使いのブラウザ内でのみ処理され、当サイトのサーバーに送信・保存されることはありません。</li>
+  <ul class="plain">
+    <li>下書きづくりの画面に入力した内容は、お使いのブラウザの中でのみ処理され、当サイトのサーバーに送信・保存されることはありません。</li>
     <li>チェックリストのチェック状態は、お使いのブラウザ（localStorage）にのみ保存されます。</li>
-    ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスを利用してアクセス情報を収集しています。収集される情報は匿名で、個人を特定するものではありません。</li>' : ''}
+    ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスでアクセス情報を収集しています。個人を特定する情報は含みません。</li>' : ''}
   </ul>
-  <p class="muted">最終更新日：${BUILD_DATE}</p>
+  <p class="small muted">最終更新日：${BUILD_DATE}</p>
 </div>`;
   write('about.html', layout({ path: 'about.html', title: `運営者情報・免責事項｜${CONFIG.siteName}`, description: `${CONFIG.siteName}の運営者情報・免責事項・プライバシーポリシー。`, body }));
 }
