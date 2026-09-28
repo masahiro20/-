@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DOMAINS, AGES, ISSUES } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
+import { salesPages } from './sales-pages.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -24,10 +25,14 @@ function write(path, html) {
 
 const sq = (id) => `<span class="sq c-${id}" aria-hidden="true"></span>`;
 
-function offerLink(url, label) {
-  return url
-    ? `<a class="btn btn-line btn-sm" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`
-    : '<span class="pending">準備中です</span>';
+const yen = (n) => `${n.toLocaleString('ja-JP')}円`;
+const TODO = (label) => `<span class="todo">【公開前に記入：${esc(label)}】</span>`;
+
+// 購入ボタン。販売ページのURLが未設定のあいだは「準備中」にする
+function buyButton(extraClass = '') {
+  return CONFIG.productUrl
+    ? `<a class="btn btn-shu btn-lg ${extraClass}" href="${esc(CONFIG.productUrl)}" target="_blank" rel="noopener">購入ページへ（${yen(CONFIG.productPrice)}）</a>`
+    : `<span class="btn btn-shu btn-lg ${extraClass}" aria-disabled="true">販売開始の準備中です</span>`;
 }
 
 function layout({ path, title, description, body, scripts = [], jsonLd }) {
@@ -73,7 +78,8 @@ ${ga}
       <a href="${r}index.html#tool">下書きをつくる</a>
       <a href="${r}bunrei/index.html">文例集</a>
       <a href="${r}kakikata.html">書き方</a>
-      <a href="${r}checklist.html">運営指導チェック</a>
+      <a href="${r}download.html">無料の様式</a>
+      <a class="nav-cta" href="${r}template.html">Excelセット</a>
     </nav>
   </div>
 </header>
@@ -89,7 +95,12 @@ ${body}
         <li><a href="${r}bunrei/index.html">5領域の文例集</a></li>
         <li><a href="${r}kakikata.html">個別支援計画の書き方</a></li>
         <li><a href="${r}checklist.html">運営指導前チェックリスト</a></li>
-        <li><a href="${r}about.html">運営者情報・免責事項</a></li>
+        <li><a href="${r}download.html">無料の様式ダウンロード</a></li>
+        <li><a href="${r}template.html">文例つきExcelセット</a></li>
+        <li><a href="${r}contact.html">お問い合わせ</a></li>
+        <li><a href="${r}terms.html">利用規約</a></li>
+        <li><a href="${r}tokushoho.html">特定商取引法に基づく表記</a></li>
+        <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
       </ul>
     </div>
     <p class="fine">掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向をもとに作成し、様式や記載方法は指定権者（自治体）の資料をご確認ください。<br>&copy; ${new Date().getFullYear()} ${esc(CONFIG.operator)}</p>
@@ -133,8 +144,8 @@ function buildIndex() {
   <div class="wrap hero-grid">
     <div>
       <p class="kicker">放課後等デイサービス・児童発達支援の児発管のみなさまへ</p>
-      <h1><span class="nb">個別支援計画を、</span><span class="nb">白紙から書かなくていい。</span></h1>
-      <p class="hero-lead">気になる課題を選ぶと、こども家庭庁の参考様式と同じ項目で下書きができます。支援内容ごとの5領域との関連性、家族支援・移行支援まで入った状態から、お子さまに合わせて書き直すだけです。</p>
+      <h1><span class="nb">個別支援計画を、</span><span class="nb"><span class="hl">白紙から</span>書かなくていい。</span></h1>
+      <p class="hero-lead">半年ごとにやってくる、利用児全員分の計画書。「最初の一文が出てこない」時間を、ここで短くしませんか。気になる課題を選ぶと、こども家庭庁の参考様式と同じ項目で下書きができます。5領域との関連性も、家族支援・移行支援も入った状態から、お子さまに合わせて書き直すだけです。</p>
       <div class="hero-actions">
         <a class="btn" href="#tool">下書きをつくる（無料）</a>
         <a class="text-link" href="bunrei/index.html">文例集を目次から探す</a>
@@ -210,6 +221,10 @@ function buildIndex() {
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
         <div class="doc-scroll"><div class="doc" id="doc"></div></div>
         <div id="warn"></div>
+        <div class="tool-cta">
+          <p>いつものExcelで作りたい方へ。<b>課題を選ぶと文例が入る計画書のExcel</b>もあります。</p>
+          <div class="links"><a class="btn btn-sm btn-shu" href="template.html">Excelセットを見る</a><a class="text-link" href="download.html">白紙の様式（無料）</a></div>
+        </div>
       </div>
     </div>
   </div>
@@ -247,18 +262,19 @@ function buildIndex() {
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head"><h2>事業所のみなさまへ</h2></div>
+    <div class="section-head"><h2>もっと手早く書きたい方へ</h2></div>
     <div class="offer">
       <div>
-        <h3>Excel様式と文例全集</h3>
-        <p>参考様式に沿ったExcelの計画書・モニタリング記録の様式と、この文例帳の全文例をまとめたセットです。</p>
-        ${offerLink(CONFIG.productUrl, '内容を見る')}
+        <h3>課題を選ぶと文例が入る、計画書のExcel</h3>
+        <p>計画書・モニタリング記録・記入例・${ISSUES.length}課題の文例一覧が入ったExcelと、印刷用の文例全集（PDF）のセットです。${CONFIG.productPrice.toLocaleString('ja-JP')}円（税込）・買い切り。</p>
+        <a class="btn btn-sm btn-shu" href="template.html">くわしく見る</a>
       </div>
       <div>
-        <h3>アセスメントのメモから下書き（事業所向け）</h3>
-        <p>面談やアセスメントのメモから、お子さまごとの計画・モニタリング・支援記録の下書きを作る事業所向けの版を準備しています。</p>
-        ${offerLink(CONFIG.waitlistUrl, '先行登録する')}
+        <h3>白紙の様式（無料）</h3>
+        <p>参考様式と同じ項目の、個別支援計画書とモニタリング記録のExcel様式です。登録なしでダウンロードできます。</p>
+        <a class="btn btn-line btn-sm" href="download.html">ダウンロードページへ</a>
       </div>
+      <div>
     </div>
   </div>
 </section>
@@ -351,6 +367,11 @@ function buildIssuePages() {
   <div class="redpen" style="margin-top:40px">
     <span class="redpen-label">赤ペン：そのまま写さないで</span>
     <p>国の記載のポイントでは、5領域に課題や支援を「当てはめるだけ」の計画にならないよう求めています。回数・時間・場面・声かけの量など、お子さまの今の様子に合わせて数字と言葉を書き換えてください。</p>
+  </div>
+
+  <div class="tool-cta">
+    <p>この文例、<b>Excelの計画書でプルダウンから選ぶだけ</b>で入れられます。</p>
+    <div class="links"><a class="btn btn-sm btn-shu" href="../template.html">Excelセットを見る</a><a class="text-link" href="../download.html">白紙の様式（無料）</a></div>
   </div>
 
   <h2>「${esc(d.name)}」のほかの文例</h2>
@@ -606,5 +627,16 @@ buildIssuePages();
 buildGuide();
 buildChecklist();
 buildAbout();
+for (const pg of salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton })) {
+  write(pg.path, layout({
+    path: pg.path, title: pg.title, description: pg.description, body: pg.body,
+    jsonLd: pg.faq ? {
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: pg.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+    } : undefined,
+  }));
+}
+const missing = ['siteUrl', 'sellerName', 'supportEmail', 'productUrl'].filter((k) => !CONFIG[k] || CONFIG[k] === 'https://example.com');
+if (missing.length) console.warn(`[公開前に設定してください] data/config.mjs: ${missing.join(', ')}`);
 buildSeoFiles();
 console.log(`built ${pages.length} pages into site/`);
