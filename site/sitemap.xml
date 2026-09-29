@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.com/</loc><lastmod>2026-09-29</lastmod></url>
+  <url><loc>https://example.com/jido-keikaku.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/bunrei/index.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/bunrei/health.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/bunrei/motor.html</loc><lastmod>2026-09-29</lastmod></url>
@@ -41,6 +41,10 @@
   <url><loc>https://example.com/kakikata.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/checklist.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/about.html</loc><lastmod>2026-09-29</lastmod></url>
+  <url><loc>https://example.com/</loc><lastmod>2026-09-29</lastmod></url>
+  <url><loc>https://example.com/jido.html</loc><lastmod>2026-09-29</lastmod></url>
+  <url><loc>https://example.com/shogai.html</loc><lastmod>2026-09-29</lastmod></url>
+  <url><loc>https://example.com/kaigo.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/program.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/template.html</loc><lastmod>2026-09-29</lastmod></url>
   <url><loc>https://example.com/download.html</loc><lastmod>2026-09-29</lastmod></url>

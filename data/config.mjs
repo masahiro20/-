@@ -1,11 +1,11 @@
 // サイト全体の設定。公開前に TODO の値を埋めてから `node scripts/build.mjs` を実行する。
 export const CONFIG = {
-  siteName: '個別支援計画 文例帳',
-  tagline: '放デイ・児発の5領域対応',
+  siteName: 'ふくしのおたすけ帳',
+  tagline: '介護・障害福祉・児童支援の書類づくりを、無料で',
   // TODO: 公開するドメイン（末尾スラッシュなし）。canonical と sitemap.xml に使う
   siteUrl: 'https://example.com',
   // TODO: 運営者名（屋号でも可）
-  operator: '個別支援計画 文例帳 編集部',
+  operator: 'ふくしのおたすけ帳 編集部',
   // TODO: 問い合わせ用フォーム（Googleフォーム等）のURL。空なら問い合わせ導線を「準備中」表示にする
   contactUrl: '',
   // TODO: 有料テンプレート（Excel様式＋文例集）の販売ページURL（BOOTH・note・Stripe等）。空なら「準備中」
@@ -23,6 +23,14 @@ export const CONFIG = {
   sellerPhone: '請求があった場合には遅滞なく開示いたします。',
   // TODO: 事業所向けAI版の先行登録フォームURL。空なら「準備中」
   waitlistUrl: '',
+  // アフィリエイト枠。url を入れた枠だけがサイトに表示される（ASPで提携した広告のリンクを貼る）。
+  // sectors：表示する業種（jido=児童支援、shogai=障害福祉、kaigo=介護、all=全ページ）
+  affiliates: [
+    { id: 'job-kaigo', sectors: ['kaigo'], title: '介護職の求人を探す', text: '給与・休日・夜勤の有無などの条件から、介護の求人を探せます。', cta: '求人を見る', url: '' },
+    { id: 'job-fukushi', sectors: ['jido', 'shogai'], title: '児発管・サビ管・支援員の求人を探す', text: '障害福祉・児童福祉に特化した求人サイトです。', cta: '求人を見る', url: '' },
+    { id: 'shikaku', sectors: ['kaigo', 'shogai'], title: '介護・福祉の資格講座を比べる', text: '実務者研修・初任者研修などの講座資料を、まとめて無料で取り寄せられます。', cta: '資料を請求する', url: '' },
+    { id: 'soft', sectors: ['all'], title: '請求・記録ソフトの資料をまとめて見る', text: '計画書・記録・請求を一つにまとめる、事業所向けソフトの比較です。', cta: '比較を見る', url: '' },
+  ],
   // TODO: Google Analytics 4 の測定ID（例: G-XXXXXXXXXX）。空なら計測タグを出力しない
   gaId: '',
 };

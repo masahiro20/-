@@ -6,6 +6,7 @@ import { DOMAINS, AGES, ISSUES } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
 import { programPage, programData } from './program-page.mjs';
+import { SECTORS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -60,7 +61,7 @@ function layout({ path, title, description, body, scripts = [], jsonLd }) {
 <meta property="og:site_name" content="${esc(CONFIG.siteName)}">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#1f3b60">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23b63b27'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E6%96%87%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23b63b27'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&display=swap">
@@ -72,15 +73,13 @@ ${ga}
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="${r}index.html">
-      <span class="brand-seal" aria-hidden="true">文</span>
+      <span class="brand-seal" aria-hidden="true">帳</span>
       <span class="brand-name">${esc(CONFIG.siteName)}<span class="brand-sub">${esc(CONFIG.tagline)}</span></span>
     </a>
     <nav class="nav" aria-label="メインメニュー">
-      <a href="${r}index.html#tool">下書きをつくる</a>
-      <a href="${r}bunrei/index.html">文例集</a>
-      <a href="${r}program.html">支援プログラム</a>
-      <a href="${r}download.html">無料の様式</a>
-      <a class="nav-cta" href="${r}template.html">Excelセット</a>
+      <a href="${r}jido.html">児童支援</a>
+      <a href="${r}shogai.html">障害福祉</a>
+      <a href="${r}kaigo.html">介護</a>
     </nav>
   </div>
 </header>
@@ -89,25 +88,21 @@ ${body}
 </main>
 <footer class="site-footer">
   <div class="wrap">
-    <div class="footer-grid">
-      <p class="brand-name" style="margin:0">${esc(CONFIG.siteName)}</p>
-      <ul class="footer-links">
-        <li><a href="${r}index.html#tool">下書きをつくる</a></li>
-        <li><a href="${r}bunrei/index.html">5領域の文例集</a></li>
-        <li><a href="${r}kakikata.html">個別支援計画の書き方</a></li>
-        <li><a href="${r}checklist.html">運営指導前チェックリスト</a></li>
-        <li><a href="${r}program.html">支援プログラムの下書きツール</a></li>
-        <li><a href="${r}download.html">無料の様式ダウンロード</a></li>
-        <li><a href="${r}template.html">文例つきExcelセット</a></li>
+    <div class="footer-cols">
+      <div><p class="brand-name" style="margin:0 0 6px">${esc(CONFIG.siteName)}</p><p class="small muted" style="margin:0">${esc(CONFIG.tagline)}</p></div>
+      ${SECTORS.map((sec) => `<div><p class="footer-h"><a href="${r}${sec.path}">${esc(sec.name)}</a></p><ul class="footer-list">${sec.tools.map((t) => `<li><a href="${r}${t.path}">${esc(t.name)}</a></li>`).join('')}${sec.guides.map((g) => `<li><a href="${r}${g.path}">${esc(g.name)}</a></li>`).join('')}</ul></div>`).join('')}
+      <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
+        <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
         <li><a href="${r}contact.html">お問い合わせ</a></li>
         <li><a href="${r}terms.html">利用規約</a></li>
+        <li><a href="${r}template.html">文例つきExcelセット（放デイ・児発）</a></li>
         <li><a href="${r}tokushoho.html">特定商取引法に基づく表記</a></li>
-        <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
-      </ul>
+      </ul></div>
     </div>
-    <p class="fine">掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向をもとに作成し、様式や記載方法は指定権者（自治体）の資料をご確認ください。<br>&copy; ${new Date().getFullYear()} ${esc(CONFIG.operator)}</p>
+    <p class="fine">掲載している文例・下書きは、書類を書き始めるためのものです。実際の書類は、ご本人のアセスメントと意向・事実に基づいて作成し、様式や記載方法は指定権者（自治体）の資料をご確認ください。サイト内の「PR」は広告です。<br>&copy; ${new Date().getFullYear()} ${esc(CONFIG.operator)}</p>
   </div>
 </footer>
+<script src="${r}assets/common.js"></script>
 ${scripts.map((s) => `<script src="${r}${s}"></script>`).join('\n')}
 </body>
 </html>
@@ -218,6 +213,7 @@ function buildIndex() {
             <button class="btn btn-sm" id="copyTable" type="button" disabled>Excelに貼る形でコピー</button>
             <button class="btn btn-line btn-sm" id="copyText" type="button" disabled>文章でコピー</button>
             <button class="btn btn-line btn-sm" id="printPlan" type="button" disabled>印刷</button>
+            <button class="btn btn-line btn-sm ai-btn" id="aiPlan" type="button" disabled>AIで文章を整える</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
@@ -296,9 +292,9 @@ function buildIndex() {
 </section>
 `;
   write(
-    'index.html',
+    'jido-keikaku.html',
     layout({
-      path: 'index.html',
+      path: 'jido-keikaku.html',
       title: `個別支援計画の文例と下書き作成【5領域対応・無料】放デイ・児発｜${CONFIG.siteName}`,
       description:
         '放課後等デイサービス・児童発達支援の個別支援計画を、こども家庭庁の参考様式と同じ項目で下書き。5領域との関連性、家族支援・移行支援、モニタリングの文例まで。無料・登録不要、入力内容は送信されません。',
@@ -335,14 +331,14 @@ function buildIssuePages() {
     const related = ISSUES.filter((i) => i.domain === issue.domain && i.id !== issue.id);
     const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="index.html">文例集</a> ／ <a href="${d.id}.html">${esc(d.name)}</a></nav>
+  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="../jido.html">児童支援</a> ／ <a href="index.html">文例集</a> ／ <a href="${d.id}.html">${esc(d.name)}</a></nav>
   <p class="domain-label c-${d.id}">${sq(d.id)}${esc(d.name)}</p>
   <h1>「${esc(issue.label)}」の個別支援計画 文例</h1>
   <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画で使える文例です。アセスメントの視点から、支援目標・支援内容（5領域との関連性つき）・留意事項・家族支援・モニタリングまで、計画書の項目の順に並べています。</p>
 
   <div class="cta-line">
     <p>この課題を選んだ状態で、参考様式どおりの計画書の下書きを作れます。</p>
-    <a class="btn btn-sm" href="../index.html?issues=${issue.id}#tool">この課題で下書きをつくる</a>
+    <a class="btn btn-sm" href="../jido-keikaku.html?issues=${issue.id}#tool">この課題で下書きをつくる</a>
   </div>
 
   <h2>アセスメントで確かめたいこと</h2>
@@ -403,7 +399,7 @@ function buildDomainPages() {
     const issues = ISSUES.filter((i) => i.domain === d.id);
     const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="index.html">文例集</a></nav>
+  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="../jido.html">児童支援</a> ／ <a href="index.html">文例集</a></nav>
   <p class="domain-label c-${d.id}">${sq(d.id)}5領域</p>
   <h1>「${esc(d.name)}」の個別支援計画 文例</h1>
   <p class="lead">${esc(d.desc)}</p>
@@ -420,7 +416,7 @@ function buildDomainPages() {
     .join('')}
   <div class="cta-line">
     <p>課題を選ぶと、5領域の関連性まで入った計画書の下書きができます。</p>
-    <a class="btn btn-sm" href="../index.html#tool">下書きをつくる</a>
+    <a class="btn btn-sm" href="../jido-keikaku.html#tool">下書きをつくる</a>
   </div>
 </div>`;
     write(
@@ -439,7 +435,7 @@ function buildDomainPages() {
 function buildBunreiIndex() {
   const body = `
 <div class="wrap article">
-  <nav class="breadcrumb"><a href="../index.html">トップ</a></nav>
+  <nav class="breadcrumb"><a href="../index.html">トップ</a> ／ <a href="../jido.html">児童支援</a></nav>
   <h1>個別支援計画 文例集</h1>
   <p class="lead">5領域と課題ごとに、アセスメントの視点・支援目標・支援内容・留意事項・家族支援・モニタリングの文例をまとめています。</p>
   ${tocHtml('')}
@@ -459,7 +455,7 @@ function buildBunreiIndex() {
 function buildGuide() {
   const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <nav class="breadcrumb"><a href="index.html">トップ</a> ／ <a href="jido.html">児童支援</a></nav>
   <h1>個別支援計画の書き方<br><small class="muted" style="font-size:.6em">令和6年度報酬改定・5領域対応</small></h1>
   <p class="lead">放課後等デイサービス・児童発達支援の個別支援計画は、令和6年度の報酬改定で書くべき内容が増えました。国が示した「記載のポイント」に沿って、項目ごとの書き方を整理します。</p>
 
@@ -506,7 +502,7 @@ function buildGuide() {
 
   <div class="cta-line">
     <p>この構成どおりの下書きを、課題を選ぶだけで作れます。</p>
-    <a class="btn btn-sm" href="index.html#tool">下書きをつくる</a>
+    <a class="btn btn-sm" href="jido-keikaku.html#tool">下書きをつくる</a>
   </div>
   <p class="small muted">※ 様式や記載方法の細かな求めは、自治体（指定権者）によって異なります。必ず最新の資料をご確認ください。</p>
 </div>`;
@@ -559,7 +555,7 @@ function buildChecklist() {
   const total = groups.reduce((a, [, items]) => a + items.length, 0);
   const body = `
 <div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <nav class="breadcrumb"><a href="index.html">トップ</a> ／ <a href="jido.html">児童支援</a></nav>
   <h1>個別支援計画 運営指導前チェックリスト</h1>
   <p class="lead">運営指導（実地指導）の前に、個別支援計画まわりの書類を${total}項目で確認できます。チェックはこの端末のブラウザにだけ保存されます。</p>
   <div class="progress"><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><span id="progressText"></span></div>
@@ -595,7 +591,7 @@ function buildAbout() {
   <p>${esc(CONFIG.operator)}</p>
   ${CONFIG.contactUrl ? `<p><a href="${esc(CONFIG.contactUrl)}" target="_blank" rel="noopener">お問い合わせフォーム</a></p>` : ''}
   <h2>このサイトについて</h2>
-  <p>${esc(CONFIG.siteName)}は、放課後等デイサービス・児童発達支援で働く方の書類づくりの負担を減らすための、個別支援計画の文例サイトです。</p>
+  <p>${esc(CONFIG.siteName)}は、介護・障害福祉・児童支援の現場で働く方の書類づくりの負担を減らすための、無料ツール集です。サイトの運営費は、サイト内の広告（「PR」と表示しています）でまかなっています。</p>
   <h2>免責事項</h2>
   <ul class="plain">
     <li>掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向に基づいて作成してください。</li>
@@ -634,6 +630,9 @@ buildIssuePages();
 buildGuide();
 buildChecklist();
 buildAbout();
+for (const pg of portalPages({ esc, CONFIG })) {
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body }));
+}
 write('assets/program-data.js', programData());
 {
   const pg = programPage({ esc });

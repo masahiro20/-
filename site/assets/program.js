@@ -216,6 +216,18 @@
   $('pCopyHtml').addEventListener('click', function () { copy(toHtml(), 'ホームページ掲載用のHTMLをコピーしました'); });
   $('pCopyText').addEventListener('click', function () { copy(toText(), '文章をコピーしました'); });
   $('pPrint').addEventListener('click', function () { window.print(); });
+  $('pAi').addEventListener('click', function () {
+    window.Otasuke.copyAiPrompt({
+      role: '児童発達支援・放課後等デイサービス事業所の管理者',
+      doc: '支援プログラム（事業所の支援の実施に関する計画）',
+      rules: [
+        '利用を考えている保護者が読んで分かりやすい、やわらかい言葉にする。',
+        '「本人支援」の5領域（健康・生活／運動・感覚／認知・行動／言語・コミュニケーション／人間関係・社会性）の区分はそのまま残す。',
+        '事業所が実際に行っていない取り組みを書き足さない。',
+      ],
+      draft: toText(),
+    });
+  });
   $('pReset').addEventListener('click', function () {
     if (!window.confirm('入力した内容を消して、最初の状態に戻しますか？')) return;
     state = defaults(); save(); fillFields(); renderChecks(); renderDoc();

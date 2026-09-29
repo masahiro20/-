@@ -176,7 +176,7 @@ export function salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton }) {
 
   const download = `
 <div class="wrap article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+  <nav class="breadcrumb"><a href="index.html">トップ</a> ／ <a href="jido.html">児童支援</a></nav>
   <span class="pill">無料・登録不要</span>
   <h1>個別支援計画書・モニタリング記録の様式（Excel）</h1>
   <p class="lead">こども家庭庁の参考様式（令和6年度報酬改定）と同じ項目の、個別支援計画書とモニタリング記録のExcel様式です。A4横に収まるよう印刷設定済み。事業所名の追加など、自由に編集してお使いください。</p>
@@ -195,7 +195,7 @@ export function salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton }) {
   </div>
   <div class="tool-cta" style="margin-top:40px">
     <p>文章も入れたい方へ。<b>課題を選ぶと文例が入るExcel</b>（${price}）もあります。</p>
-    <div class="links"><a class="btn btn-sm btn-shu" href="template.html">Excelセットを見る</a><a class="text-link" href="index.html#tool">ブラウザで下書きをつくる（無料）</a></div>
+    <div class="links"><a class="btn btn-sm btn-shu" href="template.html">Excelセットを見る</a><a class="text-link" href="jido-keikaku.html#tool">ブラウザで下書きをつくる（無料）</a></div>
   </div>
   <h2>書き方に迷ったら</h2>
   <ul class="plain">
@@ -267,7 +267,7 @@ export function salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton }) {
     <p style="margin:0 0 8px"><b>よくあるご質問は、先にこちらをご覧ください</b></p>
     <ul class="plain" style="margin:0">
       <li><a href="template.html#faq">Excelセット（動作環境・利用範囲・領収書・返品など）</a></li>
-      <li><a href="index.html">下書きツール・文例について</a></li>
+      <li><a href="index.html">各ツール・文例について</a></li>
     </ul>
   </div>
   <h2>お問い合わせ先</h2>

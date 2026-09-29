@@ -9,7 +9,7 @@ export function programPage({ esc }) {
   const body = `
 <section class="tool-section" style="border-top:0">
   <div class="wrap">
-    <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+    <nav class="breadcrumb"><a href="index.html">トップ</a> ／ <a href="jido.html">児童支援</a></nav>
     <div class="section-head tool-head">
       <div>
         <span class="pill">無料・登録不要</span>
@@ -44,6 +44,7 @@ export function programPage({ esc }) {
             <button class="btn btn-sm" id="pCopyHtml" type="button">ホームページ掲載用にコピー</button>
             <button class="btn btn-line btn-sm" id="pCopyText" type="button">文章でコピー</button>
             <button class="btn btn-line btn-sm" id="pPrint" type="button">印刷</button>
+            <button class="btn btn-line btn-sm ai-btn" id="pAi" type="button">AIで文章を整える</button>
           </div>
         </div>
         <p class="edit-hint">下書きの文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">下書きは横にスクロールできます。</span></p>

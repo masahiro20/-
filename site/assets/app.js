@@ -167,7 +167,7 @@
   function renderDoc() {
     var p = buildPlan();
     var has = state.picked.length > 0;
-    ['copyTable', 'copyText', 'printPlan'].forEach(function (id) { $(id).disabled = !has; });
+    ['copyTable', 'copyText', 'printPlan', 'aiPlan'].forEach(function (id) { $(id).disabled = !has; });
 
     var selfRows = p.rows.length ? p.rows.map(function (r) { return rowHtml(r, true); }).join('')
       : '<tr><th>本人支援</th><td colspan="6"><p class="doc-empty">左の「二」で課題を選ぶと、ここに支援目標と支援内容の文例が入ります。</p></td></tr>';
@@ -352,6 +352,19 @@
   $('copyTable').addEventListener('click', function () { copy(planTsv(), '表をコピーしました。Excelのセルを選んで貼り付けてください'); });
   $('copyText').addEventListener('click', function () { copy(planText(), '文章をコピーしました'); });
   $('printPlan').addEventListener('click', function () { window.print(); });
+  $('aiPlan').addEventListener('click', function () {
+    window.Otasuke.copyAiPrompt({
+      role: '放課後等デイサービス・児童発達支援の児童発達支援管理責任者',
+      doc: '個別支援計画書',
+      rules: [
+        '支援目標は、こども本人が主語の「〜できる。」で、場面・回数・時間など評価できる書き方にする。',
+        '支援内容は、職員が行う支援・工夫・配慮として具体的に書き、【5領域】の行はそのまま残す。',
+        '家族支援・移行支援・地域支援の見出しは残し、5領域は書かない。',
+        'こども家庭庁の「個別支援計画書の記載のポイント」（令和6年）に沿った書き方にそろえる。',
+      ],
+      draft: planText(),
+    });
+  });
 
   renderAges();
   renderAll();
