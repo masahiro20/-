@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { DOMAINS, AGES, ISSUES } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
+import { programPage, programData } from './program-page.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -77,7 +78,7 @@ ${ga}
     <nav class="nav" aria-label="メインメニュー">
       <a href="${r}index.html#tool">下書きをつくる</a>
       <a href="${r}bunrei/index.html">文例集</a>
-      <a href="${r}kakikata.html">書き方</a>
+      <a href="${r}program.html">支援プログラム</a>
       <a href="${r}download.html">無料の様式</a>
       <a class="nav-cta" href="${r}template.html">Excelセット</a>
     </nav>
@@ -95,6 +96,7 @@ ${body}
         <li><a href="${r}bunrei/index.html">5領域の文例集</a></li>
         <li><a href="${r}kakikata.html">個別支援計画の書き方</a></li>
         <li><a href="${r}checklist.html">運営指導前チェックリスト</a></li>
+        <li><a href="${r}program.html">支援プログラムの下書きツール</a></li>
         <li><a href="${r}download.html">無料の様式ダウンロード</a></li>
         <li><a href="${r}template.html">文例つきExcelセット</a></li>
         <li><a href="${r}contact.html">お問い合わせ</a></li>
@@ -273,6 +275,11 @@ function buildIndex() {
         <h3>白紙の様式（無料）</h3>
         <p>参考様式と同じ項目の、個別支援計画書とモニタリング記録のExcel様式です。登録なしでダウンロードできます。</p>
         <a class="btn btn-line btn-sm" href="download.html">ダウンロードページへ</a>
+      </div>
+      <div>
+        <h3>支援プログラムの下書き（無料）</h3>
+        <p>作成・公表が必要な「支援プログラム」を、国の手引きの①〜⑫の項目どおりに作れます。ホームページ掲載用のHTMLもコピーできます。</p>
+        <a class="btn btn-line btn-sm" href="program.html">下書きをつくる</a>
       </div>
       <div>
     </div>
@@ -627,6 +634,11 @@ buildIssuePages();
 buildGuide();
 buildChecklist();
 buildAbout();
+write('assets/program-data.js', programData());
+{
+  const pg = programPage({ esc });
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
+}
 for (const pg of salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton })) {
   write(pg.path, layout({
     path: pg.path, title: pg.title, description: pg.description, body: pg.body,

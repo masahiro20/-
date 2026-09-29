@@ -404,5 +404,8 @@ textarea.input { resize: vertical; line-height: 1.7; }
   .buy-box { padding: 20px; }
 }
 @media print {
-  .tool-cta { display: none !important; }
+  .tool-cta, .breadcrumb { display: none !important; }
+  .doc-portrait { page: portrait; }
 }
+@page portrait { size: A4 portrait; margin: 12mm; }
+.doc-portrait { min-width: 640px; }
