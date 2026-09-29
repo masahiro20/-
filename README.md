@@ -1,14 +1,17 @@
-# 個別支援計画 文例帳
+# ふくしのおたすけ帳
 
-放課後等デイサービス・児童発達支援の個別支援計画を、5領域に沿って作るための無料ツールと文例サイト。あわせて、有料の「文例つき様式セット（Excel＋PDF）」を販売する。
+介護・障害福祉・児童支援の現場で働く人のための、無料の書類ツール集（個別支援計画・支援プログラム・事故報告書など）。収益はPR枠（アフィリエイト）。放デイ・児発向けには有料の「文例つき様式セット（Excel＋PDF）」も用意している。
+
+運営の方針は `docs/portal-plan.md` を参照。
 
 ## フォルダ構成
 
 | 場所 | 中身 |
 |---|---|
-| `data/issues.mjs` | 文例データ（5領域 × 31課題）。サイトと商品の両方がここを使う |
+| `data/issues.mjs` | 児童支援の文例データ（5領域 × 31課題）。サイトと商品の両方がここを使う |
+| `data/program.mjs`・`data/shogai.mjs`・`data/jiko.mjs` | 支援プログラム・障害福祉の個別支援計画・事故報告書のデータ |
 | `data/config.mjs` | サイト名・ドメイン・価格・販売ページURL・連絡先などの設定 |
-| `scripts/build.mjs` | `site/` に静的サイトを生成する（`scripts/sales-pages.mjs` は販売まわりのページ） |
+| `scripts/build.mjs` | `site/` に静的サイトを生成する。`portal.mjs`（トップ・業種ページ・共有ボタン・PR枠）、`*-page.mjs`（各ツール）、`sales-pages.mjs`（販売まわり）を呼び出す |
 | `scripts/sns-posts.mjs` | SNSの投稿文を `docs/sales/sns-posts.csv` に生成する |
 | `site/` | 公開するファイル一式。`assets/app.js`・`style.css`・`checklist.js`・`copy.js`・`img/` 以外は生成物 |
 | `products/` | 有料商品を作るスクリプト。出力先の `products/dist/` はリポジトリに入れない |

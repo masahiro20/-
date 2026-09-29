@@ -13,6 +13,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
+    upcoming: ['モニタリング記録の下書き', '保護者への連絡帳・おたよりの文例'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -23,6 +24,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
+    upcoming: ['モニタリング記録の下書き', '虐待防止・身体拘束適正化の委員会記録と研修の年間計画'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -32,6 +34,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
+    upcoming: ['ヒヤリハット報告の下書きと月別集計', '委員会（虐待防止・身体拘束・感染症・事故防止）の議事録', '法定研修の年間計画表（サービス種別ごとの回数つき）'],
   },
 ];
 
@@ -143,6 +146,7 @@ export function portalPages({ esc, CONFIG }) {
 <section class="section">
   <div class="wrap">
     <div class="tool-grid">${s.tools.map((t) => toolCard(t, esc)).join('')}</div>
+    ${s.upcoming && s.upcoming.length ? `<div class="upcoming"><p>準備中のツール</p><ul>${s.upcoming.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>` : ''}
     ${s.guides.length ? `<h2 style="margin-top:40px;font-size:20px">読みもの</h2><ul class="plain">${s.guides.map((g) => `<li><a href="${esc(g.path)}">${esc(g.name)}</a></li>`).join('')}</ul>` : ''}
   </div>
 </section>

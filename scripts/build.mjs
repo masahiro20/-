@@ -7,6 +7,8 @@ import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
 import { programPage, programData } from './program-page.mjs';
 import { SECTORS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
+import { shogaiPage, shogaiData } from './shogai-page.mjs';
+import { jikoPage, jikoData } from './jiko-page.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -27,6 +29,10 @@ function write(path, html) {
 
 const sq = (id) => `<span class="sq c-${id}" aria-hidden="true"></span>`;
 
+// ツールページの下に置く共有ボタンとPR枠
+function toolFooter(sector, path) {
+  return `<section class="section"><div class="wrap narrow">${shareBlock({ esc, url: `${CONFIG.siteUrl}/${path}`, title: `${CONFIG.siteName}｜無料で使える書類の下書きツール` })}${affiliateBlock({ esc, CONFIG, sector })}</div></section>`;
+}
 const yen = (n) => `${n.toLocaleString('ja-JP')}円`;
 const TODO = (label) => `<span class="todo">【公開前に記入：${esc(label)}】</span>`;
 
@@ -298,7 +304,7 @@ function buildIndex() {
       title: `個別支援計画の文例と下書き作成【5領域対応・無料】放デイ・児発｜${CONFIG.siteName}`,
       description:
         '放課後等デイサービス・児童発達支援の個別支援計画を、こども家庭庁の参考様式と同じ項目で下書き。5領域との関連性、家族支援・移行支援、モニタリングの文例まで。無料・登録不要、入力内容は送信されません。',
-      body,
+      body: body + toolFooter('jido', 'jido-keikaku.html'),
       scripts: ['assets/data.js', 'assets/app.js'],
       jsonLd: {
         '@context': 'https://schema.org',
@@ -634,9 +640,14 @@ for (const pg of portalPages({ esc, CONFIG })) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body }));
 }
 write('assets/program-data.js', programData());
+write('assets/shogai-data.js', shogaiData());
+write('assets/jiko-data.js', jikoData());
+for (const pg of [shogaiPage({ esc }), jikoPage({ esc })]) {
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter(pg.sector || 'shogai', pg.path), scripts: pg.scripts }));
+}
 {
   const pg = programPage({ esc });
-  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter('jido', pg.path), scripts: pg.scripts }));
 }
 for (const pg of salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton })) {
   write(pg.path, layout({
