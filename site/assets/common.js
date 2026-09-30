@@ -65,6 +65,15 @@
     copyAiPrompt: function (opts) { return copyText(buildPrompt(opts)).then(showAiDialog); },
   };
 
+  // 共有ボタンは、表示しているページのURLとタイトルで作り直す（設定のドメインが未確定でも、仮のURLでも正しく共有できる）
+  if (/^https?:$/.test(location.protocol)) {
+    var here = location.origin + location.pathname.replace(/index\.html$/, '');
+    var u = encodeURIComponent(here), t = encodeURIComponent(document.title);
+    document.querySelectorAll('.share-line').forEach(function (a) { a.href = 'https://social-plugins.line.me/lineit/share?url=' + u; });
+    document.querySelectorAll('.share-x').forEach(function (a) { a.href = 'https://twitter.com/intent/tweet?url=' + u + '&text=' + t; });
+    document.querySelectorAll('.share [data-copy-url]').forEach(function (b) { b.setAttribute('data-copy-url', here); });
+  }
+
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-copy-url]');
     if (!b) return;

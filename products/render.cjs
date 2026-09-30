@@ -1,6 +1,7 @@
 // HTML を PDF・PNG に書き出す（Playwright + Chromium を使用）。
 //   node products/render.cjs pdf <in.html> <out.pdf>
 //   node products/render.cjs png <in.html> <out.png> [幅] [高さ]
+// 環境変数 SCALE で画素密度を変えられる（既定：png は2倍）。
 // 環境変数 FONT_VIA_CURL=1 のときは、Webフォントを curl 経由で取得する（プロキシ環境向け）。
 const { execFileSync } = require('child_process');
 const path = require('path');
@@ -24,7 +25,7 @@ async function fontRoute(route) {
   const browser = await chromium.launch();
   const width = Number(w) || 1200;
   const height = Number(h) || 1200;
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: mode === 'png' ? 2 : 1 });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: Number(process.env.SCALE) || (mode === 'png' ? 2 : 1) });
   if (process.env.FONT_VIA_CURL) await ctx.route(/fonts\.(googleapis|gstatic)\.com/, fontRoute);
   const page = await ctx.newPage();
   await page.goto('file://' + path.resolve(input), { waitUntil: 'load', timeout: 120000 });

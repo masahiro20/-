@@ -31,6 +31,13 @@ export const CONFIG = {
     { id: 'shikaku', sectors: ['kaigo', 'shogai'], title: '介護・福祉の資格講座を比べる', text: '実務者研修・初任者研修などの講座資料を、まとめて無料で取り寄せられます。', cta: '資料を請求する', url: '' },
     { id: 'soft', sectors: ['all'], title: '請求・記録ソフトの資料をまとめて見る', text: '計画書・記録・請求を一つにまとめる、事業所向けソフトの比較です。', cta: '比較を見る', url: '' },
   ],
+  // 意見箱の送り先。
+  // feedbackEndpoint：Google Apps Script のウェブアプリのURL（tools/feedback-gas.js を貼って公開したもの）。
+  //   入れると、意見がスプレッドシートに記録され、メールで届く。手順は docs/deploy.md の「意見箱」。
+  // feedbackEmail：endpoint がまだ無いときの予備。入れると「メールで送る」ボタンになる（利用者のメールソフトが開く）。
+  // どちらも空なら、意見箱は「送信の準備中」と表示し、文章のコピーだけできる。
+  feedbackEndpoint: '',
+  feedbackEmail: '',
   // TODO: Google Analytics 4 の測定ID（例: G-XXXXXXXXXX）。空なら計測タグを出力しない
   gaId: '',
 };

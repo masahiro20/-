@@ -12,6 +12,7 @@ import { jikoPage, jikoData } from './jiko-page.mjs';
 import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
 import { flyerPage } from './flyer-page.mjs';
 import { formdocPages } from './formdoc-pages.mjs';
+import { ikenPage } from './iken-page.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -34,7 +35,10 @@ const sq = (id) => `<span class="sq c-${id}" aria-hidden="true"></span>`;
 
 // ツールページの下に置く共有ボタンとPR枠
 function toolFooter(sector, path) {
-  return `<section class="section"><div class="wrap narrow">${shareBlock({ esc, url: `${CONFIG.siteUrl}/${path}`, title: `${CONFIG.siteName}｜無料で使える書類の下書きツール` })}${affiliateBlock({ esc, CONFIG, sector })}</div></section>`;
+  // 選ぶだけの下書き（formdoc）のページは本文に意見箱の案内があるので、それ以外のツールにだけ足す
+  const ask = !['jido-keikaku.html', 'shogai-keikaku.html', 'jiko.html', 'renrakucho.html', 'program.html'].includes(path) ? ''
+    : `<div class="ask-box" style="margin:0 0 24px"><p><b>「この項目もほしい」「この書類も作ってほしい」</b><br>現場の声でツールを増やしています。意見箱からお気軽にどうぞ。</p><a class="btn btn-line btn-sm" href="iken.html">意見箱に送る</a></div>`;
+  return `<section class="section"><div class="wrap narrow">${ask}${shareBlock({ esc, url: `${CONFIG.siteUrl}/${path}`, title: `${CONFIG.siteName}｜無料で使える書類の下書きツール` })}${affiliateBlock({ esc, CONFIG, sector })}</div></section>`;
 }
 const yen = (n) => `${n.toLocaleString('ja-JP')}円`;
 const TODO = (label) => `<span class="todo">【公開前に記入：${esc(label)}】</span>`;
@@ -46,11 +50,13 @@ function buyButton(extraClass = '') {
     : `<span class="btn btn-shu btn-lg ${extraClass}" aria-disabled="true">販売開始の準備中です</span>`;
 }
 
-function layout({ path, title, description, body, scripts = [], jsonLd }) {
+// root：相対パスの起点を上書きする（404ページはどの階層でも表示されるので '/' にする）
+// noindex：検索結果に出さず、sitemap.xml にも入れない
+function layout({ path, title, description, body, scripts = [], jsonLd, root, noindex }) {
   const depth = path.split('/').length - 1;
-  const r = depth ? '../'.repeat(depth) : './';
+  const r = root || (depth ? '../'.repeat(depth) : './');
   const canonical = `${CONFIG.siteUrl}/${path === 'index.html' ? '' : path}`;
-  pages.push(canonical);
+  if (!noindex) pages.push(canonical);
   const ga = CONFIG.gaId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(CONFIG.gaId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(CONFIG.gaId)}');</script>`
@@ -62,13 +68,18 @@ function layout({ path, title, description, body, scripts = [], jsonLd }) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<link rel="canonical" href="${esc(canonical)}">
+${noindex ? '' : `<link rel="canonical" href="${esc(canonical)}">`}
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:site_name" content="${esc(CONFIG.siteName)}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="${esc(CONFIG.siteUrl)}/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta name="theme-color" content="#1f5c4a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f5c4a'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,6 +100,7 @@ ${ga}
       <a href="${r}jido.html">児童支援</a>
       <a href="${r}shogai.html">障害福祉</a>
       <a href="${r}kaigo.html">介護</a>
+      <a class="nav-cta" href="${r}iken.html">意見箱</a>
     </nav>
   </div>
 </header>
@@ -99,8 +111,9 @@ ${body}
   <div class="wrap">
     <div class="footer-cols">
       <div><p class="brand-name" style="margin:0 0 6px">${esc(CONFIG.siteName)}</p><p class="small muted" style="margin:0">${esc(CONFIG.tagline)}</p></div>
-      ${SECTORS.map((sec) => `<div><p class="footer-h"><a href="${r}${sec.path}">${esc(sec.name)}</a></p><ul class="footer-list">${sec.tools.map((t) => `<li><a href="${r}${t.path}">${esc(t.name)}</a></li>`).join('')}${sec.guides.map((g) => `<li><a href="${r}${g.path}">${esc(g.name)}</a></li>`).join('')}</ul></div>`).join('')}
+      ${SECTORS.map((sec) => `<div><p class="footer-h"><a href="${r}${sec.path}">${esc(sec.name)}</a></p><ul class="footer-list">${sec.tools.slice(0, 6).map((t) => `<li><a href="${r}${t.path}">${esc(t.name)}</a></li>`).join('')}<li><a class="footer-more" href="${r}${sec.path}">${esc(sec.name)}のツールをすべて見る（${sec.tools.length}）</a></li></ul></div>`).join('')}
       <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
+        <li><a href="${r}iken.html">意見箱（ほしい書類・ご要望）</a></li>
         <li><a href="${r}flyer.html">職場で紹介するチラシ（印刷用）</a></li>
         <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
         <li><a href="${r}contact.html">お問い合わせ</a></li>
@@ -113,7 +126,9 @@ ${body}
   </div>
 </footer>
 <script src="${r}assets/common.js"></script>
-${scripts.map((s) => `<script src="${/^https?:/.test(s) ? s : r + s}"></script>`).join('\n')}
+${scripts.map((s) => (typeof s === 'object'
+    ? `<script src="${s.src}" integrity="${s.integrity}" crossorigin="anonymous" referrerpolicy="no-referrer"></script>`
+    : `<script src="${/^https?:/.test(s) ? s : r + s}"></script>`)).join('\n')}
 </body>
 </html>
 `;
@@ -606,7 +621,7 @@ function buildAbout() {
   <p>${esc(CONFIG.siteName)}は、介護・障害福祉・児童支援の現場で働く方の書類づくりの負担を減らすための、無料ツール集です。サイトの運営費は、サイト内の広告（「PR」と表示しています）でまかなっています。</p>
   <h2>免責事項</h2>
   <ul class="plain">
-    <li>掲載している文例は、計画を書き始めるための下書きです。実際の計画は、お子さまのアセスメントと本人・家族の意向に基づいて作成してください。</li>
+    <li>掲載している文例・下書きは、書類を書き始めるためのものです。実際の書類は、ご本人のアセスメントと意向、事実に基づいて作成してください。</li>
     <li>制度や様式の細かな求めは自治体（指定権者）によって異なり、改定されることがあります。最新の情報は必ず指定権者の資料をご確認ください。</li>
     <li>当サイトの情報を利用したことで生じた損害について、運営者は責任を負いかねます。</li>
   </ul>
@@ -614,6 +629,8 @@ function buildAbout() {
   <ul class="plain">
     <li>下書きづくりの画面に入力した内容は、お使いのブラウザの中でのみ処理され、当サイトのサーバーに送信・保存されることはありません。</li>
     <li>チェックリストのチェック状態は、お使いのブラウザ（localStorage）にのみ保存されます。</li>
+    <li>意見箱に送っていただいた内容（ご意見・任意のメールアドレス）は、ツールの改善と、ご希望の場合の返信のためだけに使い、第三者に提供しません。</li>
+    <li>当サイトは、アフィリエイトプログラム（A8.net などの広告配信サービス）を利用することがあります。広告の成果を計測するため、広告配信事業者がCookieを使用する場合があります。Cookieはブラウザの設定で無効にできます。</li>
     ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスでアクセス情報を収集しています。個人を特定する情報は含みません。</li>' : ''}
   </ul>
   <p class="small muted">最終更新日：${BUILD_DATE}</p>
@@ -631,6 +648,36 @@ ${pages.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${BUILD_DATE}</lastmod><
 `,
   );
   write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${CONFIG.siteUrl}/sitemap.xml\n`);
+  // Cloudflare Pages / Netlify が読むヘッダー設定。外部から読み込むのはフォント・QRコード・計測・意見箱の送信先だけ
+  const feedbackHost = CONFIG.feedbackEndpoint ? new URL(CONFIG.feedbackEndpoint).origin : '';
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https:",
+    `connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com${feedbackHost && !feedbackHost.includes('script.google') ? ' ' + feedbackHost : ''}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+  ].join('; ');
+  write('_headers', `/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: ${csp}
+
+/assets/*
+  Cache-Control: public, max-age=3600
+
+/assets/img/*
+  Cache-Control: public, max-age=604800
+
+/files/*
+  Cache-Control: public, max-age=86400
+`);
 }
 
 rmSync(join(OUT, 'bunrei'), { recursive: true, force: true });
@@ -649,8 +696,7 @@ write('assets/program-data.js', programData());
 write('assets/shogai-data.js', shogaiData());
 write('assets/jiko-data.js', jikoData());
 write('assets/renrakucho-data.js', renrakuchoData());
-{
-  const pg = flyerPage({ esc, CONFIG });
+for (const pg of [flyerPage({ esc, CONFIG }), ikenPage({ esc, CONFIG })]) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
 }
 for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc }), ...formdocPages({ esc, CONFIG })]) {
@@ -669,7 +715,24 @@ for (const pg of salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton })) {
     } : undefined,
   }));
 }
-const missing = ['siteUrl', 'sellerName', 'supportEmail', 'productUrl'].filter((k) => !CONFIG[k] || CONFIG[k] === 'https://example.com');
-if (missing.length) console.warn(`[公開前に設定してください] data/config.mjs: ${missing.join(', ')}`);
+write('404.html', layout({
+  path: '404.html', root: '/', noindex: true,
+  title: `ページが見つかりません｜${CONFIG.siteName}`,
+  description: 'お探しのページは見つかりませんでした。',
+  body: `
+<section class="portal-hero portal-hero-sm">
+  <div class="wrap">
+    <span class="pill">404</span>
+    <h1>ページが見つかりませんでした</h1>
+    <p class="lead">移動したか、URLが変わった可能性があります。下の入口から、お使いのツールを探してください。</p>
+    <div class="hero-jump">${SECTORS.map((sec) => `<a class="jump jump-${sec.id}" href="/${sec.path}"><b>${esc(sec.name)}</b><span>${esc(sec.sub)}</span></a>`).join('')}</div>
+    <p style="margin-top:24px"><a class="btn" href="/">トップページへ</a></p>
+  </div>
+</section>`,
+}));
+if (!CONFIG.siteUrl || CONFIG.siteUrl === 'https://example.com') console.warn('[公開前に必須] data/config.mjs: siteUrl（共有・検索・LINEの画像に使うURL）');
+if (!CONFIG.feedbackEndpoint && !CONFIG.feedbackEmail) console.warn('[公開前に推奨] data/config.mjs: feedbackEndpoint（意見箱の送り先。docs/deploy.md の「5. 意見箱」）');
+const salesMissing = ['sellerName', 'supportEmail', 'productUrl'].filter((k) => !CONFIG[k]);
+if (salesMissing.length) console.warn(`[有料販売を始めるときに] data/config.mjs: ${salesMissing.join(', ')}`);
 buildSeoFiles();
 console.log(`built ${pages.length} pages into site/`);

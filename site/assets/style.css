@@ -669,3 +669,20 @@ h1, h2, h3, .serif { font-family: var(--display); }
 .ask-box { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin-top: 32px; padding: 18px 20px; background: var(--leaf-soft); border-radius: 12px; }
 .ask-box p { margin: 0; font-size: 14.5px; line-height: 1.7; }
 @media print { .ask-box { display: none !important; } .fd-foot { color: #555; } }
+
+/* ══ 意見箱 ══ */
+.iken { background: var(--paper); border: 1px solid var(--rule); border-radius: 14px; padding: 24px; }
+.iken-kind { border: 0; padding: 0; margin: 0 0 4px; min-width: 0; }
+.iken-kind legend { padding: 0; margin: 0 0 8px; }
+.iken .chip2 input[type=radio] { position: absolute; opacity: 0; }
+.iken-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.iken-msg { margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-size: 14.5px; }
+.iken-msg:empty { display: none; }
+.iken-msg.ok { background: var(--leaf-soft); color: var(--forest-ink); }
+.iken-msg.ng { background: var(--shu-soft); color: #8a3713; }
+.home-ask { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; padding: 26px 28px; border: 2px dashed #e6c9a6; border-radius: 16px; background: #fffaf2; }
+.home-ask h2 { margin: 0 0 6px; font-size: clamp(20px, 2.6vw, 26px); color: var(--forest-ink); }
+.home-ask p { margin: 0; color: var(--ink-2); max-width: 36em; }
+@media (max-width: 640px) { .iken { padding: 18px 16px; } .field-row { grid-template-columns: minmax(0, 1fr); } }
+.site-footer .footer-list a.footer-more { color: #ffd2a3; font-weight: 700; }
+@media print { .tool-section:has(.doc-portrait) { page: portrait; } .tool-section:has(.doc-portrait) .doc-portrait { page: auto; } }

@@ -34,6 +34,6 @@ export function flyerPage({ esc, CONFIG }) {
     body,
     title: `紹介チラシ（印刷用）｜${CONFIG.siteName}`,
     description: `${CONFIG.siteName}を職場で紹介するための、QRコードつきA4チラシ。`,
-    scripts: ['https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', 'assets/flyer.js'],
+    scripts: [{ src: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', integrity: 'sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU' }, 'assets/flyer.js'],
   };
 }

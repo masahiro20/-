@@ -99,7 +99,8 @@
       return '<label class="field">' + label + '<input class="input" type="' + (f.type || 'text') + '" data-f="' + f.id + '" value="' + esc(v) + '" placeholder="' + esc(f.ph || '') + '"></label>';
     }
     function renderPanel() {
-      $('fdPanel').innerHTML = T.blocks.map(function (b, i) {
+      var no = 0;
+      $('fdPanel').innerHTML = T.blocks.map(function (b) {
         var visible = b.fields.filter(function (f) { return !f.show || f.show(state.v); });
         if (!visible.length) return '';
         var pairs = [];
@@ -108,7 +109,7 @@
           if (f.half && g && g.half) { pairs.push('<div class="field-row">' + fieldHtml(f) + fieldHtml(g) + '</div>'); k++; }
           else pairs.push(fieldHtml(f));
         }
-        return '<div class="panel-block"><h3 class="panel-title"><span class="no">' + KANJI[i] + '</span>' + esc(b.title) + (b.small ? '<small>' + esc(b.small) + '</small>' : '') + '</h3>' +
+        return '<div class="panel-block"><h3 class="panel-title"><span class="no">' + KANJI[no++] + '</span>' + esc(b.title) + (b.small ? '<small>' + esc(b.small) + '</small>' : '') + '</h3>' +
           (b.note ? '<p class="fd-note">' + esc(b.note) + '</p>' : '') + pairs.join('') + '</div>';
       }).join('');
     }
@@ -217,6 +218,8 @@
       if (!box) return;
       var id = box.getAttribute('data-f');
       var f = fields.filter(function (x) { return x.id === id; })[0];
+      // 文字・日付の欄は input で反映済み。change（フォーカスが外れたとき）で描き直すと入力位置を見失う
+      if (f.type !== 'chips' && f.type !== 'select') { state.v[id] = e.target.value; renderDoc(); return; }
       if (f.type === 'chips') {
         var list = [];
         box.querySelectorAll('input:checked').forEach(function (c) { list.push(c.value); });
