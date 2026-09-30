@@ -11,6 +11,7 @@ import { shogaiPage, shogaiData } from './shogai-page.mjs';
 import { jikoPage, jikoData } from './jiko-page.mjs';
 import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
 import { flyerPage } from './flyer-page.mjs';
+import { formdocPages } from './formdoc-pages.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -68,8 +69,8 @@ function layout({ path, title, description, body, scripts = [], jsonLd }) {
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:site_name" content="${esc(CONFIG.siteName)}">
 <meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#1f3b60">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23b63b27'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#1f5c4a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f5c4a'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
@@ -652,7 +653,7 @@ write('assets/renrakucho-data.js', renrakuchoData());
   const pg = flyerPage({ esc, CONFIG });
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
 }
-for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc })]) {
+for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc }), ...formdocPages({ esc, CONFIG })]) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter(pg.sector || 'shogai', pg.path), scripts: pg.scripts }));
 }
 {

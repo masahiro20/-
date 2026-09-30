@@ -1,4 +1,6 @@
 // 総合サイトの入口（トップ・業種別ページ）と、共通パーツ（共有ボタン・PR枠）。
+import { TEMPLATES } from '../data/templates.mjs';
+
 export const SECTORS = [
   {
     id: 'jido', path: 'jido.html', name: '児童支援', sub: '放課後等デイサービス・児童発達支援',
@@ -14,7 +16,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['モニタリング記録の下書き', 'おたより（月1回のお知らせ）の文例'],
+    upcoming: ['おたより（月1回のお知らせ）の文例', '安全計画（送迎・置き去り防止）の下書き'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -25,7 +27,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['モニタリング記録の下書き', '虐待防止・身体拘束適正化の委員会記録と研修の年間計画'],
+    upcoming: ['アセスメントシートの下書き', '工賃（賃金）向上計画の下書き'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -35,9 +37,18 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
-    upcoming: ['ヒヤリハット報告の下書きと月別集計', '委員会（虐待防止・身体拘束・感染症・事故防止）の議事録', '法定研修の年間計画表（サービス種別ごとの回数つき）'],
+    upcoming: ['ヒヤリハットの月別集計表', '看取り（ターミナルケア）の記録の文例'],
   },
 ];
+
+// 共通テンプレートを業種ごとのツール一覧に足す（その業種が主のものを先に）
+for (const sec of SECTORS) {
+  const own = TEMPLATES.filter((t) => t.sectors[0] === sec.id);
+  const shared = TEMPLATES.filter((t) => t.sectors[0] !== sec.id && t.sectors.includes(sec.id));
+  const tools = [...own, ...shared].map((t) => ({ path: t.path, name: t.name, desc: t.desc, tag: t.tag }));
+  // 業種の中心になる計画書ツールのすぐ後ろに、毎日・毎月使う書類を入れる
+  sec.tools.splice(sec.id === 'jido' ? 3 : 1, 0, ...tools);
+}
 
 export function shareBlock({ esc, url, title, r }) {
   const u = encodeURIComponent(url);
@@ -149,7 +160,7 @@ export function portalPages({ esc, CONFIG }) {
     description: `${s.sub}で働く方のための無料ツール。${s.tools.map((t) => t.name).join('・')}。登録不要・入力内容は送信されません。`,
     sector: s.id,
     body: `
-<section class="portal-hero portal-hero-sm">
+<section class="portal-hero portal-hero-sm hub-${s.id}">
   <div class="wrap">
     <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
     <span class="pill">${esc(s.who)}へ</span>
