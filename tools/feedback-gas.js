@@ -47,6 +47,8 @@ function doPost(e) {
 function sheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(SHEET_NAME);
+  // 見出し行（A1＝受付日時）がすでにあるシートを使う（シート名が違っていてもよい）
+  if (!sh) sh = ss.getSheets().filter(function (s) { return s.getRange('A1').getValue() === '受付日時'; })[0];
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
     sh.appendRow(['受付日時', '種類', '分野', '職種', '書類・ツール', '内容', '返信先', '送信元ページ', '対応']);
