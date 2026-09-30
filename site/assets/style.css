@@ -483,3 +483,144 @@ textarea.input { resize: vertical; line-height: 1.7; }
 .upcoming { margin-top: 28px; padding: 16px 20px; border: 1px dashed var(--rule); border-radius: 12px; }
 .upcoming p { margin: 0 0 6px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
 .upcoming ul { margin: 0; padding-left: 1.2em; font-size: 14px; color: var(--ink-2); }
+/* 連絡帳 */
+.tool-narrow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.chips2 { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip2 { position: relative; cursor: pointer; }
+.chip2 input { position: absolute; opacity: 0; pointer-events: none; }
+.chip2 span { display: inline-block; padding: 7px 14px; border: 1.5px solid var(--rule); border-radius: 999px; background: var(--paper); font-size: 14px; line-height: 1.4; }
+.chip2 input:checked + span { background: var(--ai); border-color: var(--ai); color: #fff; }
+.chip2 input:focus-visible + span { outline: 3px solid #9bb4d6; outline-offset: 2px; }
+.note-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; box-shadow: 0 18px 40px -24px rgba(28, 33, 38, .35); overflow: hidden; }
+.note-head { display: flex; justify-content: space-between; padding: 10px 18px; background: var(--ai); color: #fff; font-weight: 700; font-size: 14px; }
+.note-count { font-weight: 400; opacity: .85; font-variant-numeric: tabular-nums; }
+.note-body { min-height: 220px; padding: 18px 20px; font-size: 16px; line-height: 2; background-image: repeating-linear-gradient(transparent, transparent calc(2em - 1px), var(--rule-2) calc(2em - 1px), var(--rule-2) 2em); background-position: 0 18px; }
+@media (max-width: 960px) { .tool-narrow { grid-template-columns: minmax(0, 1fr); } }
+/* 特性から候補 */
+.traits { margin: 0 0 14px; }
+.traits-label { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.traits-label small { font-weight: 400; color: var(--ink-3); margin-left: 6px; }
+.traits-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.trait { padding: 5px 10px; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); color: var(--ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.trait.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.sugg { margin-top: 10px; padding: 10px 12px; background: var(--cream); border: 1px solid #f0e2bf; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+.sugg > span { width: 100%; color: var(--ink-2); }
+.sugg-btn { padding: 4px 10px; border: 1px solid var(--ai); border-radius: 999px; background: var(--paper); color: var(--ai); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.sugg-btn:hover { background: var(--ai); color: #fff; }
+
+/* ══ デザインの手直し：メリハリのある配色と、太いゴシックの見出し ══
+   方眼紙（記録用紙）の藍色を地に、黄色のマーカーで要点を立てる。本文はUDゴシック、書式（計画書）は明朝のまま */
+:root {
+  --display: "Zen Kaku Gothic New", "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --navy: #14284a;
+  --navy-2: #1d3a66;
+  --yellow: #ffd23f;
+  --yellow-soft: #fff3c4;
+  --c-jido: #2b62b0;
+  --c-shogai: #2e7d4f;
+  --c-kaigo: #c0502c;
+}
+h1, h2, h3, .serif { font-family: var(--display); }
+.doc-head .title, .sample-title, .flyer-title { font-family: var(--serif); }
+.brand-name { font-family: var(--display); font-weight: 900; letter-spacing: .04em; }
+.section h2, .article h1, .article h2, .portal-hero h1, .lp-hero h1, .hero h1 { font-family: var(--display); font-weight: 900; letter-spacing: .02em; }
+.article h2 { border-bottom: 3px solid var(--navy); }
+.panel-title { font-family: var(--display); }
+.panel-title .no { font-family: var(--display); color: #fff; background: var(--navy); width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 6px; font-size: 14px; }
+
+/* ヘッダー・フッター：藍の帯で上下を締める */
+.site-header { background: var(--navy); border-top: 0; border-bottom: 3px solid var(--yellow); }
+.site-header .brand, .site-header .brand-name { color: #fff; }
+.site-header .brand-sub { color: #b9c6dc; }
+.site-header .nav a { color: #e6ecf5; font-weight: 700; }
+.site-header .nav a:hover { color: #fff; border-bottom-color: var(--yellow); }
+.site-footer { background: var(--navy); border-top: 0; color: #c9d3e3; }
+.site-footer .brand-name, .site-footer .footer-h, .site-footer .footer-h a { color: #fff; }
+.site-footer .footer-list a, .site-footer .footer-links a { color: #c9d3e3; }
+.site-footer .footer-list a:hover { color: #fff; }
+.site-footer .fine, .site-footer .small.muted { color: #9fb0c9; }
+
+/* 入口の大見出し：藍の方眼紙 */
+.portal-hero { background-color: var(--navy); background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px; border-bottom: 0; color: #fff; }
+.portal-hero h1 { color: #fff; font-size: clamp(30px, 5vw, 52px); }
+.portal-hero .hl { background: none; color: var(--yellow); padding: 0; }
+.portal-hero .lead { color: #d5deeb; }
+.portal-hero .pill { background: var(--yellow); color: var(--navy); }
+.portal-hero .breadcrumb, .portal-hero .breadcrumb a { color: #b9c6dc; }
+.portal-points li { background: transparent; border-color: rgba(255,255,255,.35); color: #e6ecf5; }
+.portal-points b { color: var(--yellow); }
+.hero-jump { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 28px 0 0; max-width: 900px; }
+.jump { display: block; padding: 14px 18px; border-radius: 10px; background: #fff; color: var(--ink); text-decoration: none; border-bottom: 5px solid; transition: transform .15s; }
+.jump b { display: block; font-family: var(--display); font-size: 21px; font-weight: 900; }
+.jump span { font-size: 12.5px; color: var(--ink-2); }
+.jump:hover { transform: translateY(-2px); color: var(--ink); }
+.jump-jido { border-color: var(--c-jido); } .jump-shogai { border-color: var(--c-shogai); } .jump-kaigo { border-color: var(--c-kaigo); }
+.jump-jido b { color: var(--c-jido); } .jump-shogai b { color: var(--c-shogai); } .jump-kaigo b { color: var(--c-kaigo); }
+.portal-hero-sm { background-color: var(--navy-2); }
+
+/* 業種の色をはっきり */
+.sector-jido .sector-head { background: var(--c-jido); }
+.sector-shogai .sector-head { background: var(--c-shogai); }
+.sector-kaigo .sector-head { background: var(--c-kaigo); }
+.sector-head b { font-family: var(--display); font-weight: 900; }
+.sector-card { border: 0; box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(20, 40, 74, .35); }
+.tool-card { border: 1.5px solid var(--rule); }
+.tool-card b { font-family: var(--display); font-weight: 900; }
+.tool-card:hover { border-color: var(--navy); box-shadow: 4px 4px 0 var(--yellow); }
+
+/* 事業所みんなで：黄色の帯 */
+.section-band { background: var(--yellow); border-top: 0 !important; }
+.band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 40px; }
+.band > div { flex: 1 1 420px; min-width: 0; }
+.band h2 { color: var(--navy); font-size: clamp(24px, 3.4vw, 34px); margin: 0 0 10px; }
+.band p { margin: 0; color: var(--navy); max-width: 40em; }
+.btn-yellow { background: var(--navy); border-color: var(--navy); color: #fff; }
+.btn-yellow:hover { background: #0c1a33; color: var(--yellow); }
+
+/* ボタンを少し力強く */
+.btn { font-family: var(--display); font-weight: 900; letter-spacing: .05em; }
+.btn-shu { box-shadow: 0 3px 0 #7d2616; }
+.hl { background: linear-gradient(transparent 60%, var(--yellow) 60%); }
+.pill { font-family: var(--display); }
+.steps-mini .num { background: var(--yellow); color: var(--navy); }
+
+/* 紹介チラシ */
+.flyer { width: 190mm; max-width: 100%; margin: 0 auto 40px; background: #fff; border: 1px solid var(--rule); box-shadow: 0 16px 40px -24px rgba(0,0,0,.4); }
+.flyer-top { background-color: var(--navy); background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 20px 20px; color: #fff; padding: 26px 28px 24px; }
+.flyer-brand { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-family: var(--display); font-weight: 900; font-size: 18px; }
+.flyer-title { margin: 0 0 10px; font-size: 32px; line-height: 1.45; color: #fff; }
+.flyer-title span { color: var(--yellow); }
+.flyer-lead { margin: 0; color: #d5deeb; }
+.flyer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 20px 28px 8px; }
+.flyer-sector { border-top: 6px solid; padding-top: 8px; }
+.flyer-sector b { font-family: var(--display); font-size: 18px; font-weight: 900; }
+.flyer-sector ul { margin: 6px 0 0; padding-left: 1.1em; font-size: 13px; }
+.flyer-jido { border-color: var(--c-jido); } .flyer-shogai { border-color: var(--c-shogai); } .flyer-kaigo { border-color: var(--c-kaigo); }
+.flyer-bottom { display: flex; gap: 24px; align-items: center; padding: 16px 28px 26px; border-top: 1px dashed var(--rule); margin-top: 14px; }
+.flyer-qr { flex: none; width: 150px; height: 150px; }
+.flyer-qr img, .flyer-qr canvas { width: 150px; height: 150px; }
+.flyer-points { margin: 0 0 8px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.flyer-points li { background: var(--yellow); color: var(--navy); font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
+.flyer-url { margin: 0; font-family: var(--display); font-weight: 900; font-size: 20px; color: var(--navy); word-break: break-all; }
+.flyer-note { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); }
+.share-sub { margin: 12px 0 0; font-size: 13px; color: var(--ink-2); }
+@media (max-width: 640px) { .flyer-grid { grid-template-columns: 1fr; } .flyer-bottom { flex-direction: column; align-items: flex-start; } }
+@media print {
+  .flyer-screen { display: none !important; }
+  .flyer { width: auto; border: 0; box-shadow: none; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.flyer { page: portrait; }
+/* 放デイ計画書ページの見出しも藍の方眼に揃える */
+.hero { background-color: var(--navy); background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px; border-bottom: 0; color: #fff; }
+.hero h1 { color: #fff; }
+.hero .hl { background: none; color: var(--yellow); padding: 0; }
+.hero .kicker { color: var(--yellow); }
+.hero .hero-lead { color: #d5deeb; }
+.hero .text-link { color: #fff; }
+.hero .facts { color: #c9d3e3; }
+.hero .facts b { color: #fff; }
+.hero .facts li { border-left-color: rgba(255,255,255,.25); }
+.hero .btn { background: var(--yellow); border-color: var(--yellow); color: var(--navy); }
+.hero .btn:hover { background: #ffe07a; color: var(--navy); }
+.hero .sample-paper, .hero .sample-paper th, .hero .sample-paper td { color: var(--ink); }
+.hero .sample-table .dom { color: var(--ai); }

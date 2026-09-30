@@ -47,6 +47,7 @@ export function shogaiPage({ esc }) {
             <button class="btn btn-line btn-sm" id="sCopyText" type="button" disabled>文章でコピー</button>
             <button class="btn btn-line btn-sm" id="sPrint" type="button" disabled>印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="sAi" type="button" disabled>AIで文章を整える</button>
+            <button class="btn btn-line btn-sm" id="sShare" type="button" disabled>リンクで共有</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>

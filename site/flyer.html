@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>特定商取引法に基づく表記｜ふくしのおたすけ帳</title>
-<meta name="description" content="ふくしのおたすけ帳の特定商取引法に基づく表記。">
-<link rel="canonical" href="https://example.com/tokushoho.html">
+<title>紹介チラシ（印刷用）｜ふくしのおたすけ帳</title>
+<meta name="description" content="ふくしのおたすけ帳を職場で紹介するための、QRコードつきA4チラシ。">
+<link rel="canonical" href="https://example.com/flyer.html">
 <meta property="og:type" content="website">
-<meta property="og:title" content="特定商取引法に基づく表記｜ふくしのおたすけ帳">
-<meta property="og:description" content="ふくしのおたすけ帳の特定商取引法に基づく表記。">
-<meta property="og:url" content="https://example.com/tokushoho.html">
+<meta property="og:title" content="紹介チラシ（印刷用）｜ふくしのおたすけ帳">
+<meta property="og:description" content="ふくしのおたすけ帳を職場で紹介するための、QRコードつきA4チラシ。">
+<meta property="og:url" content="https://example.com/flyer.html">
 <meta property="og:site_name" content="ふくしのおたすけ帳">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#1f3b60">
@@ -37,10 +37,31 @@
 </header>
 <main>
 
-<div class="wrap narrow article">
-  <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
-  <h1>特定商取引法に基づく表記</h1>
-  <table class="law-table"><tr><th>販売事業者</th><td><span class="todo">【公開前に記入：販売事業者名（個人の場合は氏名）】</span></td></tr><tr><th>運営統括責任者</th><td><span class="todo">【公開前に記入：責任者の氏名】</span></td></tr><tr><th>所在地</th><td>請求があった場合には遅滞なく開示いたします。</td></tr><tr><th>電話番号</th><td>請求があった場合には遅滞なく開示いたします。</td></tr><tr><th>メールアドレス</th><td><span class="todo">【公開前に記入：メールアドレス】</span></td></tr><tr><th>販売価格</th><td>個別支援計画 文例つき様式セット：3,980円（税込）</td></tr><tr><th>商品代金以外の必要料金</th><td>インターネット接続料金・通信料金はお客様のご負担となります。</td></tr><tr><th>お支払い方法</th><td>販売サイトが提供する決済方法（クレジットカードなど）</td></tr><tr><th>お支払い時期</th><td>ご購入手続きの際にお支払いいただきます。</td></tr><tr><th>商品の引渡し時期</th><td>決済完了後、すぐにダウンロードいただけます。</td></tr><tr><th>返品・キャンセル</th><td>デジタルコンテンツの性質上、ご購入後の返品・返金・キャンセルはお受けしておりません。ファイルに不具合があった場合は、正常なファイルと交換いたします。</td></tr><tr><th>動作環境</th><td>Microsoft Excel 2016以降（Windows／Mac）、Microsoft 365、Googleスプレッドシート、LibreOffice。PDFの閲覧にはPDFビューアが必要です。</td></tr></table>
+<section class="section flyer-screen">
+  <div class="wrap narrow">
+    <nav class="breadcrumb"><a href="index.html">トップ</a></nav>
+    <h1 style="margin:0 0 8px">職場で紹介するためのチラシ</h1>
+    <p class="muted" style="margin:0 0 16px">A4縦で印刷して、事務所や休憩室に貼ったり、会議で配ったりしてください。QRコードからこのサイトが開きます。</p>
+    <p><button type="button" class="btn" id="flyerPrint">チラシを印刷する</button></p>
+  </div>
+</section>
+<div class="flyer" id="flyer">
+  <div class="flyer-top">
+    <p class="flyer-brand"><span class="brand-seal">帳</span>ふくしのおたすけ帳</p>
+    <h2 class="flyer-title">計画書・報告書の下書きが、<br><span>無料で、すぐに。</span></h2>
+    <p class="flyer-lead">介護・障害福祉・児童支援の書類を、国の様式どおりの項目で下書きできるツール集です。</p>
+  </div>
+  <div class="flyer-grid">
+    <div class="flyer-sector flyer-jido"><b>児童支援</b><ul><li>個別支援計画の下書き</li><li>連絡帳の文例メーカー</li><li>支援プログラムの下書き</li><li>事故・ヒヤリハット報告の下書き</li></ul></div><div class="flyer-sector flyer-shogai"><b>障害福祉</b><ul><li>個別支援計画の下書き</li><li>事故・ヒヤリハット報告の下書き</li></ul></div><div class="flyer-sector flyer-kaigo"><b>介護</b><ul><li>事故報告書の下書き</li></ul></div>
+  </div>
+  <div class="flyer-bottom">
+    <div class="flyer-qr" id="flyerQr" aria-label="サイトのQRコード"></div>
+    <div>
+      <ul class="flyer-points"><li>無料・登録不要</li><li>入力した内容は送信されません</li><li>スマホでも使えます</li></ul>
+      <p class="flyer-url" id="flyerUrl"></p>
+      <p class="flyer-note">氏名など個人が特定できる情報は入力せずに使えます。</p>
+    </div>
+  </div>
 </div>
 </main>
 <footer class="site-footer">
@@ -61,6 +82,7 @@
   </div>
 </footer>
 <script src="./assets/common.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="./assets/flyer.js"></script>
 </body>
 </html>

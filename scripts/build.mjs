@@ -2,13 +2,15 @@
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DOMAINS, AGES, ISSUES } from '../data/issues.mjs';
+import { DOMAINS, AGES, ISSUES, TRAITS } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
 import { programPage, programData } from './program-page.mjs';
 import { SECTORS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
 import { shogaiPage, shogaiData } from './shogai-page.mjs';
 import { jikoPage, jikoData } from './jiko-page.mjs';
+import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
+import { flyerPage } from './flyer-page.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -70,7 +72,7 @@ function layout({ path, title, description, body, scripts = [], jsonLd }) {
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='3' fill='%23b63b27'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
 <link rel="stylesheet" href="${r}assets/style.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
 ${ga}
@@ -98,6 +100,7 @@ ${body}
       <div><p class="brand-name" style="margin:0 0 6px">${esc(CONFIG.siteName)}</p><p class="small muted" style="margin:0">${esc(CONFIG.tagline)}</p></div>
       ${SECTORS.map((sec) => `<div><p class="footer-h"><a href="${r}${sec.path}">${esc(sec.name)}</a></p><ul class="footer-list">${sec.tools.map((t) => `<li><a href="${r}${t.path}">${esc(t.name)}</a></li>`).join('')}${sec.guides.map((g) => `<li><a href="${r}${g.path}">${esc(g.name)}</a></li>`).join('')}</ul></div>`).join('')}
       <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
+        <li><a href="${r}flyer.html">職場で紹介するチラシ（印刷用）</a></li>
         <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
         <li><a href="${r}contact.html">お問い合わせ</a></li>
         <li><a href="${r}terms.html">利用規約</a></li>
@@ -109,7 +112,7 @@ ${body}
   </div>
 </footer>
 <script src="${r}assets/common.js"></script>
-${scripts.map((s) => `<script src="${r}${s}"></script>`).join('\n')}
+${scripts.map((s) => `<script src="${/^https?:/.test(s) ? s : r + s}"></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -117,7 +120,7 @@ ${scripts.map((s) => `<script src="${r}${s}"></script>`).join('\n')}
 
 // ── ツール用データ ──
 function buildData() {
-  write('assets/data.js', `window.PLANNER_DATA=${JSON.stringify({ domains: DOMAINS, ages: AGES, issues: ISSUES })};\n`);
+  write('assets/data.js', `window.PLANNER_DATA=${JSON.stringify({ domains: DOMAINS, ages: AGES, issues: ISSUES, traits: TRAITS })};\n`);
 }
 
 const POINTS = [
@@ -199,6 +202,7 @@ function buildIndex() {
           <h3 class="panel-title"><span class="no">二</span>気になる課題<small>3つ前後がおすすめ</small></h3>
           <p class="picked-caption" id="pickedCaption" hidden>選んだ課題（上から優先順位）</p>
           <ol class="picked" id="picked"></ol>
+          <div class="traits" id="traits"></div>
           <label class="visually-hidden" for="issueSearch">課題を絞り込む</label>
           <input type="search" id="issueSearch" class="input" placeholder="絞り込み（例：切り替え、偏食、友だち）">
           <div class="issue-list" id="issueList"></div>
@@ -220,6 +224,7 @@ function buildIndex() {
             <button class="btn btn-line btn-sm" id="copyText" type="button" disabled>文章でコピー</button>
             <button class="btn btn-line btn-sm" id="printPlan" type="button" disabled>印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="aiPlan" type="button" disabled>AIで文章を整える</button>
+            <button class="btn btn-line btn-sm" id="shareLink" type="button" disabled>リンクで共有</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
@@ -642,7 +647,12 @@ for (const pg of portalPages({ esc, CONFIG })) {
 write('assets/program-data.js', programData());
 write('assets/shogai-data.js', shogaiData());
 write('assets/jiko-data.js', jikoData());
-for (const pg of [shogaiPage({ esc }), jikoPage({ esc })]) {
+write('assets/renrakucho-data.js', renrakuchoData());
+{
+  const pg = flyerPage({ esc, CONFIG });
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
+}
+for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc })]) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter(pg.sector || 'shogai', pg.path), scripts: pg.scripts }));
 }
 {

@@ -6,6 +6,7 @@ export const SECTORS = [
     lead: '令和6年度の報酬改定で書き方が変わった個別支援計画と、公表が必要な支援プログラム。5領域との関連性まで入った下書きを、選ぶだけで作れます。',
     tools: [
       { path: 'jido-keikaku.html', name: '個別支援計画の下書き', desc: '課題を選ぶと、国の参考様式と同じ項目で下書き。5領域・家族支援・移行支援まで。', tag: '人気' },
+      { path: 'renrakucho.html', name: '連絡帳の文例メーカー', desc: '今日の活動と様子を選ぶだけで、保護者に伝わる連絡帳の文章に。毎日使えます。', tag: '新着' },
       { path: 'program.html', name: '支援プログラムの下書き', desc: '作成・公表が必要な支援プログラムを、手引きの①〜⑫どおりに。ホームページ掲載用HTMLも。' },
       { path: 'bunrei/index.html', name: '個別支援計画の文例集', desc: '31課題の支援目標・支援内容・モニタリングの文例。' },
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
@@ -13,7 +14,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['モニタリング記録の下書き', '保護者への連絡帳・おたよりの文例'],
+    upcoming: ['モニタリング記録の下書き', 'おたより（月1回のお知らせ）の文例'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -48,6 +49,7 @@ export function shareBlock({ esc, url, title, r }) {
     <a class="share-btn share-x" href="https://twitter.com/intent/tweet?url=${u}&text=${t}" target="_blank" rel="noopener">Xでシェア</a>
     <button type="button" class="share-btn" data-copy-url="${esc(url)}">URLをコピー</button>
   </div>
+  <p class="share-sub">事務所に貼れる<a href="${r || ''}flyer.html">紹介チラシ（QRコードつき）</a>もあります。</p>
 </div>`;
 }
 
@@ -77,6 +79,9 @@ export function portalPages({ esc, CONFIG }) {
     <span class="pill">介護・障害福祉・児童支援で働く方へ</span>
     <h1>福祉の現場の書類を、<br><span class="hl">もっとかんたんに。</span></h1>
     <p class="lead">計画書や報告書の「最初の一文が出てこない」を、選ぶだけの下書きで助けます。すべて無料・登録不要。入力した内容はどこにも送られません。</p>
+    <div class="hero-jump">
+      ${SECTORS.map((s) => `<a class="jump jump-${s.id}" href="${s.path}"><b>${esc(s.name)}</b><span>${esc(s.sub)}</span></a>`).join('')}
+    </div>
     <ul class="portal-points">
       <li><b>国の様式どおり</b>の項目で下書き</li>
       <li>文章は<b>その場で書き換え</b>、コピーして使える</li>
@@ -87,7 +92,7 @@ export function portalPages({ esc, CONFIG }) {
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head"><h2>あなたの職場は？</h2></div>
+    <div class="section-head"><h2>業種ごとのツール</h2></div>
     <div class="sector-grid">
       ${SECTORS.map((s) => `<div class="sector-card sector-${s.id}">
         <a class="sector-head" href="${s.path}"><b>${esc(s.name)}</b><span>${esc(s.sub)}</span></a>
@@ -95,6 +100,16 @@ export function portalPages({ esc, CONFIG }) {
         <a class="text-link" href="${s.path}">${esc(s.name)}のツールをすべて見る</a>
       </div>`).join('')}
     </div>
+  </div>
+</section>
+
+<section class="section section-band">
+  <div class="wrap band">
+    <div>
+      <h2>事業所みんなで、<br>書き方をそろえる。</h2>
+      <p>職員によって計画書の書き方がばらばら。新しく入った人が、何から書けばいいか分からない。そんな事業所で、共通の「書き始め」として使ってください。選んだ課題はリンクにして同僚に送れます（入力した文章は含まれません）。</p>
+    </div>
+    <a class="btn btn-yellow" href="flyer.html">職場に貼れるチラシを印刷する</a>
   </div>
 </section>
 

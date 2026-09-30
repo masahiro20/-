@@ -945,3 +945,14 @@ export const ISSUES = [
     },
   },
 ];
+
+// 特性から「よく一緒に選ばれる課題」の候補を出すための対応表（診断ではなく、選ぶときの手がかり）
+export const TRAITS = [
+  { id: 'asd', label: '自閉スペクトラム症（ASD）の傾向', issues: ['kirikae', 'mitooshi', 'kodawari', 'kankaku-kabin', 'ippouteki', 'tomodachi'] },
+  { id: 'adhd', label: 'ADHDの傾向', issues: ['shuchu', 'junban', 'kanjou', 'mochimono', 'kankaku-tankyu', 'trouble'] },
+  { id: 'ld', label: '学習障害（LD）の傾向', issues: ['gakushu', 'bukiyou', 'jishin', 'gainen'] },
+  { id: 'id', label: '知的な遅れ', issues: ['shiji-rikai', 'goi', 'gainen', 'mijitaku', 'haisetsu', 'youkyuu'] },
+  { id: 'dcd', label: '運動の不器用さ（発達性協調運動障害など）', issues: ['undou', 'bukiyou', 'shisei', 'mijitaku'] },
+  { id: 'speech', label: '言葉の遅れ', issues: ['youkyuu', 'goi', 'kimochi-hyougen', 'shiji-rikai'] },
+  { id: 'anxiety', label: '不安の強さ・場面緘黙', issues: ['mitooshi', 'kimochi-hyougen', 'shudan', 'jishin', 'toukou'] },
+];

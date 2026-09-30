@@ -13,6 +13,7 @@
   var state = { type: 'tento', factors: [], edits: {} };
   var params = new URLSearchParams(location.search);
   if (typeById[params.get('type')]) state.type = params.get('type');
+  state.factors = (params.get('f') || '').split(',').filter(Boolean);
 
   function allFactors() {
     var out = [];
@@ -189,6 +190,10 @@
   });
   $('jCopy').addEventListener('click', function () { window.Otasuke.copy(toText(), '文章をコピーしました'); });
   $('jPrint').addEventListener('click', function () { window.print(); });
+  $('jShare').addEventListener('click', function () {
+    var url = location.origin + location.pathname + '?type=' + state.type + '&f=' + state.factors.join(',');
+    window.Otasuke.copy(url, '選んだ種別と要因のリンクをコピーしました（日時や補足の文章は含まれません）');
+  });
   $('jAi').addEventListener('click', function () {
     window.Otasuke.copyAiPrompt({
       role: '介護事業所の職員',

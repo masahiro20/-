@@ -14,6 +14,9 @@
 
   var params = new URLSearchParams(location.search);
   if (svcById[params.get('svc')]) state.svc = params.get('svc');
+  (params.get('issues') || '').split(',').forEach(function (id) {
+    if (issueById[id] && issueById[id].services.indexOf(state.svc) !== -1 && state.picked.indexOf(id) === -1 && state.picked.length < MAX) state.picked.push(id);
+  });
 
   function available() {
     return D.issues.filter(function (i) { return i.services.indexOf(state.svc) !== -1; });
@@ -89,7 +92,7 @@
   function renderDoc() {
     var p = build();
     var has1 = state.picked.length > 0;
-    ['sCopyTable', 'sCopyText', 'sPrint', 'sAi'].forEach(function (id) { $(id).disabled = !has1; });
+    ['sCopyTable', 'sCopyText', 'sPrint', 'sAi', 'sShare'].forEach(function (id) { $(id).disabled = !has1; });
     var rows = p.rows.length ? p.rows.map(function (r) {
       var i = issueById[r.issueId];
       return '<tr><td class="center">' + cell(r.key + '-prio', r.prio) + '</td><td>' + cell(r.key + '-need', r.need) + '</td><td>' + cell(r.key + '-goal', r.goal) +
@@ -200,6 +203,10 @@
   $('sCopyTable').addEventListener('click', function () { window.Otasuke.copy(toTsv(), '表をコピーしました。Excelのセルを選んで貼り付けてください'); });
   $('sCopyText').addEventListener('click', function () { window.Otasuke.copy(toText(), '文章をコピーしました'); });
   $('sPrint').addEventListener('click', function () { window.print(); });
+  $('sShare').addEventListener('click', function () {
+    var url = location.origin + location.pathname + '?svc=' + state.svc + '&issues=' + state.picked.join(',');
+    window.Otasuke.copy(url, '選んだ課題のリンクをコピーしました。同僚に送ると、同じ下書きが開きます（入力した文章は含まれません）');
+  });
   $('sAi').addEventListener('click', function () {
     window.Otasuke.copyAiPrompt({
       role: '障害福祉サービス事業所（' + svcById[state.svc].name + '）のサービス管理責任者',

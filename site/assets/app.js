@@ -167,7 +167,7 @@
   function renderDoc() {
     var p = buildPlan();
     var has = state.picked.length > 0;
-    ['copyTable', 'copyText', 'printPlan', 'aiPlan'].forEach(function (id) { $(id).disabled = !has; });
+    ['copyTable', 'copyText', 'printPlan', 'aiPlan', 'shareLink'].forEach(function (id) { $(id).disabled = !has; });
 
     var selfRows = p.rows.length ? p.rows.map(function (r) { return rowHtml(r, true); }).join('')
       : '<tr><th>本人支援</th><td colspan="6"><p class="doc-empty">左の「二」で課題を選ぶと、ここに支援目標と支援内容の文例が入ります。</p></td></tr>';
@@ -215,7 +215,19 @@
     $('mobileBar').classList.toggle('show', has);
   }
 
-  function renderAll() { renderPicked(); renderIssues(); renderDoc(); }
+  // 特性から課題の候補を出す（選ぶときの手がかり。診断ではない）
+  var trait = '';
+  function renderTraits() {
+    if (!D.traits) return;
+    var t = D.traits.filter(function (x) { return x.id === trait; })[0];
+    var sugg = t ? t.issues.filter(function (id) { return issueById[id] && state.picked.indexOf(id) === -1; }) : [];
+    $('traits').innerHTML = '<p class="traits-label">特性から候補を出す<small>任意</small></p><div class="traits-row">' +
+      D.traits.map(function (x) { return '<button type="button" class="trait' + (x.id === trait ? ' on' : '') + '" data-trait="' + x.id + '">' + esc(x.label) + '</button>'; }).join('') + '</div>' +
+      (t ? '<div class="sugg"><span>よく一緒に選ばれる課題：</span>' + (sugg.length ? sugg.map(function (id) {
+        return '<button type="button" class="sugg-btn" data-add="' + id + '">＋ ' + esc(issueById[id].label) + '</button>';
+      }).join('') : '<em>候補はすべて選んでいます</em>') + '</div>' : '');
+  }
+  function renderAll() { renderPicked(); renderTraits(); renderIssues(); renderDoc(); }
 
   // ── コピー用テキスト（書き換えを反映）──
   function collect() {
@@ -313,6 +325,19 @@
     renderAll();
   });
   $('issueSearch').addEventListener('input', renderIssues);
+  $('traits').addEventListener('click', function (e) {
+    var t = e.target.getAttribute('data-trait');
+    var add = e.target.getAttribute('data-add');
+    if (t) { trait = trait === t ? '' : t; renderTraits(); }
+    if (add && state.picked.indexOf(add) === -1) {
+      if (state.picked.length >= MAX) { toast('課題は' + MAX + 'つまでです。'); return; }
+      state.picked.push(add); renderAll();
+    }
+  });
+  $('shareLink').addEventListener('click', function () {
+    var url = location.origin + location.pathname + '?age=' + state.age + '&issues=' + state.picked.join(',') + '#tool';
+    window.Otasuke.copy(url, '選んだ課題のリンクをコピーしました。同僚に送ると、同じ下書きが開きます（入力した文章は含まれません）');
+  });
   ['likes', 'wish', 'time'].forEach(function (id) { $(id).addEventListener('input', renderDoc); });
 
   // 計画書上での書き換え：再描画せずに記録だけする（カーソル位置を保つため）

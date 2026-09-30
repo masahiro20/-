@@ -56,6 +56,7 @@ export function jikoPage({ esc }) {
             <button class="btn btn-sm" id="jCopy" type="button">文章でコピー</button>
             <button class="btn btn-line btn-sm" id="jPrint" type="button">印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="jAi" type="button">AIで文章を整える</button>
+            <button class="btn btn-line btn-sm" id="jShare" type="button">リンクで共有</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">報告書は横にスクロールできます。</span></p>
