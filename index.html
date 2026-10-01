@@ -3,196 +3,297 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>太陽光 適正容量シミュレーター</title>
+<title>Hikari — 太陽光 最適容量プランナー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="topbar no-print">
-  <div class="brand">
-    <span class="logo" aria-hidden="true">☀</span>
-    <div>
-      <h1>太陽光 適正容量シミュレーター</h1>
-      <p>お客様の暮らし方から「何kW載せるのがベストか」を根拠付きで算出</p>
+
+<!-- ============================================================ ホーム -->
+<div id="view-home" class="view">
+  <header class="home-hero">
+    <div class="hero-art" id="heroArt" aria-hidden="true"></div>
+    <nav class="home-nav">
+      <div class="brand"><span class="mark"></span><span class="brand-name">Hikari</span><span class="brand-sub">太陽光 最適容量プランナー</span></div>
+      <button class="btn-quiet on-dark" data-action="settings">提案者情報</button>
+    </nav>
+    <div class="home-copy">
+      <p class="eyebrow">SOLAR CAPACITY PLANNER</p>
+      <h1>暮らしから導く、<br>ちょうどいい太陽光。</h1>
+      <p class="lede">ご家族・空調・EV・停電への備えまでヒアリングし、気象庁の日射データと業界標準の計算式で<br class="pc">「何kWがベストか」を根拠とともにご提案書にまとめます。</p>
+      <button class="btn-sun" data-action="new"><span>新しいお客様の提案をつくる</span><i>→</i></button>
     </div>
+  </header>
+  <main class="home-main">
+    <div class="sec-head"><h2>お客様</h2><span id="custCount" class="muted"></span>
+      <div class="sec-tools">
+        <label class="btn-quiet file">読み込む<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <div id="custGrid" class="cust-grid"></div>
+  </main>
+</div>
+
+<!-- ============================================================ ヒアリング -->
+<div id="view-wizard" class="view">
+  <header class="wz-top">
+    <button class="brand mini" data-action="home"><span class="mark"></span><span class="brand-name">Hikari</span></button>
+    <div class="wz-title"><span class="muted">ヒアリング</span><b id="wzCustomer">新しいお客様</b></div>
+    <div class="wz-top-actions">
+      <button class="btn-quiet" data-action="save">保存</button>
+      <button class="btn-ink" data-action="proposal">提案書を見る</button>
+    </div>
+  </header>
+
+  <div class="wz-layout">
+    <nav class="stepper" id="stepper"></nav>
+
+    <form id="form" class="wz-main" autocomplete="off" onsubmit="return false">
+
+      <!-- STEP 1 -->
+      <section class="step" data-step="1" data-title="お客様情報" data-sub="提案書の表紙に記載されます">
+        <div class="field-grid">
+          <label class="f span2">お客様のお名前<input data-k="customer.name" placeholder="例）山田 太郎"></label>
+          <label class="f">敬称<select data-k="customer.honorific"><option>様</option><option>様邸</option><option>御中</option></select></label>
+          <label class="f">ご提案日<input type="date" data-k="customer.date"></label>
+          <label class="f span2">ご住所（任意）<input data-k="customer.address" placeholder="例）東京都世田谷区…"></label>
+          <label class="f">都道府県<select id="selPref"></select></label>
+          <label class="f">日射データの地点<select id="selStation" data-k="location.station"></select></label>
+          <label class="f span2">担当者<input data-k="customer.staff" placeholder="提案者情報の担当者が入ります"></label>
+          <label class="f span2">メモ（提案書には載りません）<textarea data-k="customer.memo" rows="2" placeholder="ご要望・ヒアリングメモなど"></textarea></label>
+        </div>
+        <p class="hint" id="stationNote"></p>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step" data-step="2" data-title="お住まいとご家族" data-sub="使う電気の量を左右します">
+        <div class="q"><div class="q-label">ご家族の人数</div>
+          <div class="chips" data-choice="house.persons" data-num>
+            <button type="button" data-v="1">1人</button><button type="button" data-v="2">2人</button><button type="button" data-v="3">3人</button>
+            <button type="button" data-v="4">4人</button><button type="button" data-v="5">5人</button><button type="button" data-v="6">6人以上</button>
+          </div></div>
+        <div class="q"><div class="q-label">平日の日中の過ごし方</div>
+          <div class="cards3" data-choice="house.lifestyle">
+            <button type="button" data-v="dual"><b>日中は不在</b><span>共働き・通勤通学</span></button>
+            <button type="button" data-v="home"><b>誰かが在宅</b><span>子育て・シニア</span></button>
+            <button type="button" data-v="remote"><b>在宅ワーク</b><span>家で仕事をする</span></button>
+          </div></div>
+        <div class="field-grid">
+          <label class="f">延床面積（坪）<input type="number" min="10" max="120" step="0.5" data-k="house.floorTsubo"></label>
+          <div class="f"><span>階数</span><div class="seg" data-choice="house.floors" data-num><button type="button" data-v="1">平屋</button><button type="button" data-v="2">2階建て</button><button type="button" data-v="3">3階建て</button></div></div>
+          <label class="f">在宅ワークの人数<input type="number" min="0" max="6" data-k="house.remoteWorkers"></label>
+          <label class="f">断熱性能<select data-k="house.insulation" id="selInsulation"></select></label>
+        </div>
+        <div class="soft-box">
+          <label class="switch"><input type="checkbox" data-k="calibration.enabled"><i></i>今の電気使用量の実績に合わせる</label>
+          <div data-show="calibration.enabled" class="field-grid mt">
+            <label class="f">年間の使用量（kWh）<input type="number" min="0" step="100" data-k="calibration.annualKwh" placeholder="検針票12か月分の合計"></label>
+            <p class="hint">EV分は補正の対象外。建て替えで設備が変わる場合は使わない方が正確です。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step" data-step="3" data-title="屋根とパネル" data-sub="載せられる量と発電量を決めます">
+        <div class="q"><div class="q-label">屋根の形</div>
+          <div class="cards4" data-choice="roofShape.type">
+            <button type="button" data-v="kirizuma"><svg viewBox="0 0 64 40"><path d="M6 22 32 6 58 22"/><path d="M12 19v15h40V19"/></svg><b>切妻</b></button>
+            <button type="button" data-v="katanagare"><svg viewBox="0 0 64 40"><path d="M6 20 58 6"/><path d="M10 19v15h44V8"/></svg><b>片流れ</b></button>
+            <button type="button" data-v="yosemune"><svg viewBox="0 0 64 40"><path d="M6 22 20 8h24l14 14Z"/><path d="M12 22v12h40V22"/></svg><b>寄棟</b></button>
+            <button type="button" data-v="rikuyane"><svg viewBox="0 0 64 40"><path d="M8 12h48v22H8Z"/><path d="M16 12l6-5h8l-6 5M34 12l6-5h8l-6 5"/></svg><b>陸屋根</b></button>
+          </div></div>
+        <div class="roof-row">
+          <div class="q"><div class="q-label">メインの屋根の向き</div>
+            <div class="compass" data-choice="roofShape.mainDir">
+              <span class="ring"></span><span class="needle" id="needle"></span>
+              <button type="button" data-v="N" style="--a:0deg">北</button><button type="button" data-v="NE" style="--a:45deg">北東</button>
+              <button type="button" data-v="E" style="--a:90deg">東</button><button type="button" data-v="SE" style="--a:135deg">南東</button>
+              <button type="button" data-v="S" style="--a:180deg">南</button><button type="button" data-v="SW" style="--a:225deg">南西</button>
+              <button type="button" data-v="W" style="--a:270deg">西</button><button type="button" data-v="NW" style="--a:315deg">北西</button>
+            </div></div>
+          <div class="q grow"><div class="q-label">勾配</div>
+            <div class="chips" data-choice="roofShape.slopeSun" data-num>
+              <button type="button" data-v="2">2寸</button><button type="button" data-v="3">3寸</button><button type="button" data-v="4">4寸</button>
+              <button type="button" data-v="5">5寸</button><button type="button" data-v="6">6寸</button>
+            </div>
+            <p class="hint">陸屋根は架台の角度（2寸≒11°）として扱います。</p>
+            <div class="roof-actions">
+              <button type="button" class="btn-line" id="btnRoofAuto">延床面積と形から屋根面を計算し直す</button>
+              <label class="switch small"><input type="checkbox" data-k="allowNorth"><i></i>北向きにも載せる</label>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="faces" id="tblFaces"></table></div>
+        <p class="hint">屋根面積は延床面積からの概算です。図面がある場合は「最大枚数」に実際の割付け枚数を入れてください（面積より優先）。</p>
+
+        <div class="q mt2"><div class="q-label">パネル（メーカー・機種）</div>
+          <div class="panel-list" id="panelList"></div></div>
+        <details class="adv">
+          <summary>パネル仕様と計算条件</summary>
+          <div class="field-grid three">
+            <label class="f">公称最大出力（W）<input type="number" min="50" max="800" data-k="panel.watt"></label>
+            <label class="f">縦（mm）<input type="number" data-k="panel.l"></label>
+            <label class="f">横（mm）<input type="number" data-k="panel.w"></label>
+            <label class="f">温度係数（%/℃）<input type="number" step="0.01" min="-0.6" max="0" data-k="panel.tc"></label>
+            <label class="f span2">計算方式<select data-k="generation.method">
+              <option value="jpea">JPEA表示ガイドライン（カタログ値と同じ方式）</option>
+              <option value="jis">JIS C 8907（パネルの温度係数を反映）</option></select></label>
+            <label class="f">パワコン効率（%）<input type="number" step="0.1" min="85" max="99.5" data-k="generation.pcsEffPct"></label>
+            <label class="f">その他損失係数（%）<input type="number" step="0.5" min="80" max="100" data-k="generation.otherLossPct"></label>
+            <label class="f">積雪の冬季損失（%）<input type="number" step="5" min="0" max="100" data-k="generation.snowLoss"></label>
+            <label class="f">パワコン容量（kW）<input type="number" step="0.1" min="0" data-k="generation.pcsKw" placeholder="0＝自動"></label>
+          </div>
+          <p class="hint" id="panelNote"></p>
+        </details>
+      </section>
+
+      <!-- STEP 4 -->
+      <section class="step" data-step="4" data-title="暮らしと設備" data-sub="空調・給湯・家電の使い方">
+        <div class="pet-card">
+          <div class="pet-ico" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="11" cy="15" r="3.4"/><circle cx="18" cy="9.5" r="3.4"/><circle cx="26" cy="9.5" r="3.4"/><circle cx="31.5" cy="15.5" r="3.4"/><path d="M20 18c5 0 10 6 10 11 0 4-3 5-6 4-2-.6-3-1-4-1s-2 .4-4 1c-3 1-6 0-6-4 0-5 5-11 10-11Z"/></svg></div>
+          <div class="grow"><b>ペットと暮らしている</b><span>留守中もエアコンを止められないご家庭は、1台目（LDK）を24時間運転で計算します</span></div>
+          <label class="switch"><input type="checkbox" id="chkPet"><i></i></label>
+        </div>
+        <div class="q"><div class="q-label">エアコン</div>
+          <label class="switch small"><input type="checkbox" data-k="ac.central"><i></i>全館空調（24時間）を導入する</label>
+          <div class="table-wrap"><table class="acs" id="tblAc"></table></div>
+          <button type="button" class="btn-line" id="btnAddAc">＋ エアコンを追加</button>
+        </div>
+        <div class="q"><div class="q-label">給湯</div>
+          <div class="cards-list" data-choice="waterHeater" id="waterChoices"></div></div>
+        <div class="field-grid">
+          <div class="f"><span>調理</span><div class="seg" data-choice="cooker"><button type="button" data-v="ih">IH</button><button type="button" data-v="gas">ガス</button></div></div>
+          <div class="f"><span>食器洗い乾燥機</span><label class="switch"><input type="checkbox" data-k="extras.dishwasher"><i></i>使う</label></div>
+          <label class="f">衣類乾燥<select data-k="extras.dryer" id="selDryer"></select></label>
+          <label class="f">乾燥機の回数（回/週）<input type="number" min="0" max="21" data-k="extras.dryerPerWeek"></label>
+          <label class="f">浴室乾燥（回/週）<input type="number" min="0" max="14" data-k="extras.bathDryerPerWeek"></label>
+          <label class="f">床暖房<select data-k="extras.floorHeating" id="selFloorHeat"></select></label>
+          <label class="f">床暖房の面積（㎡）<input type="number" min="0" data-k="extras.floorHeatingM2"></label>
+          <label class="f">その他の電気（kWh/月）<input type="number" min="0" step="10" data-k="extras.otherKwhMonth" placeholder="熱帯魚・井戸ポンプ等"></label>
+        </div>
+      </section>
+
+      <!-- STEP 5 -->
+      <section class="step" data-step="5" data-title="EV・蓄電池・停電への備え" data-sub="ためる・走る・もしもの時">
+        <div class="toggle-card">
+          <label class="switch"><input type="checkbox" data-k="ev.enabled"><i></i><b>EV（電気自動車）・PHEV がある／導入予定</b></label>
+          <div data-show="ev.enabled" class="toggle-body">
+            <div class="chips" data-choice="ev.preset" id="evPresets"></div>
+            <div class="field-grid three">
+              <label class="f">電池容量（kWh）<input type="number" min="5" max="120" data-k="ev.batteryKwh"></label>
+              <label class="f">電費（km/kWh）<input type="number" min="2" max="10" step="0.1" data-k="ev.kmPerKwh"></label>
+              <label class="f">年間走行距離（km）<input type="number" min="0" step="500" data-k="ev.kmPerYear"></label>
+              <label class="f">自宅充電の割合（%）<input type="number" min="0" max="100" step="5" data-k="ev.homeChargePct"></label>
+              <label class="f">日中に車が家にある日（日/週）<input type="number" min="0" max="7" data-k="ev.homeDaysPerWeek"></label>
+              <label class="f">車に残す電気（%）<input type="number" min="0" max="90" step="5" data-k="ev.reservePct"></label>
+            </div>
+            <div class="row-gap">
+              <label class="switch small"><input type="checkbox" data-k="ev.solarCharge"><i></i>余った電気で充電する</label>
+              <label class="switch small"><input type="checkbox" data-k="ev.v2h"><i></i>V2H（車から家へ給電）を導入</label>
+            </div>
+          </div>
+        </div>
+        <div class="toggle-card">
+          <label class="switch"><input type="checkbox" data-k="battery.enabled"><i></i><b>家庭用蓄電池を導入</b></label>
+          <div data-show="battery.enabled" class="toggle-body">
+            <div class="field-grid three">
+              <label class="f">実効容量（kWh）<input type="number" min="1" max="30" step="0.1" data-k="battery.kwh"></label>
+              <label class="f">出力（kW）<input type="number" min="0.5" max="10" step="0.1" data-k="battery.kw"></label>
+              <label class="f">往復効率（%）<input type="number" min="70" max="98" data-k="battery.roundTrip"></label>
+            </div>
+          </div>
+        </div>
+        <div class="q"><div class="q-label">停電のときに使いたいもの</div>
+          <div class="ess" id="essentials"></div>
+          <label class="switch small mt"><input type="checkbox" data-k="disaster.priority"><i></i>停電対策を優先する（冬の曇りの日でも必要量を発電できる容量以上に）</label>
+        </div>
+      </section>
+
+      <!-- STEP 6 -->
+      <section class="step" data-step="6" data-title="ご提案の方針と条件" data-sub="何を大切にするかで最適な容量が変わります">
+        <div class="q"><div class="q-label">ご提案の目的</div>
+          <div class="cards3 tall" data-choice="goal">
+            <button type="button" data-v="econ"><b>経済性</b><span>20年間の手残りが<br>いちばん多い容量</span></button>
+            <button type="button" data-v="netzero"><b>自給</b><span>年間に使う電気を<br>屋根でまかなう容量</span></button>
+            <button type="button" data-v="max"><b>屋根いっぱい</b><span>屋根のポテンシャルを<br>最大限に活かす</span></button>
+          </div></div>
+        <div class="field-grid">
+          <div class="f span2"><span>電気料金プラン</span><div class="seg" data-choice="tariff.type"><button type="button" data-v="flat">単価一律（従量電灯など）</button><button type="button" data-v="tou">時間帯別（オール電化など）</button></div></div>
+          <label class="f" data-show="tariff.type=flat">買電単価（円/kWh）<input type="number" step="0.1" data-k="tariff.flat"></label>
+          <label class="f" data-show="tariff.type=tou">昼間（円/kWh）<input type="number" step="0.1" data-k="tariff.day"></label>
+          <label class="f" data-show="tariff.type=tou">夜間（円/kWh）<input type="number" step="0.1" data-k="tariff.night"></label>
+          <label class="f" data-show="tariff.type=tou">夜間の開始（時）<input type="number" min="0" max="23" data-k="tariff.nightStart"></label>
+          <label class="f" data-show="tariff.type=tou">夜間の終了（時）<input type="number" min="0" max="23" data-k="tariff.nightEnd"></label>
+          <label class="f">電気代の上昇率（%/年）<input type="number" step="0.5" data-k="tariff.escalation"></label>
+          <label class="f">評価期間（年）<input type="number" min="5" max="30" data-k="cost.years"></label>
+        </div>
+        <div class="sub-head">導入費用（税込・万円）</div>
+        <div class="field-grid three">
+          <label class="f">太陽光 固定費<input type="number" step="1" data-k="cost.pvFixed"></label>
+          <label class="f">1kWあたり<input type="number" step="0.5" data-k="cost.pvPerKw"></label>
+          <label class="f">劣化率（%/年）<input type="number" step="0.1" data-k="cost.degradation"></label>
+          <label class="f">蓄電池（参考）<input type="number" step="1" data-k="cost.battery"></label>
+          <label class="f">V2H（参考）<input type="number" step="1" data-k="cost.v2h"></label>
+        </div>
+        <p class="hint">既定値は2025年の住宅用新築平均 28.9万円/kW を「固定費30万円＋22万円/kW」に分解したもの。見積に合わせ、補助金は固定費から差し引いてください。</p>
+        <div class="sub-head">売電単価（円/kWh）</div>
+        <div class="field-grid three">
+          <label class="f">10kW未満 1〜4年目<input type="number" step="0.1" data-k="fit.res1"></label>
+          <label class="f">5〜10年目<input type="number" step="0.1" data-k="fit.res2"></label>
+          <label class="f">卒FIT後<input type="number" step="0.1" data-k="fit.after"></label>
+          <label class="f">10kW以上 1〜5年目<input type="number" step="0.1" data-k="fit.big1"></label>
+          <label class="f">6〜20年目<input type="number" step="0.1" data-k="fit.big2"></label>
+        </div>
+      </section>
+
+      <div class="wz-nav">
+        <button type="button" class="btn-line" id="btnPrev">← 戻る</button>
+        <span class="wz-count" id="wzCount"></span>
+        <button type="button" class="btn-ink" id="btnNext">次へ →</button>
+      </div>
+    </form>
+
+    <aside class="live" id="live"></aside>
   </div>
-  <div class="actions">
-    <select id="caseList" title="保存済みのお客様"></select>
-    <button id="btnLoad" class="ghost">開く</button>
-    <button id="btnSave">保存</button>
-    <button id="btnNew" class="ghost">新規</button>
-    <button id="btnExport" class="ghost" title="JSONファイルに書き出し">書出</button>
-    <label class="ghost btn-file" title="JSONファイルから読み込み">読込<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
-    <button id="btnPrint" class="primary">提案書を印刷</button>
-  </div>
-</header>
+</div>
 
-<main class="layout">
-  <!-- ============================ 入力 ============================ -->
-  <form id="form" class="inputs no-print" autocomplete="off" onsubmit="return false">
+<!-- ============================================================ 提案書 -->
+<div id="view-proposal" class="view">
+  <header class="pv-bar">
+    <button class="btn-quiet on-dark" data-action="edit">← ヒアリングに戻る</button>
+    <div class="pv-title" id="pvTitle"></div>
+    <div class="pv-actions">
+      <button class="btn-quiet on-dark" data-action="save">保存</button>
+      <button class="btn-quiet on-dark" data-action="export">データ書き出し</button>
+      <button class="btn-sun small" data-action="pdf"><span>PDFで保存</span></button>
+    </div>
+  </header>
+  <div class="pv-hint" id="pvHint">印刷画面で「送信先：PDFに保存」を選ぶと、この提案書がPDFになります。</div>
+  <div class="pages" id="pages"></div>
+</div>
 
-    <details open>
-      <summary><span class="num">1</span>お客様・住まい</summary>
-      <div class="grid2">
-        <label class="span2">お客様名<input data-k="customer.name" placeholder="例）山田様邸"></label>
-        <label>都道府県<select id="selPref"></select></label>
-        <label>日射データ地点<select id="selStation" data-k="location.station"></select></label>
-        <label>家族人数<select data-k="house.persons" data-num>
-          <option value="1">1人</option><option value="2">2人</option><option value="3">3人</option>
-          <option value="4">4人</option><option value="5">5人</option><option value="6">6人以上</option></select></label>
-        <label>在宅ワークの人数<input type="number" min="0" max="6" data-k="house.remoteWorkers"></label>
-        <label class="span2">生活スタイル（平日の日中）<select data-k="house.lifestyle" id="selLifestyle"></select></label>
-        <label>延床面積（坪）<input type="number" min="10" max="120" step="0.5" data-k="house.floorTsubo"></label>
-        <label>階数<select data-k="house.floors" data-num><option value="1">平屋</option><option value="2">2階建て</option><option value="3">3階建て</option></select></label>
-        <label class="span2">断熱性能<select data-k="house.insulation" id="selInsulation"></select></label>
-      </div>
-      <div class="sub">
-        <label class="check"><input type="checkbox" data-k="calibration.enabled">現在の電気使用量の実績に合わせて補正する</label>
-        <label>実績の年間使用量（kWh/年）<input type="number" min="0" step="100" data-k="calibration.annualKwh" placeholder="検針票12か月分の合計"></label>
-        <p class="hint">EV は補正の対象外です。引っ越し・建て替えで設備が変わる場合は補正しない方が正確です。</p>
-      </div>
-    </details>
-
-    <details open>
-      <summary><span class="num">2</span>屋根</summary>
-      <div class="grid3">
-        <label>屋根形状<select data-k="roofShape.type">
-          <option value="kirizuma">切妻</option><option value="katanagare">片流れ</option>
-          <option value="yosemune">寄棟</option><option value="rikuyane">陸屋根（架台）</option></select></label>
-        <label>主な向き<select data-k="roofShape.mainDir" id="selMainDir"></select></label>
-        <label>勾配（寸）<input type="number" min="0" max="7" step="0.5" data-k="roofShape.slopeSun"></label>
-      </div>
-      <div class="row-btn">
-        <button type="button" id="btnRoofAuto" class="ghost small">↻ 延床面積と形状から屋根面を再計算</button>
-        <label class="check"><input type="checkbox" data-k="allowNorth">北向きの面にも載せる</label>
-      </div>
-      <div class="table-wrap"><table class="faces" id="tblFaces"></table></div>
-      <p class="hint">屋根面積は概算です。図面がある場合は「面積」か「最大枚数」を実際の割付けに合わせて上書きしてください（最大枚数を入れると面積より優先）。</p>
-    </details>
-
-    <details open>
-      <summary><span class="num">3</span>太陽光パネル・計算条件</summary>
-      <div class="grid2">
-        <label class="span2">メーカー・機種<select id="selPanel" data-k="panelId"></select></label>
-        <label>公称最大出力（W/枚）<input type="number" min="50" max="800" data-k="panel.watt"></label>
-        <label>温度係数（%/℃）<input type="number" step="0.01" min="-0.6" max="0" data-k="panel.tc"></label>
-        <label>縦（mm）<input type="number" data-k="panel.l"></label>
-        <label>横（mm）<input type="number" data-k="panel.w"></label>
-        <label class="span2">計算方式<select data-k="generation.method">
-          <option value="jpea">JPEA表示ガイドライン（メーカーカタログと同じ方式）</option>
-          <option value="jis">JIS C 8907（パネルの温度係数を反映）</option></select></label>
-        <label>パワコン変換効率（%）<input type="number" step="0.1" min="85" max="99.5" data-k="generation.pcsEffPct"></label>
-        <label>その他損失係数（%）<input type="number" step="0.5" min="80" max="100" data-k="generation.otherLossPct" title="汚れ・配線・回路損失"></label>
-        <label>積雪による冬季損失（%）<input type="number" step="5" min="0" max="100" data-k="generation.snowLoss"></label>
-        <label>パワコン容量（kW）<input type="number" step="0.1" min="0" data-k="generation.pcsKw" placeholder="0=自動"></label>
-      </div>
-      <p class="hint" id="panelNote"></p>
-    </details>
-
-    <details open>
-      <summary><span class="num">4</span>空調（エアコン・全館空調）</summary>
-      <label class="check"><input type="checkbox" data-k="ac.central">全館空調を導入（24時間運転）</label>
-      <div class="pet-box">
-        <label class="check"><input type="checkbox" id="chkPet">ペットがいる（留守中も空調が必要）</label>
-        <span class="hint">→ チェックすると1台目（LDK）を「24時間」運転にします</span>
-      </div>
-      <div class="table-wrap"><table class="acs" id="tblAc"></table></div>
-      <button type="button" id="btnAddAc" class="ghost small">＋ エアコンを追加</button>
-    </details>
-
-    <details open>
-      <summary><span class="num">5</span>給湯・調理・家事家電</summary>
-      <div class="grid2">
-        <label class="span2">給湯<select data-k="waterHeater" id="selWater"></select></label>
-        <label>調理<select data-k="cooker" id="selCooker"></select></label>
-        <label class="check mt"><input type="checkbox" data-k="extras.dishwasher">食器洗い乾燥機</label>
-        <label>衣類乾燥<select data-k="extras.dryer" id="selDryer"></select></label>
-        <label>乾燥機の使用（回/週）<input type="number" min="0" max="21" data-k="extras.dryerPerWeek"></label>
-        <label>浴室乾燥（回/週）<input type="number" min="0" max="14" data-k="extras.bathDryerPerWeek"></label>
-        <label>床暖房<select data-k="extras.floorHeating" id="selFloorHeat"></select></label>
-        <label>床暖房の面積（㎡）<input type="number" min="0" step="1" data-k="extras.floorHeatingM2"></label>
-        <label>その他の電気（kWh/月）<input type="number" min="0" step="10" data-k="extras.otherKwhMonth" title="熱帯魚・井戸ポンプ・サウナなど"></label>
-      </div>
-    </details>
-
-    <details open>
-      <summary><span class="num">6</span>EV・V2H・蓄電池</summary>
-      <label class="check"><input type="checkbox" data-k="ev.enabled">EV（電気自動車）・PHEV がある／導入予定</label>
-      <div class="grid2" data-show="ev.enabled">
-        <label class="span2">車種クラス<select id="selEvPreset" data-k="ev.preset"></select></label>
-        <label>電池容量（kWh）<input type="number" min="5" max="120" data-k="ev.batteryKwh"></label>
-        <label>電費（km/kWh）<input type="number" min="2" max="10" step="0.1" data-k="ev.kmPerKwh"></label>
-        <label>年間走行距離（km）<input type="number" min="0" step="500" data-k="ev.kmPerYear"></label>
-        <label>自宅で充電する割合（%）<input type="number" min="0" max="100" step="5" data-k="ev.homeChargePct"></label>
-        <label>日中に車が家にある日（日/週）<input type="number" min="0" max="7" data-k="ev.homeDaysPerWeek"></label>
-        <label class="check mt"><input type="checkbox" data-k="ev.solarCharge">余剰電力で充電する</label>
-        <label class="check"><input type="checkbox" data-k="ev.v2h">V2H を導入（車から家へ給電）</label>
-        <label>車の残量下限（%）<input type="number" min="0" max="90" step="5" data-k="ev.reservePct" title="V2H で家に使わずに残しておく量（災害用・走行用）"></label>
-      </div>
-      <label class="check"><input type="checkbox" data-k="battery.enabled">家庭用蓄電池を導入</label>
-      <div class="grid3" data-show="battery.enabled">
-        <label>実効容量（kWh）<input type="number" min="1" max="30" step="0.1" data-k="battery.kwh"></label>
-        <label>出力（kW）<input type="number" min="0.5" max="10" step="0.1" data-k="battery.kw"></label>
-        <label>往復効率（%）<input type="number" min="70" max="98" data-k="battery.roundTrip"></label>
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="num">7</span>停電・災害への備え</summary>
-      <p class="hint">停電時に最低限使いたいもの（1日あたりの電力量で評価）</p>
-      <div id="essentials" class="essentials"></div>
-      <label class="check"><input type="checkbox" data-k="disaster.priority">停電対策を優先（冬の曇りの日でも必要量を発電できる容量以上にする）</label>
-    </details>
-
-    <details>
-      <summary><span class="num">8</span>電気料金・売電・費用</summary>
-      <div class="grid2">
-        <label class="span2">提案の目的<select data-k="goal">
-          <option value="econ">経済性重視（期間中の累計収支が最大）</option>
-          <option value="netzero">自給重視（年間の発電 ≧ 消費＝ネットゼロ）</option>
-          <option value="max">屋根いっぱいに載せる</option></select></label>
-        <label class="span2">料金プラン<select data-k="tariff.type">
-          <option value="flat">単価一律（従量電灯など）</option>
-          <option value="tou">時間帯別（オール電化プランなど）</option></select></label>
-        <label data-show="tariff.type=flat">買電単価（円/kWh）<input type="number" step="0.1" data-k="tariff.flat"></label>
-        <label data-show="tariff.type=tou">昼間単価（円/kWh）<input type="number" step="0.1" data-k="tariff.day"></label>
-        <label data-show="tariff.type=tou">夜間単価（円/kWh）<input type="number" step="0.1" data-k="tariff.night"></label>
-        <label data-show="tariff.type=tou">夜間開始（時）<input type="number" min="0" max="23" data-k="tariff.nightStart"></label>
-        <label data-show="tariff.type=tou">夜間終了（時）<input type="number" min="0" max="23" data-k="tariff.nightEnd"></label>
-        <label>電気代の上昇率（%/年）<input type="number" step="0.5" data-k="tariff.escalation"></label>
-        <label>評価期間（年）<input type="number" min="5" max="30" data-k="cost.years"></label>
-      </div>
-      <h4>売電単価（FIT）</h4>
-      <div class="grid3">
-        <label>10kW未満 1〜4年目<input type="number" step="0.1" data-k="fit.res1"></label>
-        <label>5〜10年目<input type="number" step="0.1" data-k="fit.res2"></label>
-        <label>卒FIT後<input type="number" step="0.1" data-k="fit.after"></label>
-        <label>10kW以上 1〜5年目<input type="number" step="0.1" data-k="fit.big1"></label>
-        <label>6〜20年目<input type="number" step="0.1" data-k="fit.big2"></label>
-      </div>
-      <h4>導入費用（税込・万円）</h4>
-      <div class="grid2">
-        <label>太陽光 固定費<input type="number" step="1" data-k="cost.pvFixed" title="パワコン・足場・申請など容量によらない費用"></label>
-        <label>太陽光 1kWあたり<input type="number" step="0.5" data-k="cost.pvPerKw"></label>
-        <label>蓄電池（参考）<input type="number" step="1" data-k="cost.battery"></label>
-        <label>V2H（参考）<input type="number" step="1" data-k="cost.v2h"></label>
-        <label>パネル劣化率（%/年）<input type="number" step="0.1" data-k="cost.degradation"></label>
-      </div>
-      <p class="hint">既定値：2025年の住宅用太陽光の新築平均 28.9万円/kW（調達価格等算定委員会）を「固定費30万円＋22万円/kW」に分解した想定です。見積額に合わせて変更してください。補助金がある場合は固定費から差し引いてください。</p>
-    </details>
-
-    <p class="foot-note">入力は自動で計算に反映されます。保存したデータはこのブラウザ内（localStorage）に残ります。</p>
+<!-- 提案者情報 -->
+<dialog id="dlgSettings" class="dlg">
+  <form method="dialog">
+    <h3>提案者情報</h3>
+    <p class="hint">提案書の表紙と最終ページに記載されます。このブラウザに保存されます。</p>
+    <label class="f">会社名<input id="setCompany" placeholder="例）〇〇ホーム株式会社"></label>
+    <label class="f">担当者<input id="setStaff" placeholder="例）佐藤 一郎"></label>
+    <label class="f">電話番号<input id="setPhone"></label>
+    <label class="f">メールアドレス<input id="setEmail"></label>
+    <div class="dlg-actions"><button value="cancel" class="btn-line">閉じる</button><button value="ok" class="btn-ink" id="btnSettingsSave">保存する</button></div>
   </form>
+</dialog>
 
-  <!-- ============================ 結果 ============================ -->
-  <section id="results" class="results">
-    <div id="out"></div>
-  </section>
-</main>
+<div class="toast" id="toast"></div>
 
 <script src="js/data/climate.js"></script>
 <script src="js/data/catalog.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/charts.js"></script>
+<script src="js/proposal.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

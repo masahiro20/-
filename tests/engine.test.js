@@ -181,3 +181,18 @@ test('停電対策を優先すると、推奨は停電対策ライン以上に�
   assert.ok(a.crit.essential.total > 5);
   assert.ok(a.rec.n >= a.crit.disaster.n);
 });
+
+test('提案書：6ページを組版でき、推奨容量が表紙に入る', () => {
+  require('../js/charts.js');
+  require('../js/proposal.js');
+  const P = globalThis.Proposal;
+  const p = baseParams();
+  p.customer = { name: '山田 太郎', honorific: '様', date: '2026-10-01' };
+  p.ac.units[0].pattern = '24h'; p.ac.units[0].pet = true;
+  const a = E.analyze(p);
+  const html = P.render(p, a, { settings: { company: 'テスト住建' } });
+  assert.equal((html.match(/<section class="page/g) || []).length, 6);
+  assert.ok(html.includes(a.rec.kw.toFixed(2)));
+  assert.ok(html.includes('山田 太郎'));
+  assert.ok(!/NaN|undefined/.test(html.replace(/data-tip="[^"]*"/g, '')));
+});
