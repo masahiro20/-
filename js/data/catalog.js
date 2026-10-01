@@ -8,6 +8,15 @@
     // ---- 太陽電池モジュール ------------------------------------------------
     // watt: 公称最大出力[W] / l,w: 外形寸法[mm] / tc: 最大出力温度係数[%/℃] / tcAssumed: 温度係数が推定値か
     panels: [
+      // ハンファジャパン Qcells（同社サイト・製品ページ）
+      { id: 'qcells-qtron-m440', maker: 'Qセルズ（ハンファジャパン）', model: 'Q.TRON M-G2.4+ 440', watt: 440, l: 1722, w: 1134, tc: -0.30, tcAssumed: false, note: 'n型 Q.ANTUM NEO・変換効率22.5%・25年で90%以上の出力保証' },
+      { id: 'qcells-qtron-m430', maker: 'Qセルズ（ハンファジャパン）', model: 'Q.TRON M-G2.4+ 430', watt: 430, l: 1722, w: 1134, tc: -0.30, tcAssumed: false, note: 'n型 Q.ANTUM NEO・変換効率22.0%' },
+      { id: 'qcells-qtron-s285', maker: 'Qセルズ（ハンファジャパン）', model: 'Q.TRON S-G2.4+ 285', watt: 285, l: 1722, w: 766, tc: -0.30, tcAssumed: false, note: '細長い小型サイズ。寄棟・狭い面の割付け用。変換効率21.6%' },
+      // 長州産業（JAPAN BLACK）
+      { id: 'choshu-cs390n11', maker: '長州産業', model: 'CS-390N11（Nシリーズ）', watt: 390, l: 1544, w: 1148, tc: -0.30, tcAssumed: true, note: 'n型TOPCon・国内製造・変換効率22.0%' },
+      { id: 'choshu-cs364b91', maker: '長州産業', model: 'CS-364B91（Bシリーズ）', watt: 364, l: 1544, w: 1148, tc: -0.35, tcAssumed: true, note: '変換効率20.5%。243W・120W（台形）と組み合わせて割付け' },
+      { id: 'choshu-cs243b91', maker: '長州産業', model: 'CS-243B91（Bシリーズ）', watt: 243, l: 1544, w: 780, tc: -0.35, tcAssumed: true, note: '変換効率20.2%。364Wと同じ縦寸法の小型' },
+      { id: 'choshu-cs348g81', maker: '長州産業', model: 'CS-348G81（Gシリーズ）', watt: 348, l: 1616, w: 1054, tc: -0.35, tcAssumed: true, note: '変換効率20.4%' },
       { id: 'sharp-nq241bt', maker: 'シャープ', model: 'BLACKSOLAR ZERO NQ-241BT', watt: 241, l: 1146, w: 996, tc: -0.35, tcAssumed: true, note: '2025年発売（同社ニュースリリース）。寄棟・小屋根向けの割付けしやすい形状' },
       { id: 'sharp-nq290bp', maker: 'シャープ', model: 'NQ-290BP', watt: 290, l: 1721, w: 768, tc: -0.35, tcAssumed: true, note: '2025年発売。細長形状' },
       { id: 'sharp-nq161bt', maker: 'シャープ', model: 'BLACKSOLAR ZERO NQ-161BT（ハーフ）', watt: 161, l: 779, w: 996, tc: -0.35, tcAssumed: true, note: '隙間埋め用の小型モジュール' },
@@ -51,6 +60,27 @@
       { id: 'cool', label: '冷房のみ', short: '冷房' },
       { id: 'heat', label: '暖房のみ', short: '暖房' },
     ],
+    // 冷暖房の使い方（暑がり・寒がり、設定温度）
+    acPrefs: { low: 0.85, mid: 1.0, high: 1.15 },
+    // 冬の暖房の主役：エアコン暖房の電力量にかける係数
+    heatSources: [
+      { id: 'ac', label: 'エアコン（電気）', factor: 1.0 },
+      { id: 'mixed', label: 'エアコン＋石油・ガスファンヒーター', factor: 0.55 },
+      { id: 'fuel', label: '石油・ガス暖房が中心（エアコンは補助）', factor: 0.2 },
+    ],
+    // そのほかの冷暖房家電（使う季節の1日あたり kWh）
+    heaters: [
+      { id: 'kotatsu', label: 'こたつ', kwh: 0.5, season: 'heat' },
+      { id: 'carpet', label: 'ホットカーペット', kwh: 1.0, season: 'heat' },
+      { id: 'stove', label: '電気ストーブ・セラミックヒーター', kwh: 2.5, season: 'heat' },
+      { id: 'dehumid', label: '除湿機（梅雨〜夏）', kwh: 0.6, season: 'humid' },
+    ],
+    // 部屋を追加するときのひな形
+    roomPresets: [
+      { name: 'LDK', tatami: 18, pattern: 'day' }, { name: '主寝室', tatami: 8, pattern: 'evening' },
+      { name: '子ども部屋', tatami: 6, pattern: 'evening' }, { name: '和室', tatami: 6, pattern: 'evening' },
+      { name: '書斎', tatami: 6, pattern: 'day' }, { name: '客間', tatami: 8, pattern: 'evening' },
+    ],
     // JIS 期間消費電力量のうち冷房期間が占める割合（東京条件・代表値）
     acCoolShare: 0.27,
     // 全館空調：断熱等級4・東京相当での年間消費電力量原単位 [kWh/㎡・年]
@@ -93,6 +123,37 @@
       { id: 'dual', label: '共働き等で平日日中は不在' },
       { id: 'home', label: '日中も誰か在宅（子育て・シニア等）' },
       { id: 'remote', label: '在宅ワーク中心' },
+      { id: 'senior', label: 'シニア世代（日中在宅・朝が早い）' },
+    ],
+    // 住まいの使い方
+    usages: [
+      { id: 'main', label: 'ご家族の住まい' },
+      { id: 'final', label: '終の棲家（シニア世代の住まい）' },
+      { id: 'second', label: 'セカンドハウス・別荘' },
+    ],
+    staySeasons: [
+      { id: 'all', label: '通年' }, { id: 'summer', label: '夏（7〜9月）' }, { id: 'winter', label: '冬（12〜3月）' }, { id: 'mild', label: '春〜秋（4〜11月）' },
+    ],
+
+    // ---- 蓄電池（実効容量＝カタログの初期実効容量。不明なものは定格×0.9）------------
+    batteries: [
+      { id: 'qcells-qready-97', maker: 'Qセルズ', model: 'Q.READY 9.7kWh（QREADY-B97-1）', kwh: 8.6, rated: 9.7, kw: 5.9, kva: 5.9, load: 'full', v2h: true, note: '全負荷・停電時5.9kVA（200V機器可）。V2Hを後から追加できる' },
+      { id: 'qcells-qready-77', maker: 'Qセルズ', model: 'Q.READY 7.7kWh（QREADY-B77-1）', kwh: 6.8, rated: 7.7, kw: 5.9, kva: 5.9, load: 'full', v2h: true, note: '全負荷・停電時5.9kVA。V2Hを後から追加できる' },
+      { id: 'choshu-evo-126', maker: '長州産業', model: 'SMART PV EVO 12.6kWh', kwh: 11.3, rated: 12.6, kw: 6.0, kva: 6.0, load: 'full', v2h: true, note: '全負荷・自立出力6.0kVA。V2H対応（蓄電池⇔EV間も移動可）' },
+      { id: 'choshu-evo-63', maker: '長州産業', model: 'SMART PV EVO 6.3kWh', kwh: 5.7, rated: 6.3, kw: 3.0, kva: 3.0, load: 'full', v2h: true, note: '全負荷・自立出力3.0kVA。V2H対応' },
+      { id: 'choshu-multi-98', maker: '長州産業', model: 'Smart PV Multi 9.8kWh', kwh: 8.8, rated: 9.8, kw: 3.0, kva: 3.0, load: 'specific', v2h: false, note: '特定負荷（全負荷はオプション）。出力は要確認' },
+      { id: 'choshu-multi-164', maker: '長州産業', model: 'Smart PV Multi 16.4kWh', kwh: 14.8, rated: 16.4, kw: 3.0, kva: 3.0, load: 'specific', v2h: false, note: '特定負荷（全負荷はオプション）。出力は要確認' },
+      { id: 'nichicon-t3-149', maker: 'ニチコン', model: 'トライブリッド ESS-T3 14.9kWh', kwh: 13.4, rated: 14.9, kw: 5.9, kva: 5.9, load: 'full', v2h: true, note: '全負荷・停電時5.9kVA。太陽光・蓄電池・EVを1台のパワコンで制御' },
+      { id: 'nichicon-t3-74', maker: 'ニチコン', model: 'トライブリッド ESS-T3 7.4kWh', kwh: 6.7, rated: 7.4, kw: 5.9, kva: 5.9, load: 'full', v2h: true, note: '全負荷・停電時5.9kVA' },
+      { id: 'custom', maker: 'その他', model: '手入力', kwh: 7, rated: 7, kw: 3, kva: 3, load: 'specific', v2h: false, note: 'カタログの実効容量・出力を入力' },
+    ],
+    // ---- V2H（車⇔家の充放電出力）-------------------------------------------
+    v2hUnits: [
+      { id: 'nichicon-vsg3', maker: 'ニチコン', model: 'EVパワー・ステーション（VSG3）', kw: 6.0, note: '単体設置のV2H。停電時も家全体へ給電' },
+      { id: 'nichicon-t3', maker: 'ニチコン', model: 'トライブリッド V2Hスタンド', kw: 5.9, note: 'トライブリッド蓄電システムと組み合わせ' },
+      { id: 'qcells-qready', maker: 'Qセルズ', model: 'Q.READY V2H', kw: 5.9, note: 'Q.READY に後から追加' },
+      { id: 'choshu-evo', maker: '長州産業', model: 'SMART PV EVO V2H', kw: 6.0, note: 'SMART PV EVO と組み合わせ' },
+      { id: 'custom', maker: 'その他', model: '手入力', kw: 6.0, note: '' },
     ],
 
     // ---- EV / V2H ----------------------------------------------------------
@@ -109,7 +170,7 @@
       { id: 'light', label: '照明（LED 数か所）', kwh: 0.4, on: true },
       { id: 'comm', label: 'スマホ充電・Wi-Fi・TV', kwh: 0.5, on: true },
       { id: 'cook', label: '電子レンジ・炊飯器', kwh: 0.6, on: true },
-      { id: 'petac', label: 'ペット用エアコン1台（24時間）', kwh: 0, on: false, dynamic: 'petac' },
+      { id: 'petac', label: 'ペット用エアコン1台（8畳相当・24時間）', kwh: 0, on: false, dynamic: 'petac' },
       { id: 'water', label: 'エコキュート沸き上げ', kwh: 4.5, on: false },
       { id: 'ih', label: 'IH調理', kwh: 1.5, on: false },
       { id: 'medical', label: '医療機器など', kwh: 1.0, on: false },
@@ -132,6 +193,7 @@
       // 住宅用システム費用（2025年 新築平均 28.9万円/kW を固定費＋比例費に分解した想定）
       pvFixed: 30, pvPerKw: 22,  // 万円
       battery: 0, v2h: 0,        // 万円（比較用・任意）
+      subsidy: 0,                // 太陽光の補助金（万円）
       degradation: 0.5,          // %/年
       years: 20,
     },

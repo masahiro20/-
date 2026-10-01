@@ -12,6 +12,7 @@
   'use strict';
   const CLIMATE = root.SOLAR_CLIMATE || (typeof require !== 'undefined' ? require('./data/climate.js') : null);
   const CATALOG = root.SOLAR_CATALOG || (typeof require !== 'undefined' ? require('./data/catalog.js') : null);
+  const MUNIS = root.SOLAR_MUNIS || (typeof require !== 'undefined' ? (() => { try { return require('./data/munis.js'); } catch (e) { return null; } })() : null);
 
   const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   const MONTH_START = DAYS.reduce((a, d, i) => (a.push(i ? a[i - 1] + DAYS[i - 1] : 0), a), []);
@@ -38,6 +39,26 @@
     const s = CLIMATE.stations[name];
     if (!s) throw new Error('観測地点が見つかりません: ' + name);
     return s;
+  }
+
+  /**
+   * 計算に使う地点。市区町村（location.city＝団体コード）があれば市区町村ごとの日射量・気温、
+   * なければ気象官署（location.station）。傾斜面換算は最寄りの気象官署の値を使う。
+   */
+  function site(loc) {
+    loc = loc || {};
+    const M = root.SOLAR_MUNIS || MUNIS;
+    const r = loc.city && M && M.list[loc.city];
+    if (r) {
+      const ref = CLIMATE.stations[r[4]];
+      return {
+        name: r[1], pref: r[0], lat: r[2], lon: r[3], ref: r[4], ratio: ref.ratio,
+        H: r[5].map((v) => v / 100), temp: r[6].map((v) => v / 10),
+        src: `PVGIS推計を気象庁実測（${r[7]}）で補正`,
+      };
+    }
+    const name = loc.station || '東京';
+    return Object.assign({ name, ref: name }, station(name));
   }
 
   // ---------------------------------------------------------------- 発電 ---
@@ -151,6 +172,8 @@
   // 照明・家電の時刻別パターン（平日不在 / 在宅）
   const BASE_AWAY = [0.5, 0.45, 0.42, 0.42, 0.45, 0.7, 1.3, 1.4, 0.8, 0.5, 0.45, 0.45, 0.5, 0.45, 0.45, 0.5, 0.6, 0.9, 1.5, 1.7, 1.7, 1.5, 1.2, 0.8];
   const BASE_HOME = [0.5, 0.45, 0.42, 0.42, 0.45, 0.7, 1.2, 1.3, 1.1, 1.0, 1.0, 1.0, 1.1, 1.0, 0.95, 0.95, 1.0, 1.1, 1.5, 1.6, 1.6, 1.4, 1.1, 0.8];
+  // シニア世代：朝が早く、日中も在宅、夜は早めに休む
+  const BASE_SENIOR = [0.45, 0.4, 0.4, 0.4, 0.5, 0.9, 1.3, 1.25, 1.1, 1.05, 1.05, 1.0, 1.1, 1.0, 1.0, 1.0, 1.1, 1.35, 1.5, 1.45, 1.25, 0.9, 0.6, 0.5];
   const BASE_SEASON = [1.08, 1.06, 1.02, 0.97, 0.94, 0.93, 0.97, 1.0, 0.95, 0.97, 1.03, 1.08];
 
   /**
@@ -163,6 +186,13 @@
     const dd = degreeDays(st);
     const rh = dd.H / tokyo.H, rc = dd.C / tokyo.C;
     const ins = (C.insulation.find((x) => x.id === h.insulation) || C.insulation[1]).ac;
+    const senior = h.lifestyle === 'senior';
+    const acp = (p.ac || {});
+    const mode = acp.mode || (acp.central ? 'both' : 'split');
+    const coolF = C.acPrefs[acp.coolPref] || 1, heatF = C.acPrefs[acp.heatPref] || 1;
+    const srcF = ((C.heatSources || []).find((x) => x.id === acp.heatSource) || { factor: 1 }).factor;
+    const heatAdj = senior ? 1.15 : 1;   // シニア世代は暖房の設定温度が高め・時間が長め
+    const homeBase = senior ? BASE_SENIOR : BASE_HOME;
     const loads = [];
     const add = (key, label, group, annual, monthW, profile, extra) => {
       if (!(annual > 0)) return;
@@ -173,8 +203,8 @@
     const awayAware = (awayArr, homeArr) => (m, away) => (away ? awayArr : homeArr);
 
     // 照明・冷蔵庫・家電
-    const baseKwh = C.baseByPersons[n - 1] + ((h.floorTsubo || 30) - 30) * 15;
-    add('base', '照明・冷蔵庫・家電・待機電力', '生活', baseKwh, BASE_SEASON, awayAware(BASE_AWAY, BASE_HOME));
+    const baseKwh = (C.baseByPersons[n - 1] + ((h.floorTsubo || 30) - 30) * 15) * (senior ? 1.08 : 1);
+    add('base', '照明・冷蔵庫・家電・待機電力', '生活', baseKwh, BASE_SEASON, awayAware(BASE_AWAY, homeBase));
     add('vent', '24時間換気', '生活', C.ventilationKwh, new Array(12).fill(1), fixed(new Array(24).fill(1)));
     if (h.remoteWorkers > 0) {
       const prof = HOURS(RANGE(9, 18));
@@ -183,14 +213,14 @@
     }
 
     // 個別エアコン
-    const acs = (p.ac && p.ac.units) || [];
+    const acs = mode === 'central' ? [] : ((p.ac && p.ac.units) || []);
     acs.forEach((u, i) => {
       const size = C.acSizes.find((s) => s.tatami === +u.tatami) || C.acSizes[0];
       const pat = C.acPatterns.find((x) => x.id === u.pattern) || C.acPatterns[2];
       const count = Math.max(1, +u.count || 1);
       const base = size.kwh * pat.factor * ins * count;
-      const cool = u.season === 'heat' ? 0 : base * C.acCoolShare * rc;
-      const heat = u.season === 'cool' ? 0 : base * (1 - C.acCoolShare) * rh;
+      const cool = u.season === 'heat' ? 0 : base * C.acCoolShare * rc * coolF;
+      const heat = u.season === 'cool' ? 0 : base * (1 - C.acCoolShare) * rh * heatAdj * heatF * (u.pet ? Math.max(srcF, 0.55) : srcF);
       const on = AC_ON[pat.id];
       const pc = norm(on.map((v, k) => v * COOL_W[k])), ph = norm(on.map((v, k) => v * HEAT_W[k]));
       const name = `${u.name || 'エアコン' + (i + 1)}（${size.tatami}畳用${count > 1 ? '×' + count : ''}・${pat.short || pat.id}）`;
@@ -199,7 +229,7 @@
       const annual = cool + heat;
       if (annual > 0) {
         loads.push({
-          key: 'ac' + i, label: name, group: '空調', annual, pet: !!u.pet, pattern: pat.id,
+          key: 'ac' + i, label: name, group: '空調', annual, pet: !!u.pet, pattern: pat.id, unitKwh: size.kwh * count,
           monthly: coolM.map((v, m) => v + heatM[m]),
           profile: (m) => {
             const c = coolM[m], hh = heatM[m], t = c + hh;
@@ -210,10 +240,10 @@
     });
 
     // 全館空調
-    if (p.ac && p.ac.central) {
+    if (mode === 'central' || mode === 'both') {
       const floorM2 = (h.floorTsubo || 30) * TSUBO;
       const base = C.centralKwhPerM2 * floorM2 * (ins / 0.8);
-      const cool = base * 0.35 * rc, heat = base * 0.65 * rh;
+      const cool = base * 0.35 * rc * coolF, heat = base * 0.65 * rh * heatAdj * heatF;
       const coolM = dd.cdd.map((v) => (dd.C ? v / dd.C * cool : 0));
       const heatM = dd.hdd.map((v) => (dd.H ? v / dd.H * heat : 0));
       const pc = norm(COOL_W), ph = norm(HEAT_W);
@@ -228,10 +258,21 @@
       });
     }
 
+    // そのほかの冷暖房家電（こたつ・ヒーター・除湿機）
+    const ex0 = p.extras || {};
+    (ex0.heaters || []).forEach((id) => {
+      const hd = (C.heaters || []).find((x) => x.id === id);
+      if (!hd) return;
+      const w = hd.season === 'humid' ? [0, 0, 0, 0, 0, 1, 1, 0.8, 0.6, 0, 0, 0].map((v, m) => v * DAYS[m])
+        : st.temp.map((T, m) => DAYS[m] * clamp((15 - T) / 8, 0, 1));
+      const annual = hd.kwh * sum(w) * (hd.season === 'heat' ? heatF : 1);
+      add('heater-' + id, hd.label, '空調', annual, w, awayAware(norm(HOURS([6, 7, 18, 19, 20, 21, 22])), norm(HOURS(RANGE(7, 22)))));
+    });
+
     // 床暖房
     const fh = C.floorHeating.find((x) => x.id === (p.extras && p.extras.floorHeating)) || C.floorHeating[0];
     if (fh.kwhPerM2 > 0) {
-      const annual = fh.kwhPerM2 * (p.extras.floorHeatingM2 || 15) * rh * (ins / 0.8);
+      const annual = fh.kwhPerM2 * (p.extras.floorHeatingM2 || 15) * rh * (ins / 0.8) * heatAdj;
       const prof = norm(HOURS([6, 7, 8, 17, 18, 19, 20, 21, 22]));
       const profHome = norm(HOURS(RANGE(6, 22)));
       add('floorheat', `床暖房（${fh.label}）`, '空調', annual, dd.hdd, awayAware(prof, profHome));
@@ -308,7 +349,7 @@
 
   /** 気象（日タイプ）・曜日・時刻別負荷・面ごとの 1kW 発電 を 8760 時間で準備 */
   function prepare(p) {
-    const st = station(p.location.station);
+    const st = site(p.location);
     const gen = p.generation;
     const panel = p.panel;
     const lb = buildLoads(p, st);
@@ -328,22 +369,38 @@
       for (let d = 0; d < DAYS[m]; d++) dayFactor[MONTH_START[m] + d] = WEATHER.f[dayType[MONTH_START[m] + d]] * k;
     }
 
+    // 在宅日（セカンドハウスは滞在する日だけ。週末から優先、季節を指定可）
+    const dow0 = 3; // 2026/1/1 は木曜（0=月）
+    const occ = new Array(365).fill(true);
+    const second = p.house.usage === 'second';
+    if (second) {
+      const order = [5, 6, 4, 0, 3, 1, 2]; // 土,日,金,月,木,火,水
+      const stayDows = new Set(order.slice(0, Math.round(clamp(+p.house.stayDaysPerWeek || 0, 0, 7))));
+      const months = SEASON_MONTHS[p.house.staySeason || 'all'] || SEASON_MONTHS.all;
+      for (let d = 0; d < 365; d++) occ[d] = months.includes(monthOf(d)) && stayDows.has((dow0 + d) % 7);
+    }
+
     // 時刻別負荷（EV充電を除く）
     const load = new Float64Array(8760);
-    const dow0 = 3; // 2026/1/1 は木曜（0=月）
     const weekendArr = new Array(365);
+    const eff = lb.loads.map(() => new Array(12).fill(0));
     for (let d = 0; d < 365; d++) {
       const m = monthOf(d);
       const dow = (dow0 + d) % 7, weekend = dow >= 5;
       weekendArr[d] = weekend;
       const away = lifestyle === 'dual' && !weekend;
-      for (const l of lb.loads) {
-        const daily = l.monthly[m] / DAYS[m];
-        const prof = l.profile(m, away, weekend);
+      lb.loads.forEach((l, li) => {
+        const f = occ[d] ? 1 : vacantFactor(l);
+        if (!f) return;
+        const daily = l.monthly[m] / DAYS[m] * f;
+        const prof = occ[d] ? l.profile(m, away, weekend) : FLAT24;
         const ps = sum(prof);
         if (ps > 0) for (let h = 0; h < 24; h++) load[d * 24 + h] += daily * prof[h] / ps;
-      }
+        eff[li][m] += daily;
+      });
     }
+    if (second) lb.loads.forEach((l, li) => { l.fullAnnual = l.annual; l.monthly = eff[li]; l.annual = sum(eff[li]); });
+    const occDays = occ.filter(Boolean).length;
 
     // 面ごとの 1kW あたり時刻別発電
     const faces = (p.roof || []).filter((f) => f.enabled !== false && f.areaM2 > 0);
@@ -367,7 +424,17 @@
       for (let d = 0; d < 365; d++) evHomeDay[d] = homeDows.has((dow0 + d) % 7);
     }
 
-    return { st, lb, ev, load, faces: faceInfo, dayType, dayFactor, weekendArr, evHomeDay, panel };
+    return { st, lb, ev, load, faces: faceInfo, dayType, dayFactor, weekendArr, evHomeDay, panel, occ, occDays, second };
+  }
+
+  const FLAT24 = new Array(24).fill(1);
+  const SEASON_MONTHS = { all: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], summer: [6, 7, 8], winter: [11, 0, 1, 2], mild: [3, 4, 5, 6, 7, 8, 9, 10] };
+  /** 不在日に残る電気の割合（冷蔵庫・待機電力・換気など） */
+  function vacantFactor(l) {
+    if (l.key === 'base') return 0.3;
+    if (l.key === 'vent' || l.key === 'other') return 1;
+    if (l.group === '空調') return l.pet ? 1 : 0;
+    return 0;
   }
 
   function monthOf(d) { let m = 0; while (m < 11 && d >= MONTH_START[m + 1]) m++; return m; }
@@ -406,6 +473,7 @@
     for (let d = 0; d < 365; d++) {
       const m = monthOf(d);
       const carHome = ev ? prep.evHomeDay[d] : false;
+      const here = !prep.occ || prep.occ[d];
       for (let h = 0; h < 24; h++) {
         const i = d * 24 + h;
         let g = 0;
@@ -415,10 +483,10 @@
         const L = prep.load[i];
         const price = priceAt(tariff, h);
         let imp = 0, exp = 0, evCharge = 0;
-        const present = ev && (carHome || h < 8 || h >= 18);
+        const present = ev && here && (carHome || h < 8 || h >= 18);
 
         // 走行（18時に帰宅して当日分を消費したとみなす）
-        if (ev && h === 18) {
+        if (ev && here && h === 18) {
           evSoc -= ev.dailyNeed;
           if (evSoc < 0) { r.evPublic += -evSoc; evSoc = 0; }
         }
@@ -458,7 +526,7 @@
       }
     }
     // 太陽光なしの場合の EV 充電コスト（夜間に自宅充電）
-    if (ev) r.baseCost += ev.annualHomeGridSide * priceAt(tariff, 2);
+    if (ev) r.baseCost += ev.annualHomeGridSide * ((prep.occDays || 365) / 365) * priceAt(tariff, 2);
     const T = (a) => sum(a);
     const out = {
       panelKw, pcsKw: isFinite(pcsKw) ? pcsKw : panelKw,
@@ -484,7 +552,7 @@
       if (!big) return y <= fit.res1Years ? fit.res1 : y <= fit.res1Years + fit.res2Years ? fit.res2 : fit.after;
       return y <= fit.big1Years ? fit.big1 : y <= fit.big1Years + fit.big2Years ? fit.big2 : fit.after;
     };
-    const capex = (c.pvFixed + c.pvPerKw * sim.panelKw) * 10000;
+    const capex = Math.max(0, c.pvFixed + c.pvPerKw * sim.panelKw - (c.subsidy || 0)) * 10000;
     const extra = ((p.battery && p.battery.enabled ? c.battery : 0) + (p.ev && p.ev.v2h ? c.v2h : 0)) * 10000;
     const deg = (c.degradation || 0) / 100, esc = (p.tariff.escalation || 0) / 100;
     let cum = -capex, payback = null;
@@ -517,13 +585,14 @@
       if (e.dynamic === 'petac') {
         const pets = lb.loads.filter((l) => l.pet || l.pattern === '24h');
         const ac = pets[0] || lb.loads.find((l) => l.group === '空調');
-        kwh = ac ? Math.max(...ac.monthly.map((v, m) => v / DAYS[m] / (l2count(ac) || 1))) : 0;
+        // 停電時は1台（8畳相当）で過ごす想定
+        const scale = ac && ac.unitKwh ? Math.min(1, 800 / ac.unitKwh) : 1;
+        kwh = ac ? Math.max(...ac.monthly.map((v, m) => v / DAYS[m])) * scale : 0;
       }
       total += kwh; items.push({ id: e.id, label: e.label, kwh });
     }
     return { total, items };
   }
-  function l2count(l) { const m = /×(\d+)/.exec(l.label); return m ? +m[1] : 1; }
 
   /** 容量を1枚ずつ増やしながら全ケースを計算し、推奨容量を決める */
   function analyze(p) {
@@ -595,11 +664,12 @@
   /** 停電時の自立日数の目安 */
   function outageEstimate(p, analysis) {
     const ess = analysis.crit.essential ? analysis.crit.essential.total : 0;
-    const bat = p.battery && p.battery.enabled ? (p.battery.kwh || 0) * 0.9 : 0;
+    const bat = p.battery && p.battery.enabled ? (p.battery.kwh || 0) : 0;   // 実効容量
     const ev = p.ev && p.ev.enabled && p.ev.v2h ? (p.ev.batteryKwh || 0) * 0.8 * 0.9 : 0;
     const storage = bat + ev;
+    const full = (bat > 0 && p.battery.load !== 'specific') || ev > 0;     // 全負荷型・V2Hは家じゅうに給電
     return {
-      essential: ess, storage, battery: bat, ev,
+      essential: ess, storage, battery: bat, ev, full,
       daysNoSun: ess > 0 ? storage / ess : null,
       selfStandOnly: !bat && !ev,
     };
@@ -607,7 +677,7 @@
 
   const API = {
     DAYS, DIRS, DIR_LABEL, KH_JPEA, WEATHER, TSUBO,
-    station, tiltRatio, khMonthly, monthlyYieldPerKw, solarShape, estimateRoof, faceMaxPanels, panelArea,
+    station, site, tiltRatio, khMonthly, monthlyYieldPerKw, solarShape, estimateRoof, faceMaxPanels, panelArea,
     buildLoads, degreeDays, evSetup, prepare, simulate, economics, analyze, essentialDaily, outageEstimate, sunToDeg,
   };
   root.SolarEngine = API;

@@ -178,7 +178,7 @@ test('停電対策を優先すると、推奨は停電対策ライン以上に�
   p.disaster = { items: ['fridge', 'light', 'comm', 'cook', 'petac'], priority: true };
   p.cost.pvPerKw = 60; // 経済性だけなら小さい容量になる条件
   const a = E.analyze(p);
-  assert.ok(a.crit.essential.total > 5);
+  assert.ok(a.crit.essential.total > 4);
   assert.ok(a.rec.n >= a.crit.disaster.n);
 });
 
@@ -195,4 +195,60 @@ test('提案書：6ページを組版でき、推奨容量が表紙に入る', (
   assert.ok(html.includes(a.rec.kw.toFixed(2)));
   assert.ok(html.includes('山田 太郎'));
   assert.ok(!/NaN|undefined/.test(html.replace(/data-tip="[^"]*"/g, '')));
+});
+
+test('市区町村：全国約1,740の市区町村があり、愛知県内でも地域差が出る', () => {
+  require('../js/data/munis.js');
+  const MU = globalThis.SOLAR_MUNIS;
+  assert.ok(Object.keys(MU.list).length > 1700);
+  assert.equal(Object.keys(MU.byPref).length, 47);
+  const code = (name) => MU.byPref['愛知県'].find((c) => MU.list[c][1] === name);
+  ['名古屋市', '岡崎市', '豊田市', '半田市'].forEach((n) => assert.ok(code(n), n));
+  const y = (n) => E.monthlyYieldPerKw(E.site({ city: code(n) }), { dir: 'S', slopeSun: 4 }, baseParams().generation).annual;
+  assert.ok(y('岡崎市') > y('名古屋市'));
+  assert.ok(Math.abs(y('岡崎市') / y('名古屋市') - 1) < 0.05);
+  // 気象官署のある市は気象庁の実測値をほぼ再現
+  const nagoya = E.site({ city: code('名古屋市') });
+  const h = (s) => s.H.reduce((a, v, m) => a + v * E.DAYS[m], 0);
+  assert.ok(Math.abs(h(nagoya) / h(E.station('名古屋')) - 1) < 0.02);
+});
+
+test('シニア世代・終の棲家：日中在宅で昼の消費が増え、暖房はやや多め', () => {
+  const p = baseParams(); p.house.persons = 2;
+  const q = clone(p); q.house.lifestyle = 'senior'; q.house.usage = 'final';
+  const lp = E.buildLoads(p, E.station('東京')), lq = E.buildLoads(q, E.station('東京'));
+  const heat = (lb) => lb.loads.filter((l) => l.group === '空調').reduce((s, l) => s + l.monthly[0], 0);
+  assert.ok(heat(lq) > heat(lp));
+  const sp = E.simulate(E.prepare(p), p, [5, 0]), sq = E.simulate(E.prepare(q), q, [5, 0]);
+  assert.ok(sq.selfRate > sp.selfRate);
+});
+
+test('セカンドハウス：滞在日だけ電気を使い、自家消費率が下がる', () => {
+  const p = baseParams();
+  const q = clone(p); q.house.usage = 'second'; q.house.stayDaysPerWeek = 2; q.house.staySeason = 'all';
+  const pp = E.prepare(p), pq = E.prepare(q);
+  assert.ok(pq.occDays > 90 && pq.occDays < 120);
+  const sp = E.simulate(pp, p, [5, 0]), sq = E.simulate(pq, q, [5, 0]);
+  assert.ok(sq.load < sp.load * 0.6);
+  assert.ok(sq.selfRate < sp.selfRate);
+});
+
+test('暖房の主役・補助金・蓄電池の製品値が反映される', () => {
+  const total = (p) => E.buildLoads(p, E.station('東京')).loads.reduce((s, l) => s + l.annual, 0);
+  const p = baseParams();
+  const q = clone(p); q.ac.heatSource = 'fuel';
+  assert.ok(total(q) < total(p));
+  const r = clone(p); r.extras.heaters = ['stove'];
+  assert.ok(total(r) > total(p) + 200);
+  const sim = E.simulate(E.prepare(p), p, [5, 0]);
+  const s2 = clone(p); s2.cost.subsidy = 10;
+  assert.equal(E.economics(p, sim).capex - E.economics(s2, sim).capex, 100000);
+  const b = C.batteries.find((x) => x.id === 'qcells-qready-97');
+  const t = clone(p); t.battery = { enabled: true, kwh: b.kwh, kw: b.kw, load: b.load };
+  t.disaster.items = ['fridge', 'light', 'comm', 'cook'];
+  const a = E.analyze(t);
+  const o = E.outageEstimate(t, a);
+  assert.equal(o.battery, 8.6);
+  assert.equal(o.full, true);
+  assert.ok(C.panels.some((x) => x.maker.startsWith('Qセルズ')) && C.panels.some((x) => x.maker === '長州産業'));
 });

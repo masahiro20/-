@@ -1,7 +1,7 @@
 /* 画面制御：お客様一覧 → ヒアリング（6ステップ） → 提案書（PDF） */
 (function () {
   'use strict';
-  const E = window.SolarEngine, C = window.SOLAR_CATALOG, CL = window.SOLAR_CLIMATE, Ch = window.Charts, P = window.Proposal;
+  const E = window.SolarEngine, C = window.SOLAR_CATALOG, CL = window.SOLAR_CLIMATE, MU = window.SOLAR_MUNIS, Ch = window.Charts, P = window.Proposal;
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   const Store = window.HikariStore;
@@ -24,22 +24,22 @@
     const panel = C.panels.find((p) => p.id === 'gen-topcon-430');
     const s = {
       customer: { name: '', honorific: '様', address: '', date: today(), staff: settings.staff || '', memo: '' },
-      location: { pref: '東京都', station: '東京' },
-      house: { persons: 4, lifestyle: 'dual', remoteWorkers: 0, floorTsubo: 35, floors: 2, insulation: 'g5' },
+      location: { pref: '東京都', city: MU.byPref['東京都'][0], station: '東京' },
+      house: { usage: 'main', persons: 4, lifestyle: 'dual', remoteWorkers: 0, floorTsubo: 35, floors: 2, insulation: 'g5', age: '', stayDaysPerWeek: 2, staySeason: 'all' },
       calibration: { enabled: false, annualKwh: 0 },
       roofShape: { type: 'kirizuma', mainDir: 'S', slopeSun: 4 },
       roof: [], roofManual: false, allowNorth: false,
       panelId: panel.id, panel: { watt: panel.watt, l: panel.l, w: panel.w, tc: panel.tc },
       generation: { method: 'jpea', pcsEffPct: 96, otherLossPct: 95, snowLoss: 0, pcsKw: 0 },
-      ac: { central: false, units: [
+      ac: { mode: 'split', central: false, coolPref: 'mid', heatPref: 'mid', heatSource: 'ac', units: [
         { name: 'LDK', tatami: 18, count: 1, pattern: 'day', season: 'both', pet: false },
         { name: '主寝室', tatami: 8, count: 1, pattern: 'evening', season: 'both', pet: false },
         { name: '子ども部屋', tatami: 6, count: 2, pattern: 'evening', season: 'both', pet: false },
       ] },
       waterHeater: 'ecocute', cooker: 'ih',
-      extras: { dishwasher: true, dryer: 'none', dryerPerWeek: 4, bathDryerPerWeek: 0, floorHeating: 'none', floorHeatingM2: 15, otherKwhMonth: 0 },
-      ev: { enabled: false, preset: 'compact', batteryKwh: 40, kmPerKwh: 6.5, kmPerYear: 8000, homeChargePct: 100, homeDaysPerWeek: 2, v2h: false, reservePct: 30, solarCharge: true },
-      battery: { enabled: false, kwh: 7, kw: 3, roundTrip: 90 },
+      extras: { dishwasher: true, dryer: 'none', dryerPerWeek: 4, bathDryerPerWeek: 0, floorHeating: 'none', floorHeatingM2: 15, otherKwhMonth: 0, heaters: [] },
+      ev: { enabled: false, preset: 'compact', batteryKwh: 40, kmPerKwh: 6.5, kmPerYear: 8000, homeChargePct: 100, homeDaysPerWeek: 2, v2h: false, v2hModel: 'nichicon-vsg3', reservePct: 30, solarCharge: true },
+      battery: { enabled: false, model: 'qcells-qready-97', kwh: 8.6, kw: 5.9, kva: 5.9, load: 'full', roundTrip: 90 },
       disaster: { items: C.essentials.filter((e) => e.on).map((e) => e.id), priority: false },
       tariff: Object.assign({ type: 'flat' }, C.tariffDefaults),
       fit: Object.assign({}, C.fitDefaults),
@@ -47,6 +47,15 @@
       goal: 'econ',
     };
     s.roof = E.estimateRoof(s);
+    return s;
+  }
+  /** 旧データの移行（観測地点 → 市区町村、全館空調フラグ → 冷暖房の方式） */
+  function migrate(s) {
+    if (!s.location.city || !MU.list[s.location.city]) {
+      const codes = MU.byPref[s.location.pref] || MU.byPref['東京都'];
+      s.location.city = codes.find((c) => MU.list[c][1].startsWith(s.location.station || '')) || codes[0];
+    }
+    if (!s.ac.mode) s.ac.mode = s.ac.central ? 'both' : 'split';
     return s;
   }
   function merge(s, d) {
@@ -75,7 +84,7 @@
   function go(view, id, s) {
     $$('.view').forEach((v) => v.classList.remove('on'));
     if ((view === 'edit' || view === 'proposal') && customers[id]) {
-      if (!cur || cur.id !== id) { cur = { id, state: merge(JSON.parse(JSON.stringify(customers[id].state)), defaults()) }; last = null; }
+      if (!cur || cur.id !== id) { cur = { id, state: migrate(merge(JSON.parse(JSON.stringify(customers[id].state)), defaults())) }; last = null; }
       if (view === 'edit') { step = Math.min(6, Math.max(1, +s || 1)); showWizard(); }
       else showProposal();
     } else { showHome(); }
@@ -93,7 +102,7 @@
       const d = new Date(c.updatedAt);
       return `<article class="cust">
         <div class="cust-top"><div><div class="cust-name">${esc(s.customer.name || '（お名前未入力）')}<span class="muted" style="font-size:13px"> ${esc(s.customer.honorific || '様')}</span></div>
-          <div class="cust-meta">${esc(s.location.station)}・${s.house.persons}人家族・${s.house.floorTsubo}坪　更新 ${d.getMonth() + 1}/${d.getDate()}</div></div>
+          <div class="cust-meta">${esc((MU.list[s.location.city] || [])[1] || s.location.station)}・${s.house.persons}人家族・${s.house.floorTsubo}坪　更新 ${d.getMonth() + 1}/${d.getDate()}</div></div>
           <div class="cust-kw">${sm ? `<b>${f2(sm.kw)}</b><small>kW</small>` : ''}</div></div>
         <div class="cust-facts">${sm ? `<span>発電 ${f0(sm.gen)}kWh</span><span>自給率 ${pct(sm.suff)}</span><span>手残り ${man(sm.net)}万円</span>` : '<span>未計算</span>'}${s.ev.enabled ? '<span>EV</span>' : ''}${s.ac.units.some((u) => u.pet) ? '<span>ペット</span>' : ''}</div>
         <div class="cust-actions"><button class="btn-ink" data-open="${c.id}">提案書</button><button class="btn-line" data-edit="${c.id}">ヒアリング</button><span class="sp"></span>
@@ -148,9 +157,12 @@
   const opt = (v, label, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
 
   function fillStatic() {
-    const prefs = [];
-    Object.values(CL.stations).forEach((s) => { if (!prefs.includes(s.pref)) prefs.push(s.pref); });
-    $('#selPref').innerHTML = prefs.map((p) => opt(p, p)).join('');
+    $('#selPref').innerHTML = Object.keys(MU.byPref).map((p) => opt(p, p)).join('');
+    $('#selSeason').innerHTML = C.staySeasons.map((x) => opt(x.id, x.label)).join('');
+    $('#selHeatSrc').innerHTML = C.heatSources.map((x) => opt(x.id, x.label)).join('');
+    $('#selV2h').innerHTML = C.v2hUnits.map((x) => opt(x.id, `${x.maker} ${x.model}（${x.kw}kW）`)).join('');
+    $('#roomChips').innerHTML = C.roomPresets.map((r, i) => `<button type="button" data-room="${i}">＋ ${esc(r.name)}</button>`).join('');
+    $('#batteryList').innerHTML = C.batteries.map((b) => `<button type="button" data-battery="${b.id}"><span class="pm">${esc(b.maker)}</span><span class="pn">${esc(b.model)}</span><span class="ps">${b.id === 'custom' ? '<span>下の欄で入力</span>' : `実効${b.kwh}kWh <span>${b.load === 'full' ? '全負荷' : '特定負荷'}・${b.kva}kVA${b.v2h ? '・V2H可' : ''}</span>`}</span></button>`).join('');
     $('#selInsulation').innerHTML = C.insulation.map((x) => opt(x.id, x.label)).join('');
     $('#selDryer').innerHTML = C.dryers.map((x) => opt(x.id, x.label)).join('');
     $('#selFloorHeat').innerHTML = C.floorHeating.map((x) => opt(x.id, x.label)).join('');
@@ -162,7 +174,7 @@
   }
   function fillDynamic() {
     const pref = cur.state.location.pref;
-    $('#selStation').innerHTML = Object.entries(CL.stations).filter(([, s]) => s.pref === pref).map(([n, s]) => opt(n, n + (s.src.startsWith('推計') ? '（推計値）' : ''))).join('');
+    $('#selCity').innerHTML = (MU.byPref[pref] || []).map((c) => opt(c, MU.list[c][1])).join('');
   }
 
   function writeInputs() {
@@ -175,7 +187,7 @@
     });
     syncChoices();
     $('#chkPet').checked = s.ac.units.some((u) => u.pet);
-    renderFaces(); renderAc(); renderEssentials(); visibility(); panelNote(); stationNote();
+    renderFaces(); renderAc(); renderEssentials(); renderHeaters(); visibility(); panelNote(); stationNote(); deviceNotes();
     $('#wzCustomer').textContent = s.customer.name ? `${s.customer.name} ${s.customer.honorific}` : '新しいお客様';
   }
   function syncChoices() {
@@ -185,6 +197,7 @@
       $$('button[data-v]', g).forEach((b) => b.classList.toggle('on', b.dataset.v === v));
     });
     $$('#panelList button').forEach((b) => b.classList.toggle('on', b.dataset.panel === s.panelId));
+    $$('#batteryList button').forEach((b) => b.classList.toggle('on', b.dataset.battery === s.battery.model));
     const ang = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 }[s.roofShape.mainDir] || 180;
     $('#needle').style.transform = `rotate(${ang + 180}deg)`;
   }
@@ -192,7 +205,10 @@
     $$('[data-show]').forEach((el) => {
       const c = el.dataset.show;
       let show;
-      if (c.includes('=')) { const [k, v] = c.split('='); show = String(getP(cur.state, k)) === v; } else show = !!getP(cur.state, c);
+      const st = cur.state;
+      const virt = { 'ac.hasSplit': st.ac.mode !== 'central', 'extras.hasDryer': st.extras.dryer !== 'none', 'extras.hasFloor': st.extras.floorHeating !== 'none' };
+      if (c in virt) show = virt[c];
+      else if (c.includes('=')) { const [k, v] = c.split('='); show = String(getP(st, k)) === v; } else show = !!getP(st, c);
       el.dataset.hidden = show ? '0' : '1';
     });
   }
@@ -201,10 +217,31 @@
     $('#panelNote').textContent = p ? `${p.note}。${p.tcAssumed ? '温度係数は一般的な値です。提案前にカタログ値をご確認ください。' : ''}` : 'カタログの公称最大出力・外形寸法・温度係数を入力してください。';
   }
   function stationNote() {
-    const st = CL.stations[cur.state.location.station];
-    if (!st) return;
+    const st = E.site(cur.state.location);
     const h = st.H.reduce((a, v, m) => a + v * E.DAYS[m], 0);
-    $('#stationNote').textContent = `${cur.state.location.station}：水平面の年間日射量 ${f0(h)}kWh/㎡（${st.src}）`;
+    const y = E.monthlyYieldPerKw(st, { dir: 'S', slopeSun: 5.8 }, { method: 'jpea', pcsEff: 0.96, otherLoss: 0.95 }).annual;
+    const t = st.temp.reduce((a, b) => a + b, 0) / 12;
+    $('#stationNote').innerHTML = `<b>${esc(st.name)}</b>　年間日射量 ${f0(h)}kWh/㎡・年平均気温 ${t.toFixed(1)}℃ → 南向き30°なら1kWあたり年間 約${f0(y)}kWh 発電
+      <small>市区町村の代表点の気象データ（${esc(st.src)}）。屋根の向き・勾配の換算は${esc(st.ref)}の値を使います。</small>`;
+  }
+  function deviceNotes() {
+    const s = cur.state;
+    const b = C.batteries.find((x) => x.id === s.battery.model);
+    $('#batteryNote').textContent = b ? `${b.note}（定格${b.rated}kWh）。容量・出力はカタログ値でご確認ください。` : '';
+    const v = C.v2hUnits.find((x) => x.id === s.ev.v2hModel);
+    $('#v2hNote').textContent = v ? `充放電 ${v.kw}kW。${v.note}` : '';
+  }
+  function renderHeaters() {
+    const hs = cur.state.extras.heaters || [];
+    $('#heaters').innerHTML = C.heaters.map((h) => `<button type="button" data-heater="${h.id}" class="${hs.includes(h.id) ? 'on' : ''}">${esc(h.label)}<em>${h.kwh} kWh/日</em></button>`).join('');
+  }
+  function costPreview() {
+    const s = cur.state, el = $('#costPreview');
+    if (!el) return;
+    const kw = last && last.a && last.a.rec ? last.a.rec.kw : 5;
+    const tot = Math.max(0, s.cost.pvFixed + s.cost.pvPerKw * kw - (s.cost.subsidy || 0));
+    el.innerHTML = `ご提案の <b>${f2(kw)}kW</b> なら　基本費用 ${f0(s.cost.pvFixed)}万円 ＋ ${f0(s.cost.pvPerKw)}万円 × ${f2(kw)}kW${s.cost.subsidy ? ` − 補助金 ${f0(s.cost.subsidy)}万円` : ''} ＝ <b>${f1(tot)}万円</b>（1kWあたり ${f1(tot / kw)}万円）
+      <small>参考：2025年の住宅用（新築）全国平均は 28.9万円/kW（調達価格等算定委員会）。既定値（30万円＋22万円/kW）は5kWでこの平均になる設定です。</small>`;
   }
 
   function renderFaces() {
@@ -250,11 +287,14 @@
       if (k.startsWith('panel.') && s.panelId !== 'custom') { s.panelId = 'custom'; syncChoices(); panelNote(); }
       if (k.startsWith('panel.')) renderFaces();
       if (/^house\.(floorTsubo|floors)/.test(k) && !s.roofManual && e.type === 'change') { s.roof = E.estimateRoof(s); renderFaces(); }
-      if (k === 'location.station') { s.location.pref = CL.stations[s.location.station].pref; stationNote(); }
+      if (k === 'location.city') { s.location.station = E.site(s.location).ref; stationNote(); }
+      if (k === 'ev.v2hModel') deviceNotes();
+      if (k === 'extras.dryer' || k === 'extras.floorHeating') visibility();
+      if (k.startsWith('cost.')) costPreview();
       if (k === 'customer.name' || k === 'customer.honorific') $('#wzCustomer').textContent = s.customer.name ? `${s.customer.name} ${s.customer.honorific}` : '新しいお客様';
       visibility();
     } else if (el.id === 'selPref') {
-      s.location.pref = el.value; fillDynamic(); s.location.station = $('#selStation').value; stationNote();
+      s.location.pref = el.value; fillDynamic(); s.location.city = $('#selCity').value; s.location.station = E.site(s.location).ref; stationNote();
     } else if (el.dataset.f) {
       const i = +el.closest('tr').dataset.i, f = el.dataset.f;
       s.roof[i][f] = el.type === 'checkbox' ? el.checked : el.tagName === 'SELECT' ? el.value : el.value === '' ? null : +el.value;
@@ -287,6 +327,17 @@
     if (group && t.dataset.v != null) {
       const k = group.dataset.choice;
       setP(s, k, group.hasAttribute('data-num') ? +t.dataset.v : t.dataset.v);
+      if (k === 'house.usage' && t.dataset.v === 'final') {
+        s.house.lifestyle = 'senior'; if (s.house.persons > 2) s.house.persons = 2;
+        if (s.ac.units.some((u) => u.name === '子ども部屋')) {
+          const pet = s.ac.units.some((u) => u.pet);
+          s.ac.units = [{ name: 'LDK', tatami: 14, count: 1, pattern: pet ? '24h' : 'day', season: 'both', pet }, { name: '寝室', tatami: 8, count: 1, pattern: 'evening', season: 'both', pet: false }];
+          renderAc();
+        }
+        toast('シニア世代の暮らし方・お部屋を初期値にしました');
+      }
+      if (k === 'house.usage' && t.dataset.v === 'main' && s.house.lifestyle === 'senior') s.house.lifestyle = 'dual';
+      if (k === 'ac.mode') s.ac.central = t.dataset.v !== 'split';
       if (k === 'ev.preset') { const pr = C.evPresets.find((x) => x.id === t.dataset.v); Object.assign(s.ev, { batteryKwh: pr.kwh, kmPerKwh: pr.kmPerKwh }); writeInputs(); }
       if (k.startsWith('roofShape.') && !s.roofManual) { s.roof = E.estimateRoof(s); renderFaces(); }
       if (k.startsWith('roofShape.') && s.roofManual) toast('屋根面は手入力中です。反映するには「屋根面を計算し直す」を押してください');
@@ -299,6 +350,22 @@
       else $('details.adv').open = true;
       writeInputs(); schedule(); return;
     }
+    if (t.dataset.room != null) {
+      const r = C.roomPresets[+t.dataset.room];
+      s.ac.units.push({ name: r.name, tatami: r.tatami, count: 1, pattern: r.pattern, season: 'both', pet: false });
+      renderAc(); schedule(); return;
+    }
+    if (t.dataset.heater) {
+      const id = t.dataset.heater, hs = s.extras.heaters || [];
+      s.extras.heaters = hs.includes(id) ? hs.filter((x) => x !== id) : hs.concat(id);
+      t.classList.toggle('on'); schedule(); return;
+    }
+    if (t.dataset.battery) {
+      const b = C.batteries.find((x) => x.id === t.dataset.battery);
+      s.battery.model = b.id;
+      if (b.id !== 'custom') Object.assign(s.battery, { kwh: b.kwh, kw: b.kw, kva: b.kva, load: b.load });
+      writeInputs(); schedule(); return;
+    }
     if (t.dataset.ess) {
       const id = t.dataset.ess;
       s.disaster.items = s.disaster.items.includes(id) ? s.disaster.items.filter((x) => x !== id) : s.disaster.items.concat(id);
@@ -307,7 +374,6 @@
     if (t.id === 'btnRoofAuto') { s.roofManual = false; s.roof = E.estimateRoof(s); renderFaces(); schedule(); }
     else if (t.id === 'btnAddFace') { s.roof.push({ dir: 'S', slopeSun: 4, areaM2: 20, usablePct: 75, shading: 0, maxPanels: null, enabled: true }); s.roofManual = true; renderFaces(); schedule(); }
     else if (t.dataset.delFace != null) { s.roof.splice(+t.dataset.delFace, 1); s.roofManual = true; renderFaces(); schedule(); }
-    else if (t.id === 'btnAddAc') { s.ac.units.push({ name: '洋室', tatami: 6, count: 1, pattern: 'evening', season: 'both', pet: false }); renderAc(); schedule(); }
     else if (t.dataset.delAc != null) { s.ac.units.splice(+t.dataset.delAc, 1); renderAc(); schedule(); }
   }
 
@@ -323,6 +389,8 @@
       snowLoss: s.generation.snowLoss || 0, pcsKw: s.generation.pcsKw || 0,
     };
     p.fit = Object.assign({}, C.fitDefaults, s.fit);
+    const v = C.v2hUnits.find((x) => x.id === s.ev.v2hModel);
+    p.ev.chargerKw = s.ev.v2h ? (v ? v.kw : 6) : 3;
     return p;
   }
   function compute() {
@@ -339,6 +407,7 @@
     const live = $('#live');
     try {
       const { a } = compute();
+      costPreview();
       const pet = a.crit.essential && a.crit.essential.items.find((x) => x.id === 'petac');
       if ($('#view-wizard').classList.contains('on')) renderEssentials(pet ? pet.kwh : null);
       if (!a.rec) { live.innerHTML = `<div class="lk">RECOMMENDED</div><p class="err" style="margin-top:14px">屋根に載せられるパネルがありません。屋根面の面積・向きを確認してください。</p>`; return; }
@@ -370,7 +439,8 @@
     const s = cur.state;
     $('#pvHint').textContent = Store.downloads ? '「PDFで保存」を押すと、この6ページがPDFファイルになります。' : '「PDFで保存」→ 印刷画面の送信先で「PDFに保存」を選ぶと、この提案書がPDFになります。';
     $('#pvTitle').innerHTML = `${esc(s.customer.name || 'お客様')} ${esc(s.customer.honorific)}<small>太陽光発電 最適容量のご提案</small>`;
-    $('#pages').innerHTML = P.render(last.p, last.a, { settings }).replace(/<section class="page/g, '<div class="page-holder"><section class="page').replace(/<\/section>/g, '</section></div>');
+    $('#chkDetail').checked = !!s.proposalDetail;
+    $('#pages').innerHTML = P.render(last.p, last.a, { settings, detail: !!s.proposalDetail }).replace(/<section class="page/g, '<div class="page-holder"><section class="page').replace(/<\/section>/g, '</section></div>');
     fitPages();
   }
   function fitPages() {
@@ -481,6 +551,7 @@
     if (step < STEPS.length) { showStep(step + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     else { persist(); go('proposal', cur.id); }
   };
+  $('#chkDetail').onchange = (e) => { cur.state.proposalDetail = e.target.checked; persist(); showProposal(); };
   $('#fileImport').onchange = (e) => { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; };
   window.addEventListener('resize', () => { if ($('#view-proposal').classList.contains('on')) fitPages(); });
 
