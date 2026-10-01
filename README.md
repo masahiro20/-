@@ -13,7 +13,15 @@
 
 ## 使い方
 
-### 起動
+### いつでも使う（claude.ai）
+
+**https://claude.ai/artifact/1gpLGs42CkHd1SGKxPrfg6**（サイドバーにピン留め済み）
+
+- どのPCでも、claude.ai にログインすれば開けます。お客様データはアーティファクトのデータベースに保存され（所有者だけが読み書き可）、別のPCでも同じ一覧が出ます
+- 「PDFで保存」で提案書をPDFファイルとして保存します
+- 更新するときは `python3 tools/build_artifact.py` で `dist/hikari.html` を作り直して再公開します
+
+### 起動（ローカル）
 
 インストール不要です。`index.html` をブラウザ（Chrome / Edge 推奨）で開くだけで動きます。
 （フォントは Google Fonts から読み込みます。オフラインでも端末のフォントで表示・計算できます）
@@ -78,6 +86,8 @@ index.html              画面（ホーム / ヒアリング / 提案書）
 css/style.css           デザイン（A4印刷レイアウトを含む）
 js/engine.js            計算エンジン（発電・消費・需給・経済性・推奨）
 js/proposal.js          提案書（A4×6ページ）の組版と説明文
+js/store.js             保存（データベース／ブラウザ内）とPDF・ファイル書き出し
+dist/hikari.html        claude.ai アーティファクト用の1ファイル版（tools/build_artifact.py で生成）
 js/app.js               画面制御・保存
 js/charts.js            グラフ描画（SVG、外部ライブラリなし）
 js/data/climate.js      気象データ（自動生成）

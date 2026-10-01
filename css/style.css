@@ -108,7 +108,7 @@ button { cursor: pointer; }
 /* =====================================================================
    ヒアリング（ウィザード）
    ===================================================================== */
-.wz-top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 20px; padding: 14px 28px; background: rgba(246, 243, 237, .86); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
+.wz-top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 20px; padding: 14px 28px; background: rgba(246, 243, 237, .86); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
 .brand.mini .brand-name { font-size: 16px; }
 .brand.mini .mark { width: 22px; height: 22px; }
 .wz-title { display: flex; align-items: baseline; gap: 10px; padding-left: 20px; border-left: 1px solid var(--line); }
@@ -314,7 +314,7 @@ details.adv .field-grid { margin-top: 16px; }
    提案書
    ===================================================================== */
 #view-proposal { background: #1A2130; background: radial-gradient(120% 80% at 50% 0%, #222C3D, #121823 70%); }
-.pv-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: rgba(13, 20, 31, .82); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255, 255, 255, .06); color: var(--on-night); }
+.pv-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: rgba(13, 20, 31, .82); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255, 255, 255, .06); color: var(--on-night); }
 .pv-title { font: 600 15px var(--serif); }
 .pv-title small { font: 500 11px var(--sans); color: var(--on-night-2); margin-left: 10px; }
 .pv-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
@@ -446,6 +446,10 @@ table.tbl tr.rec .tag { border-color: var(--sun); color: var(--sun-deep); }
 .contact .who { font-size: 10px; color: var(--on-night-2); margin-top: 4px; line-height: 1.8; }
 .page.last { display: flex; flex-direction: column; }
 .page.last .pg-foot { position: static; margin-top: 14px; }
+
+/* PDF 画像化中（アーティファクト）：画像化できない表現を置き換え */
+.capturing .page { transform: none !important; box-shadow: none; }
+.capturing .cover-kw .big b { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--sun-2); }
 
 /* =====================================================================
    ダイアログ・トースト

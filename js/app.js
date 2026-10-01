@@ -4,7 +4,7 @@
   const E = window.SolarEngine, C = window.SOLAR_CATALOG, CL = window.SOLAR_CLIMATE, Ch = window.Charts, P = window.Proposal;
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
-  const LS_CUST = 'hikari-customers', LS_SET = 'hikari-settings';
+  const Store = window.HikariStore;
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const ok = (v) => v != null && isFinite(v);
   const f0 = (v) => (ok(v) ? Math.round(v).toLocaleString('ja-JP') : '—');
@@ -15,10 +15,10 @@
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
   // ------------------------------------------------------------ 保存 ---
-  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
-  const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 保存不可の環境 */ } };
-  let customers = load(LS_CUST, {});
-  let settings = load(LS_SET, { company: '', staff: '', phone: '', email: '' });
+  // お客様データと提案者情報は store.js（アーティファクトではデータベース、ローカルではブラウザ内）
+  let customers = Store.customers;
+  let settings = Store.settings;
+  let loading = !!window.claude;
 
   function defaults() {
     const panel = C.panels.find((p) => p.id === 'gen-topcon-430');
@@ -64,21 +64,19 @@
   function persist() {
     if (!cur) return;
     const a = last && last.a;
-    customers[cur.id] = {
+    Store.save(cur.id, {
       id: cur.id, state: cur.state, updatedAt: Date.now(), createdAt: (customers[cur.id] && customers[cur.id].createdAt) || Date.now(),
       summary: a && a.rec ? { kw: a.rec.kw, n: a.rec.n, gen: a.recDetail.sim.gen, net: a.recDetail.eco.net, suff: a.recDetail.sim.sufficiency } : null,
-    };
-    store(LS_CUST, customers);
+    });
   }
 
   // ------------------------------------------------------- ルーティング ---
-  function go(hash) { if (location.hash !== hash) location.hash = hash; else route(); }
-  function route() {
-    const [, view, id, s] = (location.hash || '#/home').split('/');
+  // 画面遷移は内部状態で管理（アーティファクトの枠内でも同じ動き）
+  function go(view, id, s) {
     $$('.view').forEach((v) => v.classList.remove('on'));
     if ((view === 'edit' || view === 'proposal') && customers[id]) {
       if (!cur || cur.id !== id) { cur = { id, state: merge(JSON.parse(JSON.stringify(customers[id].state)), defaults()) }; last = null; }
-      if (view === 'edit') { step = Math.min(6, Math.max(1, +s || step || 1)); showWizard(); }
+      if (view === 'edit') { step = Math.min(6, Math.max(1, +s || 1)); showWizard(); }
       else showProposal();
     } else { showHome(); }
     window.scrollTo(0, 0);
@@ -87,6 +85,7 @@
   // ------------------------------------------------------------ ホーム ---
   function showHome() {
     $('#view-home').classList.add('on');
+    if (loading) { $('#custCount').textContent = ''; $('#custGrid').innerHTML = `<div class="empty"><b>お客様を読み込んでいます</b>保存済みの提案がここに並びます。</div>`; return; }
     const list = Object.values(customers).sort((x, y) => y.updatedAt - x.updatedAt);
     $('#custCount').textContent = list.length ? `${list.length}件` : '';
     $('#custGrid').innerHTML = list.length ? list.map((c) => {
@@ -98,16 +97,26 @@
           <div class="cust-kw">${sm ? `<b>${f2(sm.kw)}</b><small>kW</small>` : ''}</div></div>
         <div class="cust-facts">${sm ? `<span>発電 ${f0(sm.gen)}kWh</span><span>自給率 ${pct(sm.suff)}</span><span>手残り ${man(sm.net)}万円</span>` : '<span>未計算</span>'}${s.ev.enabled ? '<span>EV</span>' : ''}${s.ac.units.some((u) => u.pet) ? '<span>ペット</span>' : ''}</div>
         <div class="cust-actions"><button class="btn-ink" data-open="${c.id}">提案書</button><button class="btn-line" data-edit="${c.id}">ヒアリング</button><span class="sp"></span>
-          <button class="btn-quiet x" data-dup="${c.id}">複製</button><button class="btn-quiet x" data-del="${c.id}">削除</button></div></article>`;
-    }).join('') : `<div class="empty"><b>まだお客様がいません</b>「新しいお客様の提案をつくる」から、ヒアリングを始めましょう。</div>`;
+          <button class="btn-quiet x" data-dup="${c.id}">複製</button><button class="btn-quiet x" data-del="${c.id}">${pendingDel === c.id ? '本当に削除する' : '削除'}</button></div></article>`;
+    }).join('') : `<div class="empty"><b>まだお客様がいません</b>「新しいお客様の提案をつくる」からヒアリングを始めるか、例のお客様で流れを確かめられます。<div style="margin-top:18px"><button class="btn-line" data-action="sample">例のお客様で試す</button></div></div>`;
   }
 
   function newCustomer() {
+    if (loading) { toast('お客様データを読み込み中です。少しお待ちください'); return; }
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     cur = { id, state: defaults() }; last = null; step = 1;
-    customers[id] = { id, state: cur.state, createdAt: Date.now(), updatedAt: Date.now(), summary: null };
-    store(LS_CUST, customers);
-    go(`#/edit/${id}/1`);
+    Store.save(id, { id, state: cur.state, createdAt: Date.now(), updatedAt: Date.now(), summary: null });
+    go('edit', id, 1);
+  }
+  function sampleCustomer() {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const st = defaults();
+    Object.assign(st.customer, { name: '例）日向 太郎', address: '東京都世田谷区（例）', memo: '動作確認用の例です。削除してかまいません。' });
+    Object.assign(st.ac.units[0], { pet: true, pattern: '24h' });
+    st.disaster.items.push('petac');
+    Object.assign(st.ev, { enabled: true, v2h: true, homeDaysPerWeek: 2 });
+    cur = { id, state: st }; last = null; step = 1;
+    persist(); go('proposal', id);
   }
 
   // -------------------------------------------------------- ヒアリング ---
@@ -132,7 +141,6 @@
     $('#wzCount').textContent = `${String(n).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`;
     $('#btnPrev').style.visibility = n === 1 ? 'hidden' : 'visible';
     $('#btnNext').textContent = n === STEPS.length ? '提案書をつくる →' : '次へ →';
-    if (location.hash !== `#/edit/${cur.id}/${n}`) history.replaceState(null, '', `#/edit/${cur.id}/${n}`);
   }
 
   const getP = (o, path) => path.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
@@ -360,6 +368,7 @@
     if (!last) compute();
     persist();
     const s = cur.state;
+    $('#pvHint').textContent = Store.downloads ? '「PDFで保存」を押すと、この6ページがPDFファイルになります。' : '「PDFで保存」→ 印刷画面の送信先で「PDFに保存」を選ぶと、この提案書がPDFになります。';
     $('#pvTitle').innerHTML = `${esc(s.customer.name || 'お客様')} ${esc(s.customer.honorific)}<small>太陽光発電 最適容量のご提案</small>`;
     $('#pages').innerHTML = P.render(last.p, last.a, { settings }).replace(/<section class="page/g, '<div class="page-holder"><section class="page').replace(/<\/section>/g, '</section></div>');
     fitPages();
@@ -373,59 +382,82 @@
       pg.style.transform = sc < 1 ? `scale(${sc})` : '';
     });
   }
-  function printPdf() {
-    const name = cur.state.customer.name || 'お客様';
-    const t = document.title;
-    document.title = `太陽光発電ご提案書_${name}${cur.state.customer.honorific || '様'}`;
-    const restore = () => { document.title = t; window.removeEventListener('afterprint', restore); };
-    window.addEventListener('afterprint', restore);
-    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.print());
+  const fileName = (ext) => `太陽光発電ご提案書_${cur.state.customer.name || 'お客様'}${cur.state.customer.honorific || '様'}.${ext}`;
+  let pdfBusy = false;
+  async function savePdf() {
+    if (pdfBusy) return;
+    if (!Store.downloads) {
+      // ローカル：ブラウザの印刷 →「PDFに保存」
+      const t = document.title;
+      document.title = fileName('pdf').replace(/\.pdf$/, '');
+      const restore = () => { document.title = t; window.removeEventListener('afterprint', restore); };
+      window.addEventListener('afterprint', restore);
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.print());
+      return;
+    }
+    pdfBusy = true;
+    const btn = $('[data-action="pdf"] span');
+    const label = btn.textContent;
+    try {
+      const r = await Store.savePdf($('#pages'), fileName('pdf'), (i, n) => { btn.textContent = `作成中 ${i}/${n}`; });
+      if (r === 'saved') toast('PDFを保存しました');
+    } catch (e) {
+      console.error(e);
+      toast('PDFを作成できませんでした。もう一度お試しください');
+    } finally {
+      btn.textContent = label; pdfBusy = false;
+    }
   }
 
   // ------------------------------------------------------------ 共通 ---
   function toast(msg) {
     const el = $('#toast'); el.textContent = msg; el.classList.add('on');
-    clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2400);
+    clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600);
   }
-  function exportJson() {
-    const blob = new Blob([JSON.stringify({ app: 'hikari', version: 1, customer: customers[cur.id] }, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `提案データ_${cur.state.customer.name || '無題'}.json`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  Store.onError = (e) => toast(e && e.code === 'quota_exceeded' ? '保存容量の上限です。不要なお客様を削除してください' : '保存できませんでした。通信状態を確かめてください');
+  async function exportJson() {
+    persist();
+    const r = await Store.saveText(`提案データ_${cur.state.customer.name || '無題'}.json`, JSON.stringify({ app: 'hikari', version: 1, customer: customers[cur.id] }, null, 2));
+    if (r === 'saved') toast('データを書き出しました');
   }
   function importJson(file) {
     file.text().then((t) => {
       const d = JSON.parse(t);
       const rec = d.customer || (d.state ? d : { state: d });
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      customers[id] = { id, state: merge(rec.state, defaults()), createdAt: Date.now(), updatedAt: Date.now(), summary: rec.summary || null };
-      store(LS_CUST, customers); showHome(); toast('読み込みました');
+      Store.save(id, { id, state: merge(rec.state, defaults()), createdAt: Date.now(), updatedAt: Date.now(), summary: rec.summary || null });
+      showHome(); toast('読み込みました');
     }).catch((e) => toast('読み込めませんでした：' + e.message));
   }
 
+  let pendingDel = null;
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-action],[data-open],[data-edit],[data-dup],[data-del],[data-go]');
     if (!b) return;
     const act = b.dataset.action;
+    if (!b.dataset.del && pendingDel) { pendingDel = null; if ($('#view-home').classList.contains('on')) showHome(); }
     if (act === 'new') newCustomer();
-    else if (act === 'home') go('#/home');
+    else if (act === 'sample') sampleCustomer();
+    else if (act === 'home') { if (cur) persist(); go('home'); }
     else if (act === 'settings') openSettings();
-    else if (act === 'save') { persist(); toast('保存しました'); }
-    else if (act === 'proposal') { persist(); go(`#/proposal/${cur.id}`); }
-    else if (act === 'edit') go(`#/edit/${cur.id}/${step || 1}`);
-    else if (act === 'pdf') printPdf();
+    else if (act === 'save') { persist(); Store.saveNow(cur.id); toast('保存しました'); }
+    else if (act === 'proposal') { persist(); go('proposal', cur.id); }
+    else if (act === 'edit') go('edit', cur.id, step || 1);
+    else if (act === 'pdf') savePdf();
     else if (act === 'export') exportJson();
-    else if (b.dataset.open) go(`#/proposal/${b.dataset.open}`);
-    else if (b.dataset.edit) go(`#/edit/${b.dataset.edit}/1`);
+    else if (b.dataset.open) go('proposal', b.dataset.open);
+    else if (b.dataset.edit) go('edit', b.dataset.edit, 1);
     else if (b.dataset.go) showStep(+b.dataset.go);
     else if (b.dataset.dup) {
-      const src = customers[b.dataset.dup]; const id = Date.now().toString(36);
+      const src = customers[b.dataset.dup]; const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const st = JSON.parse(JSON.stringify(src.state)); st.customer.name = (st.customer.name || '') + '（コピー）';
-      customers[id] = { id, state: st, createdAt: Date.now(), updatedAt: Date.now(), summary: src.summary };
-      store(LS_CUST, customers); showHome();
+      Store.save(id, { id, state: st, createdAt: Date.now(), updatedAt: Date.now(), summary: src.summary });
+      showHome(); toast('複製しました');
     } else if (b.dataset.del) {
-      const c = customers[b.dataset.del];
-      if (confirm(`「${c.state.customer.name || 'お名前未入力'}」を削除しますか？`)) { delete customers[b.dataset.del]; store(LS_CUST, customers); showHome(); }
+      // 2回押すと削除（確認ダイアログを使わない）
+      if (pendingDel === b.dataset.del) { Store.remove(b.dataset.del); pendingDel = null; if (cur && cur.id === b.dataset.del) cur = null; toast('削除しました'); }
+      else pendingDel = b.dataset.del;
+      showHome();
     }
   });
 
@@ -437,7 +469,7 @@
   $('#dlgSettings').addEventListener('close', () => {
     if ($('#dlgSettings').returnValue !== 'ok') return;
     settings = { company: $('#setCompany').value.trim(), staff: $('#setStaff').value.trim(), phone: $('#setPhone').value.trim(), email: $('#setEmail').value.trim() };
-    store(LS_SET, settings); toast('提案者情報を保存しました');
+    Store.saveSettings(settings); toast('提案者情報を保存しました');
   });
 
   const form = $('#form');
@@ -447,14 +479,17 @@
   $('#btnPrev').onclick = () => { showStep(Math.max(1, step - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   $('#btnNext').onclick = () => {
     if (step < STEPS.length) { showStep(step + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    else { persist(); go(`#/proposal/${cur.id}`); }
+    else { persist(); go('proposal', cur.id); }
   };
   $('#fileImport').onchange = (e) => { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; };
-  window.addEventListener('hashchange', route);
   window.addEventListener('resize', () => { if ($('#view-proposal').classList.contains('on')) fitPages(); });
 
   fillStatic();
   $('#heroArt').innerHTML = P.coverArt('hero');
-  route();
+  go('home');
+  Store.ready.then(() => {
+    customers = Store.customers; settings = Store.settings; loading = false;
+    if ($('#view-home').classList.contains('on')) showHome();
+  });
   window.__hikari = { get state() { return cur && cur.state; }, get last() { return last; }, run, compute, newCustomer };
 })();
