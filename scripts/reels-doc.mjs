@@ -3,7 +3,7 @@
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { REELS, COMMON_TAGS } from '../data/reels.mjs';
+import { REELS, COMMON_TAGS, VOICE_CREDIT } from '../data/reels.mjs';
 import { CONFIG } from '../data/config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -27,7 +27,8 @@ lines.push(`| リンク | ${CONFIG.siteUrl}/start.html （リールで紹介し�
 lines.push(`| アカウントの種類 | プロアカウント（クリエイター）にすると、見られた数・保存数が分かる |`, '');
 lines.push('アカウントを作ったら、URLを `data/config.mjs` の `instagramUrl` に入れると、LPにフォローボタンが出ます。', '');
 lines.push('## 投稿の進め方', '');
-lines.push('1. 動画にはナレーション（読み上げ）とオリジナルのBGMが入っています。インスタの音源は足さなくてOK（足す場合は、元の音を残したまま小さめに）。文字も動画に入っているので、テキストの追加はいりません。');
+lines.push('1. 動画は2種類あります。`dist/final/`（声・効果音・BGM入り。そのまま投稿）と、`dist/final-voice/`（声と効果音だけ。インスタで流行りの音源を小さめに足して使う。音源を使うには、アカウントをクリエイターにしておく）。');
+lines.push('   声は Style-Bert-VITS2 の「小春音アミ」モデル（あみたろの声素材工房の声を元にしたモデル）。**キャプションの最後のクレジットは必ず残してください**（規約で表記が必要です）。');
 lines.push('2. **表紙**は、動画の最初（大きな文字の画面）を選ぶ。プロフィールの一覧で、シリーズとして並びます。');
 lines.push('3. キャプションとハッシュタグは、下の文をそのまま貼り付ける。ハッシュタグは内容に合ったもの5個に絞っています。');
 lines.push('4. 投稿したら、**#0（自己紹介）をプロフィールに固定**する。');
@@ -59,7 +60,8 @@ for (const r of REELS) {
   }
   lines.push(`| ${sec(total - END)} | 最後の案内 | 無料・登録なし／ふくしのおたすけ帳／プロフィールのリンクから。保存して、職場の人にも。 |`, '');
   const tags = [...r.tags.slice(0, 4), COMMON_TAGS[0]].map((t) => '#' + t).join(' ');
-  lines.push('**キャプション**', '', '```', r.caption, '', tags, '```', '');
+  const credit = `🎤 ${VOICE_CREDIT}`;
+  lines.push('**キャプション**', '', '```', r.caption, '', tags, '', credit, '```', '');
 }
 
 lines.push('## 動画の作り直し・追加', '');

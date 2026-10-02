@@ -3,7 +3,7 @@
 import { writeFileSync, mkdirSync, copyFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { REELS, COMMON_TAGS } from '../../data/reels.mjs';
+import { REELS, COMMON_TAGS, VOICE_CREDIT } from '../../data/reels.mjs';
 import { CONFIG } from '../../data/config.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -20,7 +20,8 @@ const cards = REELS.map((r, i) => {
   if (existsSync(src)) copyFileSync(src, join(out, 'reels', file));
   if (existsSync(join(HERE, 'dist', `${r.no}-${r.id}-cover.jpg`))) copyFileSync(join(HERE, 'dist', `${r.no}-${r.id}-cover.jpg`), join(out, 'reels', `${r.no}-${r.id}-cover.jpg`));
   const tags = [...r.tags.slice(0, 4), COMMON_TAGS[0]].map((t) => '#' + t).join(' ');
-  const text = `${r.caption}\n\n${tags}`;
+  const credit = `🎤 ${VOICE_CREDIT}`;
+  const text = `${r.caption}\n\n${tags}\n\n${credit}`;
   const tl = existsSync(join(HERE, 'dist', `${r.no}-${r.id}.timeline.json`)) ? JSON.parse(readFileSync(join(HERE, 'dist', `${r.no}-${r.id}.timeline.json`), 'utf8')) : null;
   const secs = Math.round(tl ? tl.total : HOOK + r.length + END);
   return `<article class="reel" id="r${r.no}">
@@ -85,14 +86,14 @@ pre { margin: 0; padding: 12px; max-height: 260px; overflow: auto; white-space: 
 <div class="wrap">
   <header>
     <h1>ふくしのおたすけ帳 リール投稿キット</h1>
-    <p>${REELS.length}本の縦長動画（1080×1920・ナレーションとBGMつき）と、そのまま貼れるキャプションです。動画ファイルは、チャットに送ったファイルから保存してください。</p>
+    <p>${REELS.length}本の縦長動画（1080×1920・声と効果音とBGMつき）と、そのまま貼れるキャプションです。動画ファイルは、チャットに送ったファイルから保存してください。</p>
   </header>
   <ol class="steps">
     <li>動画をスマホに保存する</li>
     <li>インスタで「リール」を選び、動画を選ぶ</li>
-    <li>音はナレーションとBGMが入っています（インスタの音源は足さなくてOK）</li>
+    <li>声・効果音・BGM入り。流行りの音源を使いたいときは「声だけ版」に、インスタで音源を足す</li>
     <li>表紙は最初の大きな文字の画面</li>
-    <li>下のキャプションをコピーして貼る</li>
+    <li>下のキャプションをコピーして貼る（最後の音声のクレジットは消さない）</li>
     <li>#0 はプロフィールに固定する</li>
   </ol>
   <div class="reels">

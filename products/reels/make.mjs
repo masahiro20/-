@@ -12,7 +12,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { REELS } from '../../data/reels.mjs';
+import { REELS, END_SAY, VOICE_CREDIT } from '../../data/reels.mjs';
 import { CONFIG } from '../../data/config.mjs';
 import { SCENES } from './scenes.mjs';
 
@@ -24,8 +24,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, 'dist');
 const BASE = process.env.SITE_BASE || 'http://localhost:8765/';
 const FPS = 30;
-const HOOK = 2.6; // 最初の大きな文字の秒数
-const END = 3.4; // 最後の案内の秒数
+const HOOK = 1.8; // 最初の大きな文字の最短の秒数（読み上げが長ければのびる）
+const END = 2.8; // 最後の案内の最短の秒数
 
 const fontCache = {};
 async function fontRoute(route) {
@@ -44,16 +44,15 @@ export function speakable(html) {
   for (const [re, to] of TTS_FIX) t = t.replace(re, to);
   return t;
 }
-const END_SAY = '無料・登録なしで使えます。プロフィールのリンクから、ためしてみてください。';
 export function narrationLines(reel) {
-  const lines = reel.hook ? [{ key: 'hook', text: reel.sayHook || speakable(reel.hook) }] : [];
-  reel.steps.forEach((s, i) => { if (s.cap != null || s.say) lines.push({ key: 's' + i, text: s.say || speakable(s.cap) }); });
+  const lines = reel.hook ? [{ key: 'hook', text: reel.sayHook || speakable(reel.hook), style: reel.hookStyle }] : [];
+  reel.steps.forEach((s, i) => { if (s.cap != null || s.say) lines.push({ key: 's' + i, text: s.say || speakable(s.cap), style: s.style }); });
   lines.push({ key: 'end', text: reel.sayEnd || END_SAY });
   return lines;
 }
 // 読み上げの長さ（秒）に合わせて、台本の時間をのばす。字幕の区間ごとに、中の操作も同じ割合でのばす
 function retime(reel, dur) {
-  const hook = !reel.hook ? 0 : dur ? Math.max(HOOK, (dur.hook || 0) + 0.55) : HOOK;
+  const hook = !reel.hook ? 0 : dur ? Math.max(HOOK, (dur.hook || 0) + 0.35) : HOOK;
   const steps = reel.steps.map((s) => ({ ...s }));
   if (!dur) return { hook, steps, length: reel.length, end: END };
   const caps = steps.map((s, i) => (s.cap != null || s.say ? i : -1)).filter((i) => i >= 0);
@@ -63,7 +62,7 @@ function retime(reel, dur) {
     const k = caps[c];
     const segStart = origAt[k];
     const segEnd = c + 1 < caps.length ? origAt[caps[c + 1]] : reel.length;
-    const need = (dur['s' + k] || 0) + 0.35;
+    const need = (dur['s' + k] || 0) + 0.2;
     const factor = Math.max(1, need / Math.max(0.1, segEnd - segStart));
     for (let i = k; i < steps.length && (c + 1 >= caps.length || i < caps[c + 1]); i++) {
       steps[i].at = segStart + shift + (origAt[i] - segStart) * factor;
@@ -71,7 +70,7 @@ function retime(reel, dur) {
     // 字幕より前にある操作（最初の字幕の前）はそのまま
     shift += (segEnd - segStart) * (factor - 1);
   }
-  return { hook, steps, length: reel.length + shift, end: Math.max(END, (dur.end || 0) + 0.9) };
+  return { hook, steps, length: reel.length + shift, end: Math.max(END, (dur.end || 0) + 0.7) };
 }
 
 const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
@@ -85,16 +84,17 @@ async function makeReel(browser, reel) {
   await ctx.route(BASE + '__stage.html', (r) => r.fulfill({ body: stage, contentType: 'text/html; charset=utf-8' }));
   const page = await ctx.newPage();
   await page.goto(BASE + '__stage.html');
-  await page.evaluate(({ reel, url }) => {
+  await page.evaluate(({ reel, url, credit }) => {
     document.getElementById('no').textContent = reel.no ? '#' + reel.no : 'はじめまして';
     document.getElementById('hookText').innerHTML = reel.hook || '';
     document.getElementById('kicker').textContent = reel.no ? '#' + reel.no + '　' + reel.toolName : '介護・障害福祉・児童支援で働く方へ';
     document.getElementById('who').textContent = { kaigo: '介護の現場で働く方へ', shogai: '障害福祉・児童支援で働く方へ', jido: '放デイ・児発で働く方へ', all: '介護・障害福祉・児童支援で働く方へ' }[reel.sector];
     document.getElementById('url').textContent = url;
+    document.getElementById('credit').textContent = credit;
     window.__loads = 0;
     const app = document.getElementById('app');
     app.addEventListener('load', () => { window.__loads++; });
-  }, { reel, url: CONFIG.siteUrl.replace(/^https?:\/\//, '') });
+  }, { reel, url: CONFIG.siteUrl.replace(/^https?:\/\//, ''), credit: VOICE_CREDIT });
   await page.evaluate((src) => { document.getElementById('app').src = src; }, BASE + reel.page);
   await page.waitForFunction(() => window.__loads > 0);
   await page.evaluate(() => document.fonts.ready);
@@ -112,12 +112,19 @@ async function makeReel(browser, reel) {
   const frames = Math.round(total * FPS);
   const steps = tl.steps.map((s) => ({ ...s, done: false }));
   // 音声を重ねる時刻（秒）
-  const timeline = { total, lines: [...(reel.hook ? [{ key: 'hook', at: 0.15 }] : []), ...steps.map((s, i) => (s.cap != null || s.say ? { key: 's' + i, at: HOOK + s.at + 0.05 } : null)).filter(Boolean), { key: 'end', at: total - END + 0.3 }] };
+  const sfx = [
+    ...(reel.hook ? [{ key: 'open', at: 0 }] : []),
+    ...steps.filter((s) => s.tap).map((s) => ({ key: 'tap', at: HOOK + s.at })),
+    ...steps.filter((s) => s.badge).map((s) => ({ key: 'done', at: HOOK + s.at })),
+    ...steps.filter((s) => s.scene).map((s) => ({ key: 'open', at: HOOK + s.at })),
+  ];
+  const timeline = { total, sfx, lines: [...(reel.hook ? [{ key: 'hook', at: 0.1 }] : []), ...steps.map((s, i) => (s.cap != null || s.say ? { key: 's' + i, at: HOOK + s.at + 0.05 } : null)).filter(Boolean), { key: 'end', at: total - END + 0.25 }] };
   let scroll = null; // { from, to, start, dur }
   let typing = null; // { sel, text, start, dur }
   let tap = null; // { x, y, start }
   let cap = '';
   let sceneOn = null, sceneOff = null; // 場面を出した時刻・消した時刻
+  let badge = null; // { text, start }
 
   for (let f = 0; f < frames; f++) {
     const t = f / FPS;
@@ -152,6 +159,7 @@ async function makeReel(browser, reel) {
         else scroll = { from: await page.evaluate(() => document.getElementById('app').contentWindow.scrollY), to, start: s.at, dur: s.dur || 0.8 };
       }
       if (s.type) typing = { sel: s.type, text: s.text, start: s.at, dur: s.dur || 1 };
+      if (s.badge) badge = { text: s.badge, start: s.at };
       if (s.tap) {
         const loadsBefore = await page.evaluate(() => window.__loads);
         const hit = await page.evaluate((sel) => {
@@ -181,7 +189,15 @@ async function makeReel(browser, reel) {
     // 毎コマの状態
     const sc = scroll ? scroll.from + (scroll.to - scroll.from) * ease(clamp01((d - scroll.start) / scroll.dur)) : null;
     const typed = typing ? typing.text.slice(0, Math.ceil(typing.text.length * clamp01((d - typing.start) / typing.dur))) : null;
-    await page.evaluate(({ t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff }) => {
+    await page.evaluate(({ t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff, badge }) => {
+      const bd = document.getElementById('badge');
+      if (badge && d >= badge.start && d < badge.start + 2.2) {
+        const k = d - badge.start;
+        if (bd.dataset.t !== badge.text) { bd.textContent = badge.text; bd.dataset.t = badge.text; }
+        const pop = k < 0.18 ? k / 0.18 * 1.18 : k < 0.32 ? 1.18 - (k - 0.18) / 0.14 * 0.18 : 1;
+        bd.style.opacity = k > 1.9 ? Math.max(0, 1 - (k - 1.9) / 0.3) : 1;
+        bd.style.transform = `rotate(-8deg) scale(${pop})`;
+      } else bd.style.opacity = 0;
       const scn = document.getElementById('scene');
       let so = 0;
       if (sceneOn != null) so = Math.min(1, (d - sceneOn) / 0.3);
@@ -210,7 +226,7 @@ async function makeReel(browser, reel) {
         tp.style.left = tap.x + 'px'; tp.style.top = tap.y + 'px';
         tp.style.opacity = String(1 - k); tp.style.transform = `scale(${0.6 + k * 0.9})`;
       } else tp.style.opacity = 0;
-    }, { t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff });
+    }, { t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff, badge });
     await page.screenshot({ path: join(dir, String(f).padStart(4, '0') + '.jpg'), type: 'jpeg', quality: 92 });
     if (f === Math.round(1.2 * FPS)) await page.screenshot({ path: join(OUT, `${reel.no}-${reel.id}-cover.jpg`), type: 'jpeg', quality: 92 });
   }
