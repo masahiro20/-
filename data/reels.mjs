@@ -3,6 +3,7 @@
 //  hook：最初の数秒の大きな文字（<br>で改行）
 //  steps：{ at: 秒, cap: 上の字幕 } { at, tap: セレクタ } { at, type: セレクタ, text, dur } { at, scroll: セレクタ, dur, offset }
 //  セレクタは、デモするページ（page）の中の要素。チェックボックスは自動で外側の label をタップする
+//  lpDemo: true の動画は、画面操作の部分を LP（start.html）にも載せる
 export const REELS = [
   {
     id: 'intro', no: 0, sector: 'all', page: 'index.html', tool: 'index.html', toolName: 'ふくしのおたすけ帳（トップ）',
@@ -26,7 +27,7 @@ export const REELS = [
     tags: ['介護', '障害福祉', '放課後等デイサービス', '児童発達支援', '就労継続支援', '介護士', '支援員', 'サビ管', '児発管', '書類作成', '業務効率化', '福祉の仕事'],
   },
   {
-    id: 'kiroku', no: 1, sector: 'kaigo', page: 'kaigo-kiroku.html', tool: 'kaigo-kiroku.html', toolName: '介護記録（ケース記録）の文例',
+    id: 'kiroku', no: 1, lpDemo: true, sector: 'kaigo', page: 'kaigo-kiroku.html', tool: 'kaigo-kiroku.html', toolName: '介護記録（ケース記録）の文例',
     title: 'その介護記録、「不穏」って書いてない？',
     hook: 'その介護記録、<br><em>「不穏」</em>って<br>書いてない？',
     length: 21,

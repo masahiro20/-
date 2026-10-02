@@ -13,6 +13,7 @@ import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
 import { flyerPage } from './flyer-page.mjs';
 import { formdocPages } from './formdoc-pages.mjs';
 import { ikenPage } from './iken-page.mjs';
+import { startPage } from './start-page.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -696,7 +697,7 @@ write('assets/program-data.js', programData());
 write('assets/shogai-data.js', shogaiData());
 write('assets/jiko-data.js', jikoData());
 write('assets/renrakucho-data.js', renrakuchoData());
-for (const pg of [flyerPage({ esc, CONFIG }), ikenPage({ esc, CONFIG })]) {
+for (const pg of [flyerPage({ esc, CONFIG }), ikenPage({ esc, CONFIG }), startPage({ esc, CONFIG, OUT })]) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
 }
 for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc }), ...formdocPages({ esc, CONFIG })]) {

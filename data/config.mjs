@@ -38,6 +38,8 @@ export const CONFIG = {
   // どちらも空なら、意見箱は「送信の準備中」と表示し、文章のコピーだけできる。
   feedbackEndpoint: '',
   feedbackEmail: '',
+  // Instagram のアカウントURL（例：https://www.instagram.com/fukushi_otasuke/）。入れると、LP（start.html）にフォローボタンが出る
+  instagramUrl: '',
   // TODO: Google Analytics 4 の測定ID（例: G-XXXXXXXXXX）。空なら計測タグを出力しない
   gaId: '',
 };

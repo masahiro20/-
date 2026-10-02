@@ -155,7 +155,19 @@ async function makeReel(browser, reel) {
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-movflags', '+faststart', mp4]);
   if (r.status !== 0) throw new Error(String(r.stderr));
   rmSync(dir, { recursive: true, force: true });
+  if (reel.lpDemo) makeLpDemo(mp4, reel);
   return { mp4, seconds: total };
+}
+
+// LP（start.html）に載せる、画面操作の部分だけの軽い動画（540×960・音なし）と、表示前の画像
+function makeLpDemo(mp4, reel) {
+  const dir = join(HERE, '..', '..', 'site', 'assets', 'video');
+  mkdirSync(dir, { recursive: true });
+  const from = String(HOOK), len = String(reel.length);
+  const run = (args) => { const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', ...args]); if (r.status !== 0) throw new Error(String(r.stderr)); };
+  run(['-ss', from, '-t', len, '-i', mp4, '-vf', 'scale=540:960', '-c:v', 'libx264', '-crf', '28', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', join(dir, 'demo.mp4')]);
+  run(['-ss', String(HOOK + 0.5), '-i', mp4, '-frames:v', '1', '-vf', 'scale=540:960', '-q:v', '4', join(dir, 'demo.jpg')]);
+  console.log('wrote site/assets/video/demo.mp4（LP用）');
 }
 
 const only = process.argv.slice(2);
