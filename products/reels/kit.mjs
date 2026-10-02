@@ -1,6 +1,6 @@
 // リールの投稿キット（動画のプレビュー・キャプションのコピー・投稿の順番）を1ページのHTMLにする。
 // 使い方：node products/reels/kit.mjs <出力先のフォルダ>   … フォルダに kit.html と reels/*.mp4 の参照先をそろえる
-import { writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
+import { writeFileSync, mkdirSync, copyFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REELS, COMMON_TAGS } from '../../data/reels.mjs';
@@ -12,20 +12,22 @@ mkdirSync(join(out, 'reels'), { recursive: true });
 const HOOK = 2.6, END = 3.4;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const plain = (h) => h.replace(/<br>/g, '').replace(/<small>.*?<\/small>/g, '').replace(/<[^>]+>/g, '');
-const DAYS = ['月', '水', '金', '月', '水', '金'];
+const DAYS = ['月', '水', '金'];
 
 const cards = REELS.map((r, i) => {
   const file = `${r.no}-${r.id}.mp4`;
-  if (existsSync(join(HERE, 'dist', file))) copyFileSync(join(HERE, 'dist', file), join(out, 'reels', file));
+  const src = existsSync(join(HERE, 'dist', 'final', file)) ? join(HERE, 'dist', 'final', file) : join(HERE, 'dist', file);
+  if (existsSync(src)) copyFileSync(src, join(out, 'reels', file));
   if (existsSync(join(HERE, 'dist', `${r.no}-${r.id}-cover.jpg`))) copyFileSync(join(HERE, 'dist', `${r.no}-${r.id}-cover.jpg`), join(out, 'reels', `${r.no}-${r.id}-cover.jpg`));
   const tags = [...r.tags.slice(0, 4), COMMON_TAGS[0]].map((t) => '#' + t).join(' ');
   const text = `${r.caption}\n\n${tags}`;
-  const secs = Math.round(HOOK + r.length + END);
+  const tl = existsSync(join(HERE, 'dist', `${r.no}-${r.id}.timeline.json`)) ? JSON.parse(readFileSync(join(HERE, 'dist', `${r.no}-${r.id}.timeline.json`), 'utf8')) : null;
+  const secs = Math.round(tl ? tl.total : HOOK + r.length + END);
   return `<article class="reel" id="r${r.no}">
-  <div class="media"><video src="reels/${file}" poster="reels/${r.no}-${r.id}-cover.jpg" controls muted playsinline preload="metadata"></video></div>
+  <div class="media"><video src="reels/${file}" poster="reels/${r.no}-${r.id}-cover.jpg" controls playsinline preload="metadata"></video></div>
   <div class="body">
-    <p class="meta"><span class="day">${i + 1}本目・${DAYS[i]}曜</span><span>#${r.no}</span><span>${secs}秒</span><span class="file">${file}</span></p>
-    <h2>${esc(plain(r.hook))}</h2>
+    <p class="meta"><span class="day">${i + 1}本目・${DAYS[i % 3]}曜</span><span>#${r.no}</span><span>${secs}秒</span><span class="file">${file}</span></p>
+    <h2>${esc(r.hook ? plain(r.hook) : r.title)}</h2>
     <p class="tool">紹介するツール：<a href="${esc(CONFIG.siteUrl + '/' + r.tool)}">${esc(r.toolName)}</a></p>
     <div class="cap">
       <div class="cap-head"><b>キャプション</b><button type="button" class="copy" id="copy-${r.id}" data-target="cap-${r.id}">コピー</button></div>
@@ -83,12 +85,12 @@ pre { margin: 0; padding: 12px; max-height: 260px; overflow: auto; white-space: 
 <div class="wrap">
   <header>
     <h1>ふくしのおたすけ帳 リール投稿キット</h1>
-    <p>6本の縦長動画（1080×1920・音なし）と、そのまま貼れるキャプションです。動画ファイルは、チャットに送ったファイルから保存してください。</p>
+    <p>${REELS.length}本の縦長動画（1080×1920・ナレーションとBGMつき）と、そのまま貼れるキャプションです。動画ファイルは、チャットに送ったファイルから保存してください。</p>
   </header>
   <ol class="steps">
     <li>動画をスマホに保存する</li>
     <li>インスタで「リール」を選び、動画を選ぶ</li>
-    <li>音源を選ぶ（流行りのインスト曲を小さめに）</li>
+    <li>音はナレーションとBGMが入っています（インスタの音源は足さなくてOK）</li>
     <li>表紙は最初の大きな文字の画面</li>
     <li>下のキャプションをコピーして貼る</li>
     <li>#0 はプロフィールに固定する</li>

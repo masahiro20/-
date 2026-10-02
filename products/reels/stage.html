@@ -26,6 +26,12 @@
   #hook h1 { margin: 0; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 41px; line-height: 1.4; letter-spacing: .01em; }
   #hook .kicker { display: inline-block; align-self: flex-start; margin-bottom: 18px; background: #1f5c4a; color: #fff; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 15px; padding: 4px 14px; border-radius: 999px; }
   #hook .who { margin-top: 22px; font-size: 15px; font-weight: 700; color: #464d54; }
+  #scene { justify-content: flex-start; padding: 70px 26px 0; }
+  #scene .time { align-self: flex-start; margin: 0; padding: 4px 16px; border-radius: 999px; background: #173f33; color: #fff; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 22px; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+  #scene h2 { margin: 14px 0 0; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 32px; line-height: 1.38; }
+  #scene .sub { margin: 8px 0 0; font-size: 18px; font-weight: 700; color: #464d54; line-height: 1.6; }
+  #scene .art { margin-top: 18px; }
+  #scene .art svg { display: block; width: 100%; height: auto; }
   #end { background: #1f5c4a; color: #fff; text-align: left; }
   #end .pill { align-self: flex-start; background: #f5a25a; color: #173f33; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 15px; padding: 4px 14px; border-radius: 999px; }
   #end h2 { margin: 16px 0 6px; font-family: "Zen Kaku Gothic New"; font-weight: 900; font-size: 36px; line-height: 1.35; }
@@ -41,6 +47,7 @@
   <div id="phone"><div id="screen"><iframe id="app" title="demo"></iframe></div></div>
   <div id="tap"></div>
   <div class="cover" id="hook"><span class="kicker" id="kicker"></span><h1 id="hookText"></h1><p class="who" id="who"></p></div>
+  <div class="cover" id="scene"><p class="time" id="sceneTime"></p><h2 id="sceneTitle"></h2><p class="sub" id="sceneSub"></p><div class="art" id="sceneArt"></div></div>
   <div class="cover" id="end">
     <span class="pill">無料・登録なし</span>
     <h2>ふくしのおたすけ帳</h2>

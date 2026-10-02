@@ -1,6 +1,6 @@
 // Instagram リールの台本シート（docs/sns/instagram-reels.md）を data/reels.mjs から作る。
 // 使い方：node scripts/reels-doc.mjs
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REELS, COMMON_TAGS } from '../data/reels.mjs';
@@ -9,9 +9,11 @@ import { CONFIG } from '../data/config.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const HOOK = 2.6; // products/reels/make.mjs と同じ値
 const END = 3.4;
-const plain = (h) => h.replace(/<br>/g, ' ').replace(/<small>.*?<\/small>/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const plain = (h) => (h || '').replace(/<br>/g, ' ').replace(/<small>.*?<\/small>/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 const sec = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 const DAYS = ['月', '水', '金'];
+// 実際の長さ（ナレーションに合わせてのびた長さ）。動画を作ったあとなら timeline.json から読む
+const tlTotal = (r) => { try { return JSON.parse(readFileSync(join(ROOT, 'products/reels/dist', `${r.no}-${r.id}.timeline.json`), 'utf8')).total; } catch (e) { return 0; } };
 
 const lines = [];
 lines.push('# Instagram リール 台本シート', '');
@@ -25,7 +27,7 @@ lines.push(`| リンク | ${CONFIG.siteUrl}/start.html （リールで紹介し�
 lines.push(`| アカウントの種類 | プロアカウント（クリエイター）にすると、見られた数・保存数が分かる |`, '');
 lines.push('アカウントを作ったら、URLを `data/config.mjs` の `instagramUrl` に入れると、LPにフォローボタンが出ます。', '');
 lines.push('## 投稿の進め方', '');
-lines.push('1. 動画を投稿する前に、アプリで**音源**を選ぶ（流行りのインスト曲を小さめの音量で）。文字は動画に入っているので、テキストの追加はいりません。');
+lines.push('1. 動画にはナレーション（読み上げ）とオリジナルのBGMが入っています。インスタの音源は足さなくてOK（足す場合は、元の音を残したまま小さめに）。文字も動画に入っているので、テキストの追加はいりません。');
 lines.push('2. **表紙**は、動画の最初（大きな文字の画面）を選ぶ。プロフィールの一覧で、シリーズとして並びます。');
 lines.push('3. キャプションとハッシュタグは、下の文をそのまま貼り付ける。ハッシュタグは内容に合ったもの5個に絞っています。');
 lines.push('4. 投稿したら、**#0（自己紹介）をプロフィールに固定**する。');
@@ -34,24 +36,25 @@ lines.push('6. コメントやDMで「この書類もほしい」と来たら、
 lines.push('| 順番 | 動画ファイル | 内容 | 長さ |', '|---|---|---|---|');
 REELS.forEach((r, i) => {
   const total = HOOK + r.length + END;
-  lines.push(`| ${i + 1}本目 | \`${r.no}-${r.id}.mp4\` | ${plain(r.hook)} | ${Math.round(total)}秒 |`);
+  lines.push(`| ${i + 1}本目 | \`${r.no}-${r.id}.mp4\` | ${r.hook ? plain(r.hook) : r.title} | ${Math.round(tlTotal(r) || total)}秒 |`);
 });
 lines.push('');
 
 for (const r of REELS) {
-  const total = HOOK + r.length + END;
+  const total = tlTotal(r) || HOOK + r.length + END;
   lines.push(`## #${r.no}　${r.title}`, '');
   lines.push(`- 動画：\`products/reels/dist/${r.no}-${r.id}.mp4\`（1080×1920・${Math.round(total)}秒）`);
   lines.push(`- 紹介するツール：${r.toolName}（${CONFIG.siteUrl}/${r.tool}）`, '');
   lines.push('| 時間 | 画面 | 文字（字幕） |', '|---|---|---|');
-  lines.push(`| 0:00 | 大きな文字（つかみ） | ${plain(r.hook)} |`);
+  if (r.hook) lines.push(`| 0:00 | 大きな文字（つかみ） | ${plain(r.hook)} |`);
   let prev = null;
   for (const s of r.steps) {
+    if (s.scene) { lines.push(`| ${sec((r.hook ? HOOK : 0) + s.at)} | 場面のイラスト（${s.time || ''}） | ${plain(s.title)}　${plain(s.sub)}${s.say ? `<br>ナレーション：${s.say}` : ''} |`); continue; }
     if (s.cap == null) continue;
-    const t = HOOK + s.at;
+    const t = (r.hook ? HOOK : 0) + s.at;
     const acts = r.steps.filter((x) => x.at >= s.at && (!prev || true) && x.cap == null && x.at < (r.steps.find((y) => y.cap != null && y.at > s.at)?.at ?? Infinity));
     const what = acts.map((a) => (a.tap ? 'タップ' : a.type ? `入力「${a.text}」` : a.scroll ? 'スクロール' : '')).filter(Boolean);
-    lines.push(`| ${sec(t)} | ${[...new Set(what)].join('・') || '画面を見せる'} | ${plain(s.cap)} |`);
+    lines.push(`| ${sec(t)} | ${[...new Set(what)].join('・') || '画面を見せる'} | ${plain(s.cap)}${s.say ? `<br>ナレーション：${s.say}` : ''} |`);
     prev = s;
   }
   lines.push(`| ${sec(total - END)} | 最後の案内 | 無料・登録なし／ふくしのおたすけ帳／プロフィールのリンクから。保存して、職場の人にも。 |`, '');

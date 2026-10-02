@@ -3,6 +3,7 @@
 //  hook：最初の数秒の大きな文字（<br>で改行）
 //  steps：{ at: 秒, cap: 上の字幕 } { at, tap: セレクタ } { at, type: セレクタ, text, dur } { at, scroll: セレクタ, dur, offset }
 //  セレクタは、デモするページ（page）の中の要素。チェックボックスは自動で外側の label をタップする
+//  sayHook / say / sayEnd：ナレーションの読み方を字幕と変えたいときに書く（なければ字幕を読む）
 //  lpDemo: true の動画は、画面操作の部分を LP（start.html）にも載せる
 export const REELS = [
   {
@@ -130,6 +131,7 @@ export const REELS = [
     id: 'kenshu', no: 5, sector: 'all', page: 'kenshu-keikaku.html', tool: 'kenshu-keikaku.html', toolName: '研修・訓練の年間計画表',
     title: '研修と委員会、年に何回やるか即答できる？',
     hook: '研修と委員会、<br>年に<em>何回</em>やるか<br>即答できる？',
+    sayHook: '研修と委員会、年に何回やるか、すぐ答えられる？',
     length: 18,
     steps: [
       { at: 0, cap: 'サービスの種類を選ぶだけ' },
@@ -144,6 +146,71 @@ export const REELS = [
     ],
     caption: '虐待防止・身体拘束・感染症・BCP…\n義務の研修と訓練、委員会。サービスの種類で回数がちがうので、年間計画を作るのが毎年ひと苦労。\n\nサービスの種類を選ぶだけで、研修・訓練・委員会を12か月に割り振った年間計画表ができます。回数の目安つき。\n\n※回数は自治体によって異なるため、必ず指定権者の資料で確認してください。\n介護・障害福祉・児童の8種類のサービスに対応。無料・登録なし。',
     tags: ['法定研修', '研修計画', '虐待防止研修', '身体拘束廃止', '感染症対策', 'BCP', '運営指導', '介護施設', '障害福祉', '管理者'],
+  },
+  // ── 現場の1日（場面のイラスト＋ナレーションで、使っている場面が浮かぶように）──
+  // story: true の動画は、LPの「リールで紹介したツール」には並べない（同じツールの紹介になるため）
+  {
+    id: 'genba-kaigo', no: 6, story: true, sector: 'kaigo', page: 'kaigo-kiroku.html', tool: 'kaigo-kiroku.html', toolName: '介護記録（ケース記録）の文例',
+    title: '17:40、退勤まであと20分。記録がまだ3人分…',
+    hook: null,
+    length: 20,
+    steps: [
+      { at: 0, scene: 'kaigo-1740', time: '17:40', title: '退勤まで、<br>あと<em>20分</em>。', sub: '記録が、まだ3人分残ってる…', say: '夕方、5時40分。帰る時間まで、のこり20分。記録が、まだ3人分残ってる。' },
+      { at: 4.6, scene: null, cap: 'スマホで、場面と様子を<br><em>選ぶだけ</em>', say: 'そんなときは、スマホで、場面と様子を選ぶだけ。' },
+      { at: 5.0, scroll: '[data-f="scene"]', dur: 0.6, offset: 60 },
+      { at: 5.8, tap: '[data-f="scene"] [data-v="shokuji"]' },
+      { at: 6.4, scroll: '[data-f="facts"]', dur: 0.6, offset: 70 },
+      { at: 7.2, tap: 'input[value="shokuji-han"]' },
+      { at: 7.8, tap: 'input[value="shokuji-muse"]' },
+      { at: 8.4, scroll: '[data-f="resp"]', dur: 0.6, offset: 70 },
+      { at: 9.2, tap: 'input[value="shokuji-toromi"]' },
+      { at: 9.8, scroll: '[data-f="result"]', dur: 0.5, offset: 70 },
+      { at: 10.5, tap: 'input[value="shokuji-nashi"]' },
+      { at: 11.2, cap: '記録の文章が<br><em>そのまま完成</em>', say: '記録の文章が、そのまま完成。コピーして、記録ソフトに貼るだけです。' },
+      { at: 11.4, scroll: '#fdDoc', dur: 0.9, offset: 10 },
+      { at: 16.0, scene: 'kaigo-1800', time: '18:00', title: '今日は、<br><em>定時で帰れた。</em>', sub: '記録の時間を、利用者さんとの時間に。', say: '6時。今日は、定時で帰れた。' },
+    ],
+    caption: '夕方5時40分。退勤まであと20分なのに、記録がまだ3人分…。\nそんな日、ありませんか？\n\n「ふくしのおたすけ帳」なら、スマホで場面と様子をタップするだけ。\n事実 → 本人の言葉 → 対応 → 結果 の順に並んだ記録の文章ができます。コピーして記録ソフトに貼るだけ。\n\n無料・登録なし。プロフィールのリンクから使えます。',
+    tags: ['介護記録', '介護士', '介護職', '残業', '介護の仕事'],
+  },
+  {
+    id: 'genba-houday', no: 7, story: true, sector: 'jido', page: 'renrakucho.html', tool: 'renrakucho.html', toolName: '連絡帳の文例メーカー',
+    title: '16:50、お迎えまであと10分。連絡帳がまだ5冊…',
+    hook: null,
+    length: 17,
+    steps: [
+      { at: 0, scene: 'houday-1650', time: '16:50', title: 'お迎えまで、<br>あと<em>10分</em>。', sub: '連絡帳が、まだ5冊…', say: '4時50分。お迎えまで、あと10分。連絡帳が、まだ5冊。' },
+      { at: 4.2, scene: null, cap: '今日の活動と様子を<br><em>タップ</em>', say: '今日の活動と、様子をタップして。' },
+      { at: 4.5, scroll: '.chips2', dur: 0.6, offset: 90 },
+      { at: 5.2, tap: 'input[data-g="act"][value="craft"]' },
+      { at: 5.8, scroll: 'input[data-g="mood"]', dur: 0.5, offset: 110 },
+      { at: 6.5, tap: 'input[data-g="mood"][value="focus"]' },
+      { at: 7.1, scroll: 'input[data-g="done"]', dur: 0.5, offset: 110 },
+      { at: 7.8, tap: 'input[data-g="done"][value="challenge"]' },
+      { at: 8.6, cap: '保護者に伝わる文章が<br><em>すぐできる</em>', say: '保護者に伝わる文章が、すぐにできます。' },
+      { at: 8.8, scroll: '.note-card', dur: 0.9, offset: 10 },
+      { at: 12.8, scene: 'houday-omukae', time: 'お迎えの時間', title: '「今日の様子、<br><em>よく分かります</em>」', sub: '保護者さんとの会話も、はずむ。', say: 'お迎えのとき、今日の様子、よく分かります、って。' },
+    ],
+    caption: 'お迎えまであと10分。連絡帳がまだ5冊…。\n放デイ・児発の夕方、こんな時間ありますよね。\n\n今日の活動・様子・できたことをタップするだけで、保護者に伝わる連絡帳の文章ができます。\n名前は「〇〇さん」のままでOK。個人情報は入力しません。\n\n無料・登録なし。プロフィールのリンクから使えます。',
+    tags: ['放課後等デイサービス', '連絡帳', '児童発達支援', '保育士', '療育'],
+  },
+  {
+    id: 'genba-kanri', no: 8, story: true, sector: 'all', page: 'kenshu-keikaku.html', tool: 'kenshu-keikaku.html', toolName: '研修・訓練の年間計画表',
+    title: '運営指導の通知が届いた。研修の計画、そろってる？',
+    hook: null,
+    length: 17,
+    steps: [
+      { at: 0, scene: 'kanri-tsuchi', time: '月曜の朝', title: '運営指導の<br><em>通知</em>が届いた。', sub: '研修の計画、委員会の議事録…<br>そろってる？', say: '月曜の朝。運営指導の通知が届いた。研修の計画や、委員会のぎじろく、そろってる？' },
+      { at: 5.0, scene: null, cap: 'サービスの種類を<br><em>選ぶだけ</em>で', say: 'サービスの種類を、選ぶだけで、' },
+      { at: 5.3, scroll: '[data-f="svc"]', dur: 0.6, offset: 70 },
+      { at: 6.2, tap: '[data-f="svc"] [data-v="k-kyoju"]' },
+      { at: 7.0, cap: '研修・訓練・委員会の<br><em>年間計画表</em>に', say: '研修、訓練、委員会の、年間計画表に。' },
+      { at: 7.2, scroll: '#fdDoc', dur: 0.9, offset: 10 },
+      { at: 9.0, scroll: '#fdDoc .fd-grid', dur: 2.4, offset: -200 },
+      { at: 12.0, scene: 'kanri-done', time: 'その日のうちに', title: '1年分の計画が、<br><em>すぐできた。</em>', sub: '議事録・研修の記録の下書きも、無料で。', say: '1年分の計画が、すぐできた。委員会や、研修の記録の下書きも、無料で作れます。' },
+    ],
+    caption: '運営指導の通知が届いた…。\n研修の年間計画、委員会の議事録、研修の記録、ちゃんとそろっていますか？\n\nサービスの種類を選ぶだけで、研修・訓練・委員会を12か月に割り振った年間計画表ができます。委員会の議事録・研修の実施記録の下書きも、同じサイトで無料で作れます。\n\n※回数は自治体によって異なるため、必ず指定権者の資料で確認してください。',
+    tags: ['運営指導', '実地指導', '法定研修', '管理者', '介護施設'],
   },
 ];
 

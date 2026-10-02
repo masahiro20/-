@@ -30,7 +30,7 @@ export function startPage({ esc, CONFIG, OUT }) {
   <div class="wrap">
     <div class="section-head"><h2>リールで紹介したツール</h2></div>
     <div class="lp-reels">
-      ${REELS.filter((r) => r.no > 0).map((r) => `<a class="lp-reel" href="${esc(r.tool)}">
+      ${REELS.filter((r) => r.no > 0 && !r.story).map((r) => `<a class="lp-reel" href="${esc(r.tool)}">
         <span class="lp-no">#${r.no}</span>
         <b>${esc(plain(r.hook))}</b>
         <span>${esc(r.toolName)}</span>

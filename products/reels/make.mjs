@@ -9,11 +9,12 @@
 // 必要なもの：Playwright（Chromium）と ffmpeg。プロキシ環境では FONT_VIA_CURL=1 をつける。
 import { createRequire } from 'node:module';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, rmSync, readFileSync, existsSync } from 'node:fs';
+import { mkdirSync, rmSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REELS } from '../../data/reels.mjs';
 import { CONFIG } from '../../data/config.mjs';
+import { SCENES } from './scenes.mjs';
 
 const require = createRequire(import.meta.url);
 function loadPlaywright() {
@@ -35,6 +36,44 @@ async function fontRoute(route) {
   } catch (e) { await route.abort(); }
 }
 
+// ── ナレーション ──
+// 字幕（cap）をそのまま読む。読み方を変えたいときは、その手順に say を書く
+const TTS_FIX = [[/→/g, '、'], [/BCP/g, 'ビーシーピー'], [/〜/g, 'から'], [/＋/g, 'と'], [/19種類/g, 'じゅうきゅう種類'], [/12か月/g, 'じゅうにかげつ'], [/8種類/g, 'はっ種類']];
+export function speakable(html) {
+  let t = html.replace(/<small>.*?<\/small>/g, '').replace(/<br>/g, '').replace(/<[^>]+>/g, '').trim();
+  for (const [re, to] of TTS_FIX) t = t.replace(re, to);
+  return t;
+}
+const END_SAY = '無料・登録なしで使えます。プロフィールのリンクから、ためしてみてください。';
+export function narrationLines(reel) {
+  const lines = reel.hook ? [{ key: 'hook', text: reel.sayHook || speakable(reel.hook) }] : [];
+  reel.steps.forEach((s, i) => { if (s.cap != null || s.say) lines.push({ key: 's' + i, text: s.say || speakable(s.cap) }); });
+  lines.push({ key: 'end', text: reel.sayEnd || END_SAY });
+  return lines;
+}
+// 読み上げの長さ（秒）に合わせて、台本の時間をのばす。字幕の区間ごとに、中の操作も同じ割合でのばす
+function retime(reel, dur) {
+  const hook = !reel.hook ? 0 : dur ? Math.max(HOOK, (dur.hook || 0) + 0.55) : HOOK;
+  const steps = reel.steps.map((s) => ({ ...s }));
+  if (!dur) return { hook, steps, length: reel.length, end: END };
+  const caps = steps.map((s, i) => (s.cap != null || s.say ? i : -1)).filter((i) => i >= 0);
+  let shift = 0;
+  const origAt = reel.steps.map((s) => s.at);
+  for (let c = 0; c < caps.length; c++) {
+    const k = caps[c];
+    const segStart = origAt[k];
+    const segEnd = c + 1 < caps.length ? origAt[caps[c + 1]] : reel.length;
+    const need = (dur['s' + k] || 0) + 0.35;
+    const factor = Math.max(1, need / Math.max(0.1, segEnd - segStart));
+    for (let i = k; i < steps.length && (c + 1 >= caps.length || i < caps[c + 1]); i++) {
+      steps[i].at = segStart + shift + (origAt[i] - segStart) * factor;
+    }
+    // 字幕より前にある操作（最初の字幕の前）はそのまま
+    shift += (segEnd - segStart) * (factor - 1);
+  }
+  return { hook, steps, length: reel.length + shift, end: Math.max(END, (dur.end || 0) + 0.9) };
+}
+
 const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
@@ -48,7 +87,7 @@ async function makeReel(browser, reel) {
   await page.goto(BASE + '__stage.html');
   await page.evaluate(({ reel, url }) => {
     document.getElementById('no').textContent = reel.no ? '#' + reel.no : 'はじめまして';
-    document.getElementById('hookText').innerHTML = reel.hook;
+    document.getElementById('hookText').innerHTML = reel.hook || '';
     document.getElementById('kicker').textContent = reel.no ? '#' + reel.no + '　' + reel.toolName : '介護・障害福祉・児童支援で働く方へ';
     document.getElementById('who').textContent = { kaigo: '介護の現場で働く方へ', shogai: '障害福祉・児童支援で働く方へ', jido: '放デイ・児発で働く方へ', all: '介護・障害福祉・児童支援で働く方へ' }[reel.sector];
     document.getElementById('url').textContent = url;
@@ -65,13 +104,20 @@ async function makeReel(browser, reel) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
 
-  const total = HOOK + reel.length + END;
+  const durFile = join(OUT, 'narr', reel.id, 'durations.json');
+  const dur = existsSync(durFile) ? JSON.parse(readFileSync(durFile, 'utf8')) : null;
+  const tl = retime(reel, dur);
+  const HOOK = tl.hook, END = tl.end;
+  const total = HOOK + tl.length + END;
   const frames = Math.round(total * FPS);
-  const steps = reel.steps.map((s) => ({ ...s, done: false }));
+  const steps = tl.steps.map((s) => ({ ...s, done: false }));
+  // 音声を重ねる時刻（秒）
+  const timeline = { total, lines: [...(reel.hook ? [{ key: 'hook', at: 0.15 }] : []), ...steps.map((s, i) => (s.cap != null || s.say ? { key: 's' + i, at: HOOK + s.at + 0.05 } : null)).filter(Boolean), { key: 'end', at: total - END + 0.3 }] };
   let scroll = null; // { from, to, start, dur }
   let typing = null; // { sel, text, start, dur }
   let tap = null; // { x, y, start }
   let cap = '';
+  let sceneOn = null, sceneOff = null; // 場面を出した時刻・消した時刻
 
   for (let f = 0; f < frames; f++) {
     const t = f / FPS;
@@ -80,6 +126,20 @@ async function makeReel(browser, reel) {
       if (s.done || d < s.at) continue;
       s.done = true;
       if (s.cap != null) cap = s.cap;
+      if (s.scene !== undefined) {
+        sceneOn = s.scene ? s.at : null;
+        sceneOff = s.scene ? null : s.at;
+        if (s.scene) {
+          await page.evaluate(({ sc, s }) => {
+            document.getElementById('scene').style.background = sc.bg;
+            document.getElementById('sceneArt').innerHTML = sc.art;
+            document.getElementById('sceneTime').textContent = s.time || '';
+            document.getElementById('sceneTime').style.display = s.time ? '' : 'none';
+            document.getElementById('sceneTitle').innerHTML = s.title || '';
+            document.getElementById('sceneSub').innerHTML = s.sub || '';
+          }, { sc: SCENES[s.scene], s });
+        }
+      }
       if (s.scroll) {
         const to = await page.evaluate(({ sel, offset }) => {
           const w = document.getElementById('app').contentWindow;
@@ -121,7 +181,13 @@ async function makeReel(browser, reel) {
     // 毎コマの状態
     const sc = scroll ? scroll.from + (scroll.to - scroll.from) * ease(clamp01((d - scroll.start) / scroll.dur)) : null;
     const typed = typing ? typing.text.slice(0, Math.ceil(typing.text.length * clamp01((d - typing.start) / typing.dur))) : null;
-    await page.evaluate(({ t, d, total, sc, typing, typed, tap, cap, HOOK, END }) => {
+    await page.evaluate(({ t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff }) => {
+      const scn = document.getElementById('scene');
+      let so = 0;
+      if (sceneOn != null) so = Math.min(1, (d - sceneOn) / 0.3);
+      else if (sceneOff != null) so = Math.max(0, 1 - (d - sceneOff) / 0.3);
+      scn.style.opacity = so;
+      scn.style.transform = `scale(${1 + (sceneOn != null ? Math.max(0, d - sceneOn) * 0.004 : 0)})`;
       const w = document.getElementById('app').contentWindow;
       if (sc != null) w.scrollTo(0, sc);
       if (typing && typed != null) {
@@ -144,34 +210,45 @@ async function makeReel(browser, reel) {
         tp.style.left = tap.x + 'px'; tp.style.top = tap.y + 'px';
         tp.style.opacity = String(1 - k); tp.style.transform = `scale(${0.6 + k * 0.9})`;
       } else tp.style.opacity = 0;
-    }, { t, d, total, sc, typing, typed, tap, cap, HOOK, END });
+    }, { t, d, total, sc, typing, typed, tap, cap, HOOK, END, sceneOn, sceneOff });
     await page.screenshot({ path: join(dir, String(f).padStart(4, '0') + '.jpg'), type: 'jpeg', quality: 92 });
     if (f === Math.round(1.2 * FPS)) await page.screenshot({ path: join(OUT, `${reel.no}-${reel.id}-cover.jpg`), type: 'jpeg', quality: 92 });
   }
   await ctx.close();
 
+  writeFileSync(join(OUT, `${reel.no}-${reel.id}.timeline.json`), JSON.stringify(timeline, null, 1));
   const mp4 = join(OUT, `${reel.no}-${reel.id}.mp4`);
   const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', join(dir, '%04d.jpg'),
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-movflags', '+faststart', mp4]);
   if (r.status !== 0) throw new Error(String(r.stderr));
   rmSync(dir, { recursive: true, force: true });
-  if (reel.lpDemo) makeLpDemo(mp4, reel);
+  if (reel.lpDemo) makeLpDemo(mp4, reel, HOOK, tl.length);
   return { mp4, seconds: total };
 }
 
 // LP（start.html）に載せる、画面操作の部分だけの軽い動画（540×960・音なし）と、表示前の画像
-function makeLpDemo(mp4, reel) {
+function makeLpDemo(mp4, reel, HOOK, length) {
   const dir = join(HERE, '..', '..', 'site', 'assets', 'video');
   mkdirSync(dir, { recursive: true });
-  const from = String(HOOK), len = String(reel.length);
+  const from = String(HOOK), len = String(length);
   const run = (args) => { const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', ...args]); if (r.status !== 0) throw new Error(String(r.stderr)); };
   run(['-ss', from, '-t', len, '-i', mp4, '-vf', 'scale=540:960', '-c:v', 'libx264', '-crf', '28', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', join(dir, 'demo.mp4')]);
   run(['-ss', String(HOOK + 0.5), '-i', mp4, '-frames:v', '1', '-vf', 'scale=540:960', '-q:v', '4', join(dir, 'demo.jpg')]);
   console.log('wrote site/assets/video/demo.mp4（LP用）');
 }
 
-const only = process.argv.slice(2);
+const args = process.argv.slice(2);
+const only = args.filter((a) => !a.startsWith('--'));
 mkdirSync(OUT, { recursive: true });
+if (args.includes('--lines')) {
+  for (const reel of REELS) {
+    if (only.length && !only.includes(reel.id)) continue;
+    mkdirSync(join(OUT, 'narr', reel.id), { recursive: true });
+    writeFileSync(join(OUT, 'narr', reel.id, 'lines.json'), JSON.stringify(narrationLines(reel), null, 1));
+  }
+  console.log('wrote narration lines');
+  process.exit(0);
+}
 const { chromium } = loadPlaywright();
 const browser = await chromium.launch();
 for (const reel of REELS) {
