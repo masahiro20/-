@@ -689,7 +689,10 @@ h1, h2, h3, .serif { font-family: var(--display); }
 /* スマホでは、書類テンプレートの下書きを画面の幅に収める（表の多い書類だけ横スクロール） */
 @media (max-width: 640px) {
   #fdDoc.doc { min-width: 0; padding: 14px 10px 18px; }
-  #fdDoc:has(.fd-grid) { min-width: 600px; }
+  #fdDoc .fd-grid colgroup:has(col:nth-child(4)) col:first-child { width: 34px !important; }
+  #fdDoc .fd-grid col:last-child:not(:first-child) { width: auto !important; }
+  #fdDoc .fd-grid th, #fdDoc .fd-grid td { font-size: 11px; padding: 5px 4px; }
+  #fdDoc .fd-grid th { white-space: normal; }
   #fdDoc .fd-table col:nth-child(1) { width: 50px !important; }
   #fdDoc .fd-table col:nth-child(2) { width: 82px !important; }
   #fdDoc .form th { font-size: 11px; padding: 6px 4px; letter-spacing: 0; }

@@ -35,7 +35,7 @@ const cards = REELS.map((r, i) => {
 </article>`;
 }).join('\n');
 
-const html = `<title>リール投稿キット</title>
+const html = `<title>おたすけ帳 リール投稿キット</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
 <style>
