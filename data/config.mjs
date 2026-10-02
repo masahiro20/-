@@ -2,8 +2,8 @@
 export const CONFIG = {
   siteName: 'ふくしのおたすけ帳',
   tagline: '介護・障害福祉・児童支援の書類づくりを、無料で',
-  // TODO: 公開するドメイン（末尾スラッシュなし）。canonical と sitemap.xml に使う
-  siteUrl: 'https://example.com',
+  // 公開するURL（末尾スラッシュなし）。canonical・sitemap.xml・LINEの画像に使う。独自ドメインを取ったらここを差し替える
+  siteUrl: 'https://fukushi-otasuke.pages.dev',
   // TODO: 運営者名（屋号でも可）
   operator: 'ふくしのおたすけ帳 編集部',
   // TODO: 問い合わせ用フォーム（Googleフォーム等）のURL。空なら問い合わせ導線を「準備中」表示にする
