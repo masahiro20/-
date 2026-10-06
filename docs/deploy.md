@@ -12,14 +12,14 @@
 - 公開中：**https://fukushi-otasuke.vercel.app**（Vercel の無料プラン、プロジェクト名 `fukushi-otasuke`、GitHub の `masahiro20/-` とつながっている）
 - サイトを直したら：作業ブランチにプッシュ → Vercel の本番（production）にデプロイし直す（Claude がコネクタで行う）。main ブランチは使っていない。
 - 設定：`vercel.json`（ビルドの方法とセキュリティのヘッダー。`node scripts/build.mjs` が作る）
-- アクセス数：Vercel Web Analytics（Cookieなし）。**最初に一度だけ** Vercel の画面で「fukushi-otasuke → Analytics → Enable」を押す。
+- アクセス数：Vercel Web Analytics（Cookieなし）。Enable 済み（2026-10-06）。
 - 毎週の報告：毎週月曜 8:52（日本時間）に、Claude が Vercel のアクセス数と、Gmail に届いた Search Console のお知らせをまとめて報告する。
 - 注意：Vercel の無料プラン（Hobby）は「個人の非商用利用」が条件。**アフィリエイト広告を載せる前に**、Cloudflare Pages（下の手順、無料で商用可）に移すか、Vercel の有料プランにする。
 
 ### Google Search Console に登録する 👤（10分）
 
 1. [Search Console](https://search.google.com/search-console) を開き、「プロパティを追加」→ **URLプレフィックス** に `https://fukushi-otasuke.vercel.app/` を入れる。
-2. 確認方法で「HTMLタグ」を選び、表示された `<meta name="google-site-verification" content="〇〇〇〇">` の **〇〇〇〇 の部分** をコピーして Claude に送る（`data/config.mjs` の `searchConsoleVerification` に入れて公開し直す）。
+2. 確認方法で「HTMLタグ」を選び、表示された `<meta name="google-site-verification" content="〇〇〇〇">` の **〇〇〇〇 の部分** をコピーして Claude に送る（`data/config.mjs` の `searchConsoleVerification` に入れて公開し直す）。**← 済み（全ページに入れて公開済み）**
 3. 公開し直したら、Search Console の画面で「確認」を押す。
 4. 左のメニュー「サイトマップ」に `sitemap.xml` と入れて送信する。
 5. 数日〜1週間で、検索での表示回数・クリック数が見られるようになる。
@@ -150,11 +150,13 @@ ASP（広告の仲介会社）の審査は、**サイトが公開されていて
 |---|---|
 | 届いたら | 意見箱の内容を確認し、スプレッドシートの「対応」列を更新。ほしい書類の声が多いものから、テンプレートを追加 |
 | 週1回 | Search Console で、どの検索語で来ているか・どのツールが見られているかを確認 |
-| 月1回 | 意見箱の声をまとめて、ツール・テンプレートを追加（`data/templates.mjs` と `site/assets/tpl/`）。SNSで「新しく〇〇の下書きができました」と告知 |
+| 月1回 | 意見箱の声をまとめて、ツール・テンプレートを追加（`data/templates/` と `site/assets/tpl/`）。SNSで「新しく〇〇の下書きができました」と告知 |
 | 制度改定時 | 報酬改定（3年ごと）・通知の変更を確認し、頻度や記載事項の文言を直す |
 
 ## 9. 新しいテンプレートの足し方（開発メモ）
 
-1. `data/templates.mjs` に1件追加（ページのタイトル・説明・書き方のコツ・出典）。
+1. `data/templates/<id>.mjs` を1つ作る（ページのタイトル・説明・書き方のコツ・出典・並び順 `order`）。1ツール＝1ファイルなので、何人かで同時に作ってもぶつからない。
 2. `site/assets/tpl/<id>.js` に、左の入力欄（`blocks`）と、右の書類の組み立て（`build`）を書く。既存のテンプレートをまねるのが早いです。
 3. `node scripts/build.mjs` で、ページ・業種ページの一覧・フッター・サイトマップに自動で入ります。
+4. 確認：サーバーを起動して `node tools/qa/formdoc-check.cjs <id>`（入力欄を一通り操作して、下書きの抜け・エラーを確認）。
+5. チームでの進め方は `docs/team.md`、やることの一覧は `docs/team/backlog.md`。
