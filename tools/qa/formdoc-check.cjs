@@ -12,6 +12,7 @@ const ids = process.argv.slice(2);
     p.on('pageerror', (e) => errs.push('PAGEERR ' + e.message));
     p.on('console', (m) => { if (m.type() === 'error' && !/fonts|ERR_CERT|net::/.test(m.text())) errs.push(m.text()); });
     await p.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    await p.route(/\/_vercel\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' })); // 本番だけにある計測スクリプト
     await p.goto((process.env.BASE || 'http://localhost:8765/') + id + '.html');
     await p.waitForTimeout(200);
     // cycle every seg option
