@@ -7,7 +7,24 @@
 
 ---
 
-## まず無料のURLで公開する（10分）👤
+## いまの公開状況（Vercel）
+
+- 公開中：**https://fukushi-otasuke.vercel.app**（Vercel の無料プラン、プロジェクト名 `fukushi-otasuke`、GitHub の `masahiro20/-` とつながっている）
+- サイトを直したら：作業ブランチにプッシュ → Vercel の本番（production）にデプロイし直す（Claude がコネクタで行う）。main ブランチは使っていない。
+- 設定：`vercel.json`（ビルドの方法とセキュリティのヘッダー。`node scripts/build.mjs` が作る）
+- アクセス数：Vercel Web Analytics（Cookieなし）。**最初に一度だけ** Vercel の画面で「fukushi-otasuke → Analytics → Enable」を押す。
+- 毎週の報告：毎週月曜 8:52（日本時間）に、Claude が Vercel のアクセス数と、Gmail に届いた Search Console のお知らせをまとめて報告する。
+- 注意：Vercel の無料プラン（Hobby）は「個人の非商用利用」が条件。**アフィリエイト広告を載せる前に**、Cloudflare Pages（下の手順、無料で商用可）に移すか、Vercel の有料プランにする。
+
+### Google Search Console に登録する 👤（10分）
+
+1. [Search Console](https://search.google.com/search-console) を開き、「プロパティを追加」→ **URLプレフィックス** に `https://fukushi-otasuke.vercel.app/` を入れる。
+2. 確認方法で「HTMLタグ」を選び、表示された `<meta name="google-site-verification" content="〇〇〇〇">` の **〇〇〇〇 の部分** をコピーして Claude に送る（`data/config.mjs` の `searchConsoleVerification` に入れて公開し直す）。
+3. 公開し直したら、Search Console の画面で「確認」を押す。
+4. 左のメニュー「サイトマップ」に `sitemap.xml` と入れて送信する。
+5. 数日〜1週間で、検索での表示回数・クリック数が見られるようになる。
+
+## （別の方法）Cloudflare Pages で公開する（10分）👤
 
 独自ドメインなしで、**`https://fukushi-otasuke.pages.dev`** として公開します。設定ファイル（`siteUrl`）はこのURLに合わせてあります。
 
