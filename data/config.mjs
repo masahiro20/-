@@ -3,7 +3,7 @@ export const CONFIG = {
   siteName: 'ふくしのおたすけ帳',
   tagline: '介護・障害福祉・児童支援の書類づくりを、無料で',
   // 公開するURL（末尾スラッシュなし）。canonical・sitemap.xml・LINEの画像に使う。独自ドメインを取ったらここを差し替える
-  siteUrl: 'https://fukushi-otasuke.pages.dev',
+  siteUrl: 'https://fukushi-otasuke.vercel.app',
   // TODO: 運営者名（屋号でも可）
   operator: 'ふくしのおたすけ帳 編集部',
   // TODO: 問い合わせ用フォーム（Googleフォーム等）のURL。空なら問い合わせ導線を「準備中」表示にする
@@ -40,6 +40,10 @@ export const CONFIG = {
   feedbackEmail: '',
   // Instagram のアカウントURL（例：https://www.instagram.com/fukushi_otasuke/）。入れると、LP（start.html）にフォローボタンが出る
   instagramUrl: '',
+  // Vercel Web Analytics（Vercelで公開しているときのアクセス数の計測。Cookieを使わない）
+  vercelAnalytics: true,
+  // Google Search Console の所有権確認用（HTMLタグの content="…" の中身）。入れると全ページの head に入る
+  searchConsoleVerification: '',
   // TODO: Google Analytics 4 の測定ID（例: G-XXXXXXXXXX）。空なら計測タグを出力しない
   gaId: '',
 };

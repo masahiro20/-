@@ -62,6 +62,12 @@ function layout({ path, title, description, body, scripts = [], jsonLd, root, no
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(CONFIG.gaId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(CONFIG.gaId)}');</script>`
     : '';
+  // Vercel Web Analytics（/_vercel/insights/ は Vercel が配信する。Cookieなし）
+  const va = CONFIG.vercelAnalytics
+    ? `<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>`
+    : '';
+  const gsc = CONFIG.searchConsoleVerification ? `<meta name="google-site-verification" content="${esc(CONFIG.searchConsoleVerification)}">` : '';
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -88,7 +94,9 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
 <link rel="stylesheet" href="${r}assets/style.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
+${gsc}
 ${ga}
+${va}
 </head>
 <body>
 <header class="site-header">
@@ -633,6 +641,7 @@ function buildAbout() {
     <li>意見箱に送っていただいた内容（ご意見・任意のメールアドレス）は、ツールの改善と、ご希望の場合の返信のためだけに使い、第三者に提供しません。</li>
     <li>当サイトは、アフィリエイトプログラム（A8.net などの広告配信サービス）を利用することがあります。広告の成果を計測するため、広告配信事業者がCookieを使用する場合があります。Cookieはブラウザの設定で無効にできます。</li>
     ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスでアクセス情報を収集しています。個人を特定する情報は含みません。</li>' : ''}
+    ${CONFIG.vercelAnalytics ? '<li>サイトの改善のため、Vercel Web Analytics で閲覧されたページの数を計測しています。Cookieは使わず、個人を特定する情報は集めません。</li>' : ''}
   </ul>
   <p class="small muted">最終更新日：${BUILD_DATE}</p>
 </div>`;
@@ -663,6 +672,25 @@ ${pages.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${BUILD_DATE}</lastmod><
     "form-action 'self'",
     "frame-ancestors 'self'",
   ].join('; ');
+  // Vercel が読む設定（リポジトリの直下）。ビルドの方法と、上と同じヘッダー
+  const security = [
+    ['X-Content-Type-Options', 'nosniff'],
+    ['Referrer-Policy', 'strict-origin-when-cross-origin'],
+    ['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
+    ['X-Frame-Options', 'SAMEORIGIN'],
+    ['Content-Security-Policy', csp],
+  ].map(([key, value]) => ({ key, value }));
+  writeFileSync(join(ROOT, 'vercel.json'), JSON.stringify({
+    buildCommand: 'node scripts/build.mjs',
+    outputDirectory: 'site',
+    framework: null,
+    headers: [
+      { source: '/(.*)', headers: security },
+      { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }] },
+      { source: '/assets/img/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800' }] },
+      { source: '/files/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }] },
+    ],
+  }, null, 2) + '\n');
   write('_headers', `/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
