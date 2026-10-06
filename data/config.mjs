@@ -43,7 +43,7 @@ export const CONFIG = {
   // Vercel Web Analytics（Vercelで公開しているときのアクセス数の計測。Cookieを使わない）
   vercelAnalytics: true,
   // Google Search Console の所有権確認用（HTMLタグの content="…" の中身）。入れると全ページの head に入る
-  searchConsoleVerification: '',
+  searchConsoleVerification: 'fnAAUDesvY7BpXQV8NPD-PKuIAs4n8qq76oNTaiCXBg',
   // TODO: Google Analytics 4 の測定ID（例: G-XXXXXXXXXX）。空なら計測タグを出力しない
   gaId: '',
 };
