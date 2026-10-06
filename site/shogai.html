@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>障害福祉（就労継続支援・就労移行支援・生活介護・グループホーム）の書類ツール【無料】｜ふくしのおたすけ帳</title>
-<meta name="description" content="就労継続支援・就労移行支援・生活介護・グループホームで働く方のための無料ツール。個別支援計画の下書き・支援記録（日々の記録）の文例・モニタリング記録の下書き・欠席時対応の記録・個別支援会議の記録・ヒヤリハット報告書の下書き・申し送りメモの下書き・ご家族への近況報告（お便り）・委員会の議事録の下書き・研修・訓練の年間計画表・研修の実施記録・事故・ヒヤリハット報告の下書き。登録不要・入力内容は送信されません。">
+<meta name="description" content="就労継続支援・就労移行支援・生活介護・グループホームで働く方のための無料ツール。個別支援計画の下書き・アセスメントシートの下書き・支援記録（日々の記録）の文例・モニタリング記録の下書き・欠席時対応の記録・個別支援会議の記録・ヒヤリハット報告書の下書き・申し送りメモの下書き・ご家族への近況報告（お便り）・委員会の議事録の下書き・研修・訓練の年間計画表・研修の実施記録・事故・ヒヤリハット報告の下書き。登録不要・入力内容は送信されません。">
 <link rel="canonical" href="https://fukushi-otasuke.vercel.app/shogai.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="障害福祉（就労継続支援・就労移行支援・生活介護・グループホーム）の書類ツール【無料】｜ふくしのおたすけ帳">
-<meta property="og:description" content="就労継続支援・就労移行支援・生活介護・グループホームで働く方のための無料ツール。個別支援計画の下書き・支援記録（日々の記録）の文例・モニタリング記録の下書き・欠席時対応の記録・個別支援会議の記録・ヒヤリハット報告書の下書き・申し送りメモの下書き・ご家族への近況報告（お便り）・委員会の議事録の下書き・研修・訓練の年間計画表・研修の実施記録・事故・ヒヤリハット報告の下書き。登録不要・入力内容は送信されません。">
+<meta property="og:description" content="就労継続支援・就労移行支援・生活介護・グループホームで働く方のための無料ツール。個別支援計画の下書き・アセスメントシートの下書き・支援記録（日々の記録）の文例・モニタリング記録の下書き・欠席時対応の記録・個別支援会議の記録・ヒヤリハット報告書の下書き・申し送りメモの下書き・ご家族への近況報告（お便り）・委員会の議事録の下書き・研修・訓練の年間計画表・研修の実施記録・事故・ヒヤリハット報告の下書き。登録不要・入力内容は送信されません。">
 <meta property="og:url" content="https://fukushi-otasuke.vercel.app/shogai.html">
 <meta property="og:site_name" content="ふくしのおたすけ帳">
 <meta property="og:image" content="https://fukushi-otasuke.vercel.app/assets/img/og.png">
@@ -57,9 +57,21 @@
 </section>
 <section class="section">
   <div class="wrap">
+    <div class="tool-search" data-search="hub" data-sector="shogai" hidden>
+  <label class="tool-search-label" for="toolQ">書類の名前で探す</label>
+  <div class="tool-search-box">
+    <input id="toolQ" class="input" type="search" placeholder="例：事故、れんらくちょう、記録" autocomplete="off" enterkeyhint="search" aria-describedby="toolQCount">
+    <button type="button" class="tool-search-clear" aria-label="入力を消す" hidden>×</button>
+  </div>
+  <p class="tool-search-hints"><span>よく探される書類</span><button type="button" data-q="個別支援計画">個別支援計画</button><button type="button" data-q="支援記録">支援記録</button><button type="button" data-q="モニタリング">モニタリング</button><button type="button" data-q="アセスメント">アセスメント</button><button type="button" data-q="事故">事故</button></p>
+  <p class="tool-search-count" id="toolQCount" role="status" aria-live="polite"></p>
+  <div class="tool-search-results"></div>
+</div>
     <div class="tool-grid"><a class="tool-card" href="shogai-keikaku.html">
     <span class="pill pill-shu">新着</span>
-    <b>個別支援計画の下書き</b><span>就労B・A・移行・生活介護・GHに対応。希望と課題を選ぶと、目標と支援内容の下書きに。</span><em>使ってみる →</em></a><a class="tool-card" href="shien-kiroku.html">
+    <b>個別支援計画の下書き</b><span>就労B・A・移行・生活介護・GHに対応。希望と課題を選ぶと、目標と支援内容の下書きに。</span><em>使ってみる →</em></a><a class="tool-card" href="assessment.html">
+    <span class="pill pill-shu">新着</span>
+    <b>アセスメントシートの下書き</b><span>面談で聞いた希望と、領域ごとの「できていること」「支援が必要なこと」を選ぶと、課題の整理（ニーズ）まで入ったアセスメントシートに。</span><em>使ってみる →</em></a><a class="tool-card" href="shien-kiroku.html">
     <span class="pill pill-shu">新着</span>
     <b>支援記録（日々の記録）の文例</b><span>就労B・A・移行・生活介護・GH。通所の状況・作業の様子・体調・本人の言葉・支援内容を選ぶと、日々の記録の文章に。</span><em>使ってみる →</em></a><a class="tool-card" href="monitoring.html">
     
@@ -82,7 +94,7 @@
     <b>研修の実施記録</b><span>研修のテーマを選ぶと、目的・内容・確認テスト・振り返りまで入った研修記録に。虐待防止・身体拘束・感染症など。</span><em>使ってみる →</em></a><a class="tool-card" href="jiko.html">
     
     <b>事故・ヒヤリハット報告の下書き</b><span>国の標準様式の項目で、原因分析と再発防止策まで。</span><em>使ってみる →</em></a></div>
-    <div class="upcoming"><p>準備中のツール</p><ul><li>アセスメントシートの下書き</li><li>工賃（賃金）向上計画の下書き</li></ul></div>
+    <div class="upcoming"><p>準備中のツール</p><ul><li>工賃（賃金）向上計画の下書き</li><li>身体拘束の3要件の検討記録</li></ul></div>
     
   </div>
 </section>
@@ -105,7 +117,7 @@
   <div class="wrap">
     <div class="footer-cols">
       <div><p class="brand-name" style="margin:0 0 6px">ふくしのおたすけ帳</p><p class="small muted" style="margin:0">介護・障害福祉・児童支援の書類づくりを、無料で</p></div>
-      <div><p class="footer-h"><a href="./jido.html">児童支援</a></p><ul class="footer-list"><li><a href="./jido-keikaku.html">個別支援計画の下書き</a></li><li><a href="./renrakucho.html">連絡帳の文例メーカー</a></li><li><a href="./program.html">支援プログラムの下書き</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a href="./iinkai.html">委員会の議事録の下書き</a></li><li><a href="./kenshu-keikaku.html">研修・訓練の年間計画表</a></li><li><a class="footer-more" href="./jido.html">児童支援のツールをすべて見る（14）</a></li></ul></div><div><p class="footer-h"><a href="./shogai.html">障害福祉</a></p><ul class="footer-list"><li><a href="./shogai-keikaku.html">個別支援計画の下書き</a></li><li><a href="./shien-kiroku.html">支援記録（日々の記録）の文例</a></li><li><a href="./monitoring.html">モニタリング記録の下書き</a></li><li><a href="./kesseki.html">欠席時対応の記録</a></li><li><a href="./kaigi.html">個別支援会議の記録</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a class="footer-more" href="./shogai.html">障害福祉のツールをすべて見る（12）</a></li></ul></div><div><p class="footer-h"><a href="./kaigo.html">介護</a></p><ul class="footer-list"><li><a href="./jiko.html">事故報告書の下書き</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a href="./kaigo-kiroku.html">介護記録（ケース記録）の文例</a></li><li><a href="./moushiokuri.html">申し送りメモの下書き</a></li><li><a href="./kinkyo.html">ご家族への近況報告（お便り）</a></li><li><a href="./iinkai.html">委員会の議事録の下書き</a></li><li><a class="footer-more" href="./kaigo.html">介護のツールをすべて見る（8）</a></li></ul></div>
+      <div><p class="footer-h"><a href="./jido.html">児童支援</a></p><ul class="footer-list"><li><a href="./jido-keikaku.html">個別支援計画の下書き</a></li><li><a href="./renrakucho.html">連絡帳の文例メーカー</a></li><li><a href="./program.html">支援プログラムの下書き</a></li><li><a href="./otayori.html">おたより（月1回のお知らせ）の文例</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a href="./assessment.html">アセスメントシートの下書き</a></li><li><a class="footer-more" href="./jido.html">児童支援のツールをすべて見る（16）</a></li></ul></div><div><p class="footer-h"><a href="./shogai.html">障害福祉</a></p><ul class="footer-list"><li><a href="./shogai-keikaku.html">個別支援計画の下書き</a></li><li><a href="./assessment.html">アセスメントシートの下書き</a></li><li><a href="./shien-kiroku.html">支援記録（日々の記録）の文例</a></li><li><a href="./monitoring.html">モニタリング記録の下書き</a></li><li><a href="./kesseki.html">欠席時対応の記録</a></li><li><a href="./kaigi.html">個別支援会議の記録</a></li><li><a class="footer-more" href="./shogai.html">障害福祉のツールをすべて見る（13）</a></li></ul></div><div><p class="footer-h"><a href="./kaigo.html">介護</a></p><ul class="footer-list"><li><a href="./jiko.html">事故報告書の下書き</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a href="./kaigo-kiroku.html">介護記録（ケース記録）の文例</a></li><li><a href="./moushiokuri.html">申し送りメモの下書き</a></li><li><a href="./mitori.html">看取り（ターミナルケア）の記録の文例</a></li><li><a href="./kinkyo.html">ご家族への近況報告（お便り）</a></li><li><a class="footer-more" href="./kaigo.html">介護のツールをすべて見る（9）</a></li></ul></div>
       <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
         <li><a href="./iken.html">意見箱（ほしい書類・ご要望）</a></li>
         <li><a href="./flyer.html">職場で紹介するチラシ（印刷用）</a></li>
@@ -120,6 +132,6 @@
   </div>
 </footer>
 <script src="./assets/common.js"></script>
-
+<script src="./assets/tools-data.js"></script>
 </body>
 </html>

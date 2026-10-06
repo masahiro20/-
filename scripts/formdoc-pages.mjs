@@ -27,10 +27,11 @@ export function formdocPages({ esc, CONFIG }) {
             <button class="btn btn-line btn-sm" id="fdPrint" type="button">印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="fdAi" type="button">AIで文章を整える</button>
             <button class="btn btn-line btn-sm" id="fdShare" type="button">リンクで共有</button>
-            <button class="btn btn-line btn-sm" id="fdReset" type="button">書き換えを元に戻す</button>
+            <button class="btn btn-line btn-sm" id="fdReset" type="button" title="入力と書き換えをすべて消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">書類は横にスクロールできます。</span></p>
+        <p class="fd-save" id="fdSave" hidden></p>
         <div class="doc-scroll"><div class="doc doc-portrait" id="fdDoc"></div></div>
         <div id="fdWarn"></div>
       </div>

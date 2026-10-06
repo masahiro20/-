@@ -1,5 +1,6 @@
 // 総合サイトの入口（トップ・業種別ページ）と、共通パーツ（共有ボタン・PR枠）。
 import { TEMPLATES } from '../data/templates.mjs';
+import { allTools, searchBox, SECTOR_NAMES } from './tool-search.mjs';
 
 export const SECTORS = [
   {
@@ -16,7 +17,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['おたより（月1回のお知らせ）の文例', '安全計画（送迎・置き去り防止）の下書き'],
+    upcoming: ['安全計画（送迎・置き去り防止）の下書き', '保育所等訪問支援の報告書'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -27,7 +28,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['アセスメントシートの下書き', '工賃（賃金）向上計画の下書き'],
+    upcoming: ['工賃（賃金）向上計画の下書き', '身体拘束の3要件の検討記録'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -37,7 +38,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
-    upcoming: ['ヒヤリハットの月別集計表', '看取り（ターミナルケア）の記録の文例'],
+    upcoming: ['ヒヤリハットの月別集計表', 'サービス担当者会議の要点'],
   },
 ];
 
@@ -49,6 +50,16 @@ for (const sec of SECTORS) {
   // 業種の中心になる計画書ツールのすぐ後ろに、毎日・毎月使う書類を入れる
   sec.tools.splice(sec.id === 'jido' ? 3 : 1, 0, ...tools);
 }
+
+// 全ツールの一覧（1ツール1件）。検索・最近使ったツール・トップの一覧に使う
+export const TOOLS = allTools(SECTORS, TEMPLATES);
+
+const HINTS = {
+  home: ['事故', '連絡帳', '個別支援計画', '記録', 'モニタリング', '議事録', '研修'],
+  jido: ['個別支援計画', '連絡帳', 'モニタリング', '欠席', 'おたより'],
+  shogai: ['個別支援計画', '支援記録', 'モニタリング', 'アセスメント', '事故'],
+  kaigo: ['事故', 'ヒヤリハット', '介護記録', '申し送り', '看取り'],
+};
 
 export function shareBlock({ esc, url, title, r }) {
   const u = encodeURIComponent(url);
@@ -87,9 +98,14 @@ export function portalPages({ esc, CONFIG }) {
   const home = `
 <section class="portal-hero">
   <div class="wrap">
+    <div class="recent" id="recentTools" hidden>
+      <div class="recent-head"><p class="recent-title">最近使ったツール</p><button type="button" class="link-btn recent-clear">履歴を消す</button></div>
+      <ul class="recent-list"></ul>
+    </div>
     <span class="pill">介護・障害福祉・児童支援で働く方へ</span>
     <h1>福祉の現場の書類を、<br><span class="hl">もっとかんたんに。</span></h1>
     <p class="lead">計画書や報告書の「最初の一文が出てこない」を、選ぶだけの下書きで助けます。すべて無料・登録不要。入力した内容はどこにも送られません。</p>
+    ${searchBox({ esc, tools: TOOLS, mode: 'home', hints: HINTS.home })}
     <div class="hero-jump">
       ${SECTORS.map((s) => `<a class="jump jump-${s.id}" href="${s.path}"><b>${esc(s.name)}</b><span>${esc(s.sub)}</span></a>`).join('')}
     </div>
@@ -111,6 +127,10 @@ export function portalPages({ esc, CONFIG }) {
         <a class="text-link" href="${s.path}">${esc(s.name)}のツールをすべて見る</a>
       </div>`).join('')}
     </div>
+    <details class="all-tools" id="all-tools">
+      <summary>すべてのツールの一覧（${TOOLS.length}）</summary>
+      <ul class="all-tools-list">${TOOLS.map((t) => `<li><a href="${esc(t.path)}">${esc(t.name)}</a><span class="all-tools-sec">${t.sectors.map((x) => `<span class="pill pill-sector pill-${x}">${SECTOR_NAMES[x]}</span>`).join('')}</span></li>`).join('')}</ul>
+    </details>
   </div>
 </section>
 
@@ -159,7 +179,7 @@ export function portalPages({ esc, CONFIG }) {
     <div class="section-head"><h2>よくある質問</h2></div>
     <dl class="qa" style="max-width:820px">
       <div><dt>本当に無料ですか？</dt><dd>はい。すべてのツールを無料・登録不要でお使いいただけます。運営費は、サイト内の広告（PR）でまかなっています。</dd></div>
-      <div><dt>入力した内容は送信されますか？</dt><dd>いいえ。下書きの組み立ては、すべてお使いのブラウザの中で行います。氏名など個人が特定できる情報は入力しないでください。</dd></div>
+      <div><dt>入力した内容は送信されますか？</dt><dd>いいえ。下書きの組み立ては、すべてお使いのブラウザの中で行います。入力途中の内容は、続きから書けるように<b>その端末の中にだけ</b>保存します（サーバーには送りません。7日たつと自動的に消えます）。共有の端末では、ツールの「リセット」で消してください。氏名など個人が特定できる情報は入力しないでください。</dd></div>
       <div><dt>「AIに頼む文章」とは？</dt><dd>下書きと注意点をまとめた依頼文をコピーできる機能です。ChatGPT・Claude・Geminiなどに貼り付けると、文章を整えてもらえます。AIに貼る前に、個人が特定できる情報が入っていないか確認してください。</dd></div>
       <div><dt>そのまま提出してもいいですか？</dt><dd>下書きは書き始めのためのものです。ご本人のアセスメントや事実に合わせて必ず書き直し、様式や記載方法は自治体（指定権者）の資料をご確認ください。</dd></div>
     </dl>
@@ -171,6 +191,7 @@ export function portalPages({ esc, CONFIG }) {
     title: `${s.name}（${s.sub}）の書類ツール【無料】｜${CONFIG.siteName}`,
     description: `${s.sub}で働く方のための無料ツール。${s.tools.map((t) => t.name).join('・')}。登録不要・入力内容は送信されません。`,
     sector: s.id,
+    scripts: ['assets/tools-data.js'],
     body: `
 <section class="portal-hero portal-hero-sm hub-${s.id}">
   <div class="wrap">
@@ -183,6 +204,7 @@ export function portalPages({ esc, CONFIG }) {
 </section>
 <section class="section">
   <div class="wrap">
+    ${searchBox({ esc, tools: TOOLS, mode: 'hub', sector: s.id, hints: HINTS[s.id] })}
     <div class="tool-grid">${s.tools.map((t) => toolCard(t, esc)).join('')}</div>
     ${s.upcoming && s.upcoming.length ? `<div class="upcoming"><p>準備中のツール</p><ul>${s.upcoming.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>` : ''}
     ${s.guides.length ? `<h2 style="margin-top:40px;font-size:20px">読みもの</h2><ul class="plain">${s.guides.map((g) => `<li><a href="${esc(g.path)}">${esc(g.name)}</a></li>`).join('')}</ul>` : ''}
@@ -198,7 +220,7 @@ export function portalPages({ esc, CONFIG }) {
 
   return [
     {
-      path: 'index.html', body: home,
+      path: 'index.html', body: home, scripts: ['assets/tools-data.js'],
       title: `${CONFIG.siteName}｜介護・障害福祉・児童支援の計画書・報告書を無料でかんたんに`,
       description: '介護・障害福祉・児童支援（放デイ・児発）で働く方のための無料ツール集。個別支援計画、モニタリング、支援記録、介護記録、事故報告・ヒヤリハット、委員会の議事録、研修計画などの下書きを、選ぶだけで作れます。登録不要・入力内容は送信されません。',
     },

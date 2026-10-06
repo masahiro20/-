@@ -53,8 +53,10 @@ export function renrakuchoPage({ esc }) {
           <button class="btn" id="rCopy" type="button">文章をコピー</button>
           <button class="btn btn-line" id="rShuffle" type="button">別の言い回しにする</button>
           <button class="btn btn-line ai-btn" id="rAi" type="button">AIで文章を整える</button>
+          <button class="btn btn-line" id="rReset" type="button" title="選んだ内容と書き換えを消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
         </div>
         <p class="small muted" style="margin-top:12px">文章はクリックすると書き換えられます。「〇〇さん」はお子さまの名前に置き換えてお使いください。</p>
+        <p class="fd-save" id="rSave" hidden></p>
         <div class="redpen" style="margin-top:16px"><span class="redpen-label">赤ペン：連絡帳のコツ</span>
           <p>・できたことは「何を・どんな場面で」まで書くと、保護者に伝わります。<br>・気になることを書くときは、先にできたことを伝え、最後に「ご家庭での様子も教えてください」と添えると、相談しやすい関係になります。</p>
         </div>

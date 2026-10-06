@@ -17,7 +17,7 @@
     },
     time: function (s) {
       var m = /^(\d{1,2}):(\d{2})$/.exec(s || '');
-      return m ? Number(m[1]) + '時' + m[2] + '分' : '　　時　　分';
+      return m ? Number(m[1]) + '時' + (Number(m[2]) ? Number(m[2]) + '分' : '') : '　　時　　分'; // 15:05→15時5分、15:00→15時
     },
     month: function (s) {
       var m = /^(\d{4})-(\d{2})/.exec(s || '');
@@ -51,20 +51,66 @@
     var reactive = fields.some(function (f) { return typeof f.options === 'function' || f.show; });
     function optionsOf(f) { return norm(typeof f.options === 'function' ? f.options(state.v) : f.options); }
 
-    // 初期値 → URLの指定
-    fields.forEach(function (f) {
-      if (f.type === 'chips') state.v[f.id] = (f.def || []).slice();
-      else if (f.type === 'date' && f.today) state.v[f.id] = H.today();
-      else if (f.type === 'seg' || f.type === 'select') state.v[f.id] = f.def != null ? f.def : (optionsOf(f)[0] || [''])[0];
-      else state.v[f.id] = f.def || '';
-    });
+    // 初期値 → URLの指定（共有リンク）、または この端末に保存した入力途中の内容
+    function setDefaults() {
+      state.v = {};
+      fields.forEach(function (f) {
+        if (f.type === 'chips') state.v[f.id] = (f.def || []).slice();
+        else if (f.type === 'date' && f.today) state.v[f.id] = H.today();
+        else if (f.type === 'seg' || f.type === 'select') state.v[f.id] = f.def != null ? f.def : (optionsOf(f)[0] || [''])[0];
+        else state.v[f.id] = f.def || '';
+      });
+    }
+    setDefaults();
+    var SELECTABLE = ['seg', 'select', 'chips'];
     var params = new URLSearchParams(location.search);
+    var fromUrl = fields.some(function (f) { return params.has(f.id) && SELECTABLE.indexOf(f.type) !== -1; });
     fields.forEach(function (f) {
-      if (!params.has(f.id) || ['seg', 'select', 'chips'].indexOf(f.type) === -1) return;
+      if (!params.has(f.id) || SELECTABLE.indexOf(f.type) === -1) return;
       var raw = params.get(f.id);
       if (f.type === 'chips') state.v[f.id] = raw.split(',').filter(Boolean);
       else state.v[f.id] = raw;
     });
+
+    // ── 自動保存（この端末の localStorage だけ。7日で消える。common.js の Otasuke.draft） ──
+    var D = window.Otasuke && window.Otasuke.draft;
+    var draftId = T.id || (location.pathname.split('/').pop() || 'index').replace(/\.html$/, '');
+    var canSave = !!(D && D.available());
+    var saved = canSave ? D.load(draftId) : null;
+    var restored = null;
+    // 共有リンク（URLの指定）で開いたときは、URLの内容を優先する
+    if (saved && !fromUrl && saved.d && saved.d.v) {
+      var sv = saved.d.v;
+      fields.forEach(function (f) {
+        if (!Object.prototype.hasOwnProperty.call(sv, f.id)) return;
+        var x = sv[f.id];
+        if (f.type === 'chips') { if (Array.isArray(x)) state.v[f.id] = x.filter(function (y) { return typeof y === 'string'; }); }
+        else if (typeof x === 'string') state.v[f.id] = x;
+      });
+      var se = saved.d.e;
+      if (se && typeof se === 'object') {
+        Object.keys(se).forEach(function (k) {
+          var o = se[k];
+          if (o && typeof o.base === 'string' && typeof o.text === 'string') state.edits[k] = { base: o.base, text: o.text };
+        });
+      }
+      restored = saved.t;
+    }
+    var saveTimer = null;
+    function saveNow() {
+      clearTimeout(saveTimer); saveTimer = null;
+      if (canSave) D.save(draftId, { v: state.v, e: state.edits });
+      // 共有リンクから入力を始めたら、前の保存は置きかわるので「もどす」の案内を消す
+      if (fromUrl && saved) { saved = null; showSaveNote(); }
+    }
+    function persist() {
+      if (!canSave) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveNow, 400);
+    }
+    function flush() { if (saveTimer) saveNow(); }
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
     // 選べない値を外す
     function clean() {
       fields.forEach(function (f) {
@@ -137,7 +183,7 @@
       d.sections.forEach(function (s, si) {
         if (s.grid) {
           var g = s.grid;
-          html += (s.h ? '<p class="fd-grid-h">' + esc(s.h) + '</p>' : '') + '<table class="form form-main fd-grid">' +
+          html += (s.h ? '<p class="fd-grid-h">' + esc(s.h) + '</p>' : '') + '<table class="form form-main fd-grid' + (g.labelCol ? ' fd-labelcol' : '') + '">' +
             (g.widths ? '<colgroup>' + g.widths.map(function (w) { return '<col' + (w ? ' style="width:' + w + '"' : '') + '>'; }).join('') + '</colgroup>' : '') +
             '<thead><tr>' + g.head.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
             g.rows.map(function (row, ri) {
@@ -191,6 +237,7 @@
     // ── 操作 ──
     var panel = $('fdPanel');
     function changed(structural) {
+      persist();
       if (structural && reactive) {
         // 描き直してもフォーカスの位置を保つ
         var a = document.activeElement, box = a && a.closest ? a.closest('[data-f]') : null;
@@ -219,7 +266,7 @@
       var id = box.getAttribute('data-f');
       var f = fields.filter(function (x) { return x.id === id; })[0];
       // 文字・日付の欄は input で反映済み。change（フォーカスが外れたとき）で描き直すと入力位置を見失う
-      if (f.type !== 'chips' && f.type !== 'select') { state.v[id] = e.target.value; renderDoc(); return; }
+      if (f.type !== 'chips' && f.type !== 'select') { state.v[id] = e.target.value; renderDoc(); persist(); return; }
       if (f.type === 'chips') {
         var list = [];
         box.querySelectorAll('input:checked').forEach(function (c) { list.push(c.value); });
@@ -233,6 +280,7 @@
       if (!el) return;
       state.v[el.getAttribute('data-f')] = el.value;
       renderDoc();
+      persist();
     });
     var doc = $('fdDoc');
     doc.addEventListener('focusin', function (e) { var ed = e.target.closest('.ed'); if (ed && ed.querySelector('.ph')) ed.textContent = ''; });
@@ -242,6 +290,7 @@
       var k = ed.getAttribute('data-key');
       state.edits[k] = { base: current[k] || '', text: ed.innerText.replace(/\n$/, '') };
       ed.classList.add('is-edited');
+      persist();
     });
     doc.addEventListener('focusout', function (e) {
       var ed = e.target.closest('.ed');
@@ -254,10 +303,20 @@
     });
     $('fdCopy').addEventListener('click', function () { window.Otasuke.copy(toText(), '文章をコピーしました'); });
     $('fdPrint').addEventListener('click', function () { window.print(); });
+    // リセット：入力・書き換え・この端末の保存をすべて消して、最初の状態に戻す
     $('fdReset').addEventListener('click', function () {
+      if (!window.confirm('入力した内容と書き換えた文章を消して、最初の状態に戻します。\nこの端末に保存していた内容も消えます。よろしいですか？')) return;
+      clearTimeout(saveTimer); saveTimer = null;
+      if (canSave) D.clear(draftId);
+      setDefaults();
+      clean();
       state.edits = {};
+      if (location.search && window.history && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+      fromUrl = false; restored = null;
+      renderPanel();
       renderDoc();
-      window.Otasuke.toast('書き換えた文章を、元の下書きに戻しました');
+      showSaveNote();
+      window.Otasuke.toast('入力を消して、最初の状態に戻しました');
     });
     $('fdShare').addEventListener('click', function () {
       var q = new URLSearchParams();
@@ -273,8 +332,24 @@
       window.Otasuke.copyAiPrompt({ role: T.ai.role, doc: T.ai.doc || T.title, rules: T.ai.rules, draft: toText() });
     });
 
+    // 保存の案内（保存できない環境では出さない）
+    function showSaveNote() {
+      var el = $('fdSave');
+      if (!el) return;
+      if (!canSave) { el.hidden = true; return; }
+      var html = '<b>自動保存</b>：この端末にだけ保存しています（' + D.days + '日で自動的に消えます）。共有の端末では「リセット」で消してください。';
+      if (fromUrl && saved) html += '<br>共有リンクの内容を表示しています（この端末に保存していた入力より優先）。ここで入力すると、保存していた入力は置きかわります。<a href="' + esc(location.pathname) + '">保存していた入力にもどす</a>';
+      el.innerHTML = html;
+      el.hidden = false;
+    }
+
     renderPanel();
     renderDoc();
+    showSaveNote();
+    if (restored) {
+      var dt = new Date(restored);
+      window.Otasuke.toast('前回の入力（' + (dt.getMonth() + 1) + '月' + dt.getDate() + '日 ' + dt.getHours() + ':' + String(dt.getMinutes()).padStart(2, '0') + '）を復元しました');
+    }
   }
 
   window.Formdoc = { run: run, H: H };

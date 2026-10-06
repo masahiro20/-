@@ -6,7 +6,8 @@ import { DOMAINS, AGES, ISSUES, TRAITS } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
 import { programPage, programData } from './program-page.mjs';
-import { SECTORS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
+import { SECTORS, TOOLS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
+import { toolsDataJs } from './tool-search.mjs';
 import { shogaiPage, shogaiData } from './shogai-page.mjs';
 import { jikoPage, jikoData } from './jiko-page.mjs';
 import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
@@ -25,6 +26,8 @@ const esc = (s) =>
 const domainById = Object.fromEntries(DOMAINS.map((d) => [d.id, d]));
 const domainNames = (ids) => ids.map((id) => domainById[id].name).join('／');
 const pages = [];
+// ツールのページ（開くと「最近使ったツール」に記録する。site/assets/common.js）
+const TOOL_BY_PATH = Object.fromEntries(TOOLS.map((t) => [t.path, t]));
 
 function write(path, html) {
   const file = join(OUT, path);
@@ -98,7 +101,7 @@ ${gsc}
 ${ga}
 ${va}
 </head>
-<body>
+<body${TOOL_BY_PATH[path] ? ` data-tool="${esc(path)}" data-tool-name="${esc(TOOL_BY_PATH[path].name)}"` : ''}>
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="${r}index.html">
@@ -637,7 +640,7 @@ function buildAbout() {
   <h2>プライバシーポリシー</h2>
   <ul class="plain">
     <li>下書きづくりの画面に入力した内容は、お使いのブラウザの中でのみ処理され、当サイトのサーバーに送信・保存されることはありません。</li>
-    <li>チェックリストのチェック状態は、お使いのブラウザ（localStorage）にのみ保存されます。</li>
+    <li><b>端末内の保存（localStorage）</b>：下書きツールの入力途中の内容、最近使ったツールの一覧、チェックリストのチェック状態、支援プログラムの入力内容は、続きから使えるように、お使いの端末のブラウザ（localStorage）にのみ保存します。<b>サーバーには送信しません。</b>下書きツールの入力途中の内容は、最後に入力してから7日たつと自動的に消えます。共有の端末では、各ツールの「リセット」で消してください（最近使ったツールは、トップページの「履歴を消す」で消せます）。ブラウザの設定で、サイトのデータを消すこともできます。</li>
     <li>意見箱に送っていただいた内容（ご意見・任意のメールアドレス）は、ツールの改善と、ご希望の場合の返信のためだけに使い、第三者に提供しません。</li>
     <li>当サイトは、アフィリエイトプログラム（A8.net などの広告配信サービス）を利用することがあります。広告の成果を計測するため、広告配信事業者がCookieを使用する場合があります。Cookieはブラウザの設定で無効にできます。</li>
     ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスでアクセス情報を収集しています。個人を特定する情報は含みません。</li>' : ''}
@@ -719,8 +722,9 @@ buildGuide();
 buildChecklist();
 buildAbout();
 for (const pg of portalPages({ esc, CONFIG })) {
-  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body }));
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
 }
+write('assets/tools-data.js', toolsDataJs(TOOLS));
 write('assets/program-data.js', programData());
 write('assets/shogai-data.js', shogaiData());
 write('assets/jiko-data.js', jikoData());
