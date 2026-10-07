@@ -170,7 +170,8 @@
       if (v.kind === 'a') how = '前年度の実績、地域の最低賃金、生産活動の収支の見通しを参考に設定した。';
       var basis = [['目標の考え方', 'how', how]];
       if (p.auto.some(Boolean)) basis.push(['自動で入れた目標', 'autonote', p.auto.map(function (a, k) { return a ? reiwa(years[k]) : ''; }).filter(Boolean).join('・') + 'の目標は、前年度から' + p.pct + '%上げた額にした（100円未満は切り上げ）。']);
-      if (p.calc) {
+      // 計算欄の結果は、表の「前年度の実績」と同じときだけ根拠に入れる（違う数字が並ばないように）
+      if (p.calc && (p.fromCalc || Math.round(p.calc.m) === Math.round(p.base))) {
         basis.push(['平均工賃の計算', 'calc', reiwa(y - 1) + 'の実績：' + '1年間の工賃支払総額 ' + yen(p.calc.total) + ' ÷ 1日あたりの平均利用者数 ' + (Math.round(p.calc.avg * 10) / 10).toLocaleString('ja-JP') + '人（延べ ' + Math.round(p.calc.nobe).toLocaleString('ja-JP') + '人 ÷ 開所日数 ' + Math.round(p.calc.days).toLocaleString('ja-JP') + '日）÷ 12か月 ＝ ' + yen(p.calc.m)]);
       }
 
@@ -179,13 +180,14 @@
 
       // 4. 取り組み（年度別）
       var acts = ACTS.filter(function (x) { return v.acts.indexOf(x[0]) !== -1; });
-      var sched = acts.map(function (x) { return [x[2], x[3], x[4], x[5]]; });
+      // A型では「工賃」を「賃金」と書く
+      var sched = acts.map(function (x) { return [x[2], x[3], x[4], x[5]].map(function (t) { return t.replace(/工賃/g, W); }); });
       sched.push(['点検・見直し', '計画を職員・利用者に説明し、毎月の' + W + 'の実績を確認する。', '前年度の実績を点検し、目標と取り組みを見直す。', '前年度の実績を点検し、3年間の結果をまとめて次の計画を作る。']);
 
       // 5. 推進体制
       var share = SHARE.filter(function (x) { return v.share.indexOf(x[0]) !== -1; }).map(function (x) { return x[2]; });
       var check = '毎年度、前年度の実績を点検・評価し、必要に応じて計画を見直す。';
-      if (v.kind === 'b') check += '見直した場合は、5月末までに都道府県へ提出する。';
+      if (v.kind === 'b') check += '見直した場合は、都道府県の定める期限（国の指針では各年度の5月末）までに都道府県へ提出する。';
 
       return {
         title: kind[2],
@@ -203,7 +205,7 @@
           { h: '目標の根拠', w2: '110px', rows: basis },
           { h: '3. 現状と課題', w2: '110px', rows: [
             ['生産活動の状況', 'state', works.length ? works.join('、') + 'に取り組んでいる。' : '', '（今の作業と売上の状況）'],
-            ['課題', 'issues', H.bullets(issues), '（工賃を上げるうえでの課題）'],
+            ['課題', 'issues', H.bullets(issues), '（' + W + 'を上げるうえでの課題）'],
             ['利用者の希望', 'voice', '', '（利用者・家族の声、働き方の希望）'],
           ] },
           { key: 'sched', h: '4. 目標を達成するための取り組み（年度別スケジュール）', grid: { head: ['取り組み', reiwa(years[0]), reiwa(years[1]), reiwa(years[2])], widths: ['124px', '', '', ''], rowHead: true, labelCol: true, rows: sched, ph: '　' } },
@@ -227,6 +229,7 @@
       var p = plan(v);
       if (p.base == null) return '前年度の平均' + W + '（月額）を入れると、各年度の伸び率を計算します。' + (v.kind === 'b' ? '分からないときは「平均工賃を計算する」の欄を使えます。' : '');
       if (p.base === 0) return '前年度の実績が0円のため、伸び率は計算できません。新しく始めた事業所は、1年目の目標から伸び率を見ます。';
+      if (p.calc && !p.fromCalc && Math.round(p.calc.m) !== Math.round(p.base)) return '「平均工賃を計算する」の結果（' + yen(p.calc.m) + '）が、入れた前年度の平均工賃（' + yen(p.base) + '）と違います。どちらが正しいか確かめてください（計算の結果は書類には入れていません）。';
       var all = [p.base].concat(p.t);
       for (var i = 0; i < all.length; i++) if (all[i] != null && all[i] > 1000000) return '金額がとても大きくなっています。1か月あたり（月額）の金額で入っているか確かめてください。';
       var prev = p.base;

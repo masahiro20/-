@@ -7,14 +7,14 @@
   var MONTHS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
   var MONTH_OPTS = MONTHS.map(function (m) { return [String(m), m + '月']; });
 
-  // 安全点検の場所 [id, 名前（左の欄）, 計画の文, 送迎ありのときだけ]
+  // 安全点検の場所 [id, 名前（左の欄）, 計画の文, 送迎ありのときだけ（'dev' は安全装置があるときだけ）]
   var TENKEN = [
     ['setsubi', '部屋・設備', '部屋・設備（家具の固定、コンセント、窓・出入口のかぎ、段差など）', false],
     ['yugu', '遊具・おもちゃ', '遊具・おもちゃ（こわれ・とがった所・小さな部品がないか）', false],
     ['bousai', '消火器・避難経路', '消火器・非常口・避難経路（物が置かれていないか）', false],
     ['gaibu', '散歩コース・公園', '散歩コース・よく行く公園・避難先（危ない場所がないか）', false],
     ['car', '送迎の車', '送迎の車（タイヤ・ブレーキ・ライト・ドアのロックなど）', true],
-    ['buzzer', '安全装置（ブザー等）', '置き去りを防ぐ安全装置（ブザー等）がきちんと動くか', true],
+    ['buzzer', '安全装置（ブザー等）', '置き去りを防ぐ安全装置（ブザー等）がきちんと動くか', 'dev'],
   ];
   // マニュアル [id, 名前]
   var MANUAL = [
@@ -59,10 +59,13 @@
   var FREQ_MONTHS = { month: MONTHS, quarter: [4, 7, 10, 1], term: [4, 9, 1] };
 
   var hasCar = function (v) { return v.sougei === 'ari'; };
+  // 安全装置の点検を入れるか（すべて2列までの車、または「つけていない」ときは入れない）
+  var hasDev = function (v) { return hasCar(v) && v.rows !== '2' && v.buzzer !== 'nashi'; };
+  var fits = function (x, v) { return x[3] === 'dev' ? hasDev(v) : !x[3] || hasCar(v); };
   var NOW = new Date();
   var FY = NOW.getMonth() + 1 >= 4 ? NOW.getFullYear() : NOW.getFullYear() - 1;
 
-  function carOpts(list) { return function (v) { return list.filter(function (x) { return !x[3] || hasCar(v); }).map(function (x) { return [x[0], x[1]]; }); }; }
+  function carOpts(list) { return function (v) { return list.filter(function (x) { return fits(x, v); }).map(function (x) { return [x[0], x[1]]; }); }; }
 
   var fields4 = TRAIN.map(function (t) {
     var f = { id: t[0], type: 'chips', label: t[3], options: MONTH_OPTS, def: t[4] };
@@ -112,7 +115,7 @@
       var place = v.place.trim() || '（　　　　）';
 
       // ── 1. 安全点検 ──
-      var ten = H.pick(TENKEN, v.tenken).filter(function (t) { return !t[3] || car; });
+      var ten = H.pick(TENKEN, v.tenken).filter(function (t) { return fits(t, v); });
       var freqText = { month: '毎月1回', quarter: '3か月に1回（4月・7月・10月・1月）', term: '年3回（4月・9月・1月、学期ごと）' }[v.freq];
       var sec1 = [
         ['毎日の点検', 'ten.daily', '支援を始める前に、部屋・おもちゃ・出入口のかぎなどを目で見て確かめる。' +
@@ -201,7 +204,7 @@
           { h: '1. 安全点検', rows: sec1 },
           { h: '2. 安全指導・保護者への周知', rows: sec2 },
           { key: 'plan', h: '3. 職員への研修・訓練と安全点検（年間の予定）', grid: { head: ['月', '研修', '訓練', '安全点検・見直し', '担当・メモ'], widths: ['48px', '', '', '', '96px'], rowHead: true, rows: rows, ph: '　' } },
-          { h: '3. 研修・訓練の進め方', rows: sec3 },
+          { h: '3.（つづき）研修・訓練の進め方', rows: sec3 },
           { h: '4. 送迎時の所在確認（置き去り防止）', rows: sec4 },
           { h: '5. 再発防止と計画の見直し', rows: sec5 },
         ],
