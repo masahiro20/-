@@ -1,5 +1,6 @@
 // 看取り（ターミナルケア）の経過記録の文例。状態（事実）→ ご本人・ご家族の言葉 → 行ったケア → 連絡 の順に、時刻を添えて組み立てる。
 // 「お亡くなりになった後」は、気づいたときの様子 → 連絡 → 医師による確認 → ご家族への対応 → エンゼルケア の形。
+// 医師の確認は「来所して確認」「情報通信機器（ICT）を利用した死亡診断の手順」「来所を待っている」の3通りで書き分ける。
 // 死亡の確認・診断は医師が行うため、介護職員の文には医学的な判断の言葉を入れない。
 (function () {
   'use strict';
@@ -35,6 +36,13 @@
     ['hyoujou', '穏やかな表情', '穏やかな表情で、ベッドに横になられていた。', 'd'],
   ];
 
+  // 医師の確認のしかた（お亡くなりになった後）
+  var DOCTOR = [
+    ['raisho', '医師が来所して確認'],
+    ['ict', 'オンラインでの死亡診断の手順', '情報通信機器（ICT）・医師が判断'],
+    ['machi', '医師の来所を待っている', '連絡済み・来所予定'],
+  ];
+
   // 行ったケア（看取り期）[id, 選択肢, 文]
   var CARE = [
     ['koukuu', '口腔ケア', '口腔ケアを行い、スポンジブラシで口の中を湿らせ、唇に保湿剤を塗った。'],
@@ -56,6 +64,14 @@
     ['owakare', 'お別れの時間', 'ご家族だけでお別れをされる時間をつくった。'],
     ['shokuin', '職員のお別れ', '勤務中の職員が居室を訪れ、お別れのあいさつをした。'],
     ['miokuri', 'お見送り', '　時　分、ご家族とともに出発された。職員でお見送りをした。'],
+  ];
+
+  // 医師の来所を待つ間の対応（エンゼルケアは、医師が死亡を確認した後に行う）
+  var WAIT = [
+    ['soba', 'そばで見守る', '医師の来所まで、職員がご本人のそばに付き添った。'],
+    ['shiji', '看護職員の指示を確認', '医師の来所までの対応について、看護職員に確認し、指示を受けた。'],
+    ['kazokujikan', 'ご家族と過ごす時間', 'ご家族がご本人のそばで過ごせるよう、居室に椅子を用意した。'],
+    ['kankyou', '室温・明るさを整える', '居室の室温と明るさを整えた。'],
   ];
 
   // ご家族 [id, 選択肢, 文, 時期]
@@ -136,6 +152,8 @@
   function texts(list, ids) { return H0.pick(list, ids).map(function (x) { return x[2]; }); }
   function isGo(v) { return v.phase === 'go'; }
   function notGo(v) { return v.phase !== 'go'; }
+  function waiting(v) { return isGo(v) && v.doctor === 'machi'; }
+  function confirmed(v) { return isGo(v) && v.doctor !== 'machi'; }
   function picked(id) { return function (v) { return v.contact.indexOf(id) !== -1; }; }
 
   function vitals(v) {
@@ -150,6 +168,18 @@
     return CONTACT.filter(function (c) { return v.contact.indexOf(c[0]) !== -1; }).map(function (c) {
       return H.time(v[c[2]]) + '、' + c[3][P[v.phase]];
     }).join('\n');
+  }
+
+  // 医師による確認の行。介護職員が「死亡」と判断する書き方にはせず、確認した人（医師）と時刻を書く
+  function kakunin(v, H) {
+    if (v.doctor === 'ict') {
+      return ['医師による確認', 'kakunin', '事前の取り決めに沿い、医師の判断で、情報通信機器（ICT）を利用した死亡診断の手順により確認が行われた。看護師（　　）がご本人の状態を確認し、テレビ電話などで医師に報告した。' +
+        H.time(v.tKakunin) + '、医師が死亡を確認した。'];
+    }
+    if (v.doctor === 'machi') {
+      return ['医師の来所', 'kakunin', '医師には連絡済みで、' + H.time(v.tYotei) + 'ごろに来所される予定。医師の来所と確認を待っている。\n（医師の確認後に追記）　　時　　分、来所した医師が死亡を確認した。'];
+    }
+    return ['医師による確認', 'kakunin', H.time(v.tKakunin) + '、来所した医師が死亡を確認した。'];
   }
 
   Formdoc.run({
@@ -172,6 +202,7 @@
         { id: 'time', type: 'time', label: '時刻', hint: '亡くなった後は、気づいた時刻', half: true },
         { id: 'who', type: 'text', label: '対象の方', hint: '居室番号・イニシャルなど、施設の決まりに沿って', ph: '例：203号室 Aさん' },
         { id: 'phase', type: 'seg', options: PHASES },
+        { id: 'doctor', type: 'seg', label: '医師の確認', options: DOCTOR, show: isGo },
       ] },
       { title: 'ご本人の状態', small: '見たこと・測ったこと', fields: [
         { id: 'state', type: 'chips', options: phaseOpts(STATE) },
@@ -184,7 +215,8 @@
       ] },
       { title: '行ったケア', fields: [
         { id: 'care', type: 'chips', options: CARE.map(function (x) { return [x[0], x[1]]; }), show: notGo },
-        { id: 'after', type: 'chips', label: 'エンゼルケア・お見送り', options: AFTER.map(function (x) { return [x[0], x[1]]; }), show: isGo },
+        { id: 'after', type: 'chips', label: 'エンゼルケア・お見送り', options: AFTER.map(function (x) { return [x[0], x[1]]; }), show: confirmed },
+        { id: 'wait', type: 'chips', label: '医師の来所を待つ間', hint: 'エンゼルケアは、医師が死亡を確認した後に行います', options: WAIT.map(function (x) { return [x[0], x[1]]; }), show: waiting },
       ] },
       { title: 'ご家族', small: '様子・言葉・付き添い', fields: [
         { id: 'family', type: 'chips', options: phaseOpts(FAMILY) },
@@ -196,7 +228,8 @@
         { id: 'tIshi', type: 'time', label: '医師に連絡した時刻', half: true, show: picked('ishi') },
         { id: 'tKazoku', type: 'time', label: 'ご家族に連絡した時刻', half: true, show: picked('kazoku') },
         { id: 'tSoudan', type: 'time', label: '相談員などに連絡した時刻', half: true, show: picked('soudan') },
-        { id: 'tKakunin', type: 'time', label: '医師が死亡を確認した時刻', hint: '医師・看護職員に確認して記入', show: isGo },
+        { id: 'tKakunin', type: 'time', label: '医師が死亡を確認した時刻', hint: '医師・看護職員に確認して記入', show: confirmed },
+        { id: 'tYotei', type: 'time', label: '医師の来所予定の時刻', hint: '医師から聞いた予定の時刻', show: waiting },
       ] },
       { title: '申し送り', fields: [
         { id: 'next', type: 'chips', options: phaseOpts(NEXT) },
@@ -220,9 +253,11 @@
           ['時期', 'phase', phaseName],
           ['気づいたときの様子', 'state', stateText, '（左で様子を選ぶと入ります）'],
           ['連絡', 'contact', contacts(v, H), '（左で連絡した相手を選ぶと入ります）'],
-          ['医師による確認', 'kakunin', H.time(v.tKakunin) + '、医師が来所し、死亡の確認を行った。'],
+          kakunin(v, H),
           ['ご家族への対応', 'family', family, '（ご家族の様子・言葉があれば記入）'],
-          ['エンゼルケア・お見送り', 'after', texts(AFTER, v.after).join('\n'), '（左でケアを選ぶと入ります）'],
+          waiting(v)
+            ? ['医師の来所を待つ間', 'wait', texts(WAIT, v.wait).join('\n'), '（左で、待つ間の対応を選ぶと入ります）']
+            : ['エンゼルケア・お見送り', 'after', texts(AFTER, v.after).join('\n'), '（左でケアを選ぶと入ります）'],
           ['申し送り', 'next', next, '（必要に応じて記入）'],
         ];
       } else {
@@ -243,7 +278,8 @@
         right: '記録者：',
         sections: [{ h: '記録', w2: '120px', rows: rows }],
         foot: go
-          ? '死亡の確認・死亡診断は医師が行います。介護職員の記録には、気づいた時刻と見たこと、連絡した相手と時刻を書きます。'
+          ? '死亡の確認・死亡診断は医師が行います。介護職員の記録には、気づいた時刻と見たこと、連絡した相手と時刻を書きます。' +
+            (waiting(v) ? '医師が来所して確認するまでは「死亡」と書かず、確認の後に、確認した時刻を追記します。' : '')
           : '状態（事実）→ ご本人・ご家族の言葉 → 行ったケア → 連絡 の順に、時刻を添えて書きます。死亡の確認・診断は医師が行います。',
       };
     },
@@ -257,7 +293,9 @@
       if (f) return '「' + f[0] + '」は、書いた人の受け止め方が入る言葉です。' + f[1] + 'に書きかえると、ご本人の尊厳を守りながら事実が伝わります。';
       if (isGo(v) && v.state.indexOf('kokyunashi') !== -1 && v.state.indexOf('kazokusoba') !== -1) return '「呼吸の動きが見られない（巡回で気づいた）」と「ご家族が付き添う中で」は、別の場面の文です。実際の場面に合うほうを1つ選んでください。';
       if (!v.state.length && !v.extra.trim()) return '「ご本人の状態」を選ぶか書き足すと、記録の文章ができます。';
-      if (isGo(v) && !v.tKakunin) return '医師が死亡を確認した時刻は、医師や看護職員に確認して記入してください。介護職員が「死亡」と判断して書くことはしません。';
+      if (waiting(v) && v.contact.indexOf('ishi') === -1) return '医師に連絡した時刻も残しておきましょう。「連絡」で「医師」を選ぶと、時刻の欄が出ます。';
+      if (waiting(v) && !v.tYotei) return '医師の来所予定の時刻を入れておくと、次の勤務者にも伝わります。医師が死亡を確認したら、確認した時刻を追記してください。';
+      if (confirmed(v) && !v.tKakunin) return '医師が死亡を確認した時刻は、医師や看護職員に確認して記入してください。介護職員が「死亡」と判断して書くことはしません。';
       if (v.phase === 'chokuzen' && v.contact.indexOf('kango') === -1) return '状態が変わったときは、看護職員に報告した時刻も残しておくと、多職種で経過を共有できます。';
       if (!isGo(v) && !v.care.length) return '行ったケア（口腔ケア・体位変換・声かけなど）も書くと、状態の変化に対して何をしたかが伝わります。';
       if (!v.family.length && !v.fwords.trim()) return 'ご家族の様子や言葉も残しておくと、ご家族への支援の記録になります。';
