@@ -29,6 +29,9 @@
     if (issueById[id] && state.picked.indexOf(id) === -1 && state.picked.length < MAX) state.picked.push(id);
   });
   if (ageById[params.get('age')]) state.age = params.get('age');
+  var fromUrl = params.has('issues') || params.has('age');
+  var auto = null; // 自動保存（下の「自動保存」）
+  function persist() { if (auto) auto.save(); }
 
   // ── 計画の組み立て ──
   function supportsText(i) {
@@ -213,6 +216,7 @@
 
     $('mobileCount').textContent = has ? state.picked.length + '件の課題を選択中' : '';
     $('mobileBar').classList.toggle('show', has);
+    persist();
   }
 
   // 特性から課題の候補を出す（選ぶときの手がかり。診断ではない）
@@ -350,6 +354,7 @@
     if (!ed) return;
     state.edits[ed.getAttribute('data-key')] = ed.innerText.replace(/\n$/, '');
     ed.classList.add('is-edited');
+    persist();
   });
   $('doc').addEventListener('focusout', function (e) {
     var ed = e.target.closest('.ed');
@@ -391,6 +396,45 @@
     });
   });
 
+  // ── 自動保存（この端末の localStorage だけ。7日で消える。common.js の Otasuke.draft） ──
+  var TEXTS = ['likes', 'wish', 'time'];
+  function restore(d) {
+    if (ageById[d.age]) state.age = d.age;
+    if (Array.isArray(d.picked)) {
+      state.picked = [];
+      d.picked.forEach(function (id) {
+        if (typeof id === 'string' && issueById[id] && state.picked.indexOf(id) === -1 && state.picked.length < MAX) state.picked.push(id);
+      });
+    }
+    if (d.goalIndex && typeof d.goalIndex === 'object') {
+      Object.keys(d.goalIndex).forEach(function (k) { var n = d.goalIndex[k]; if (issueById[k] && typeof n === 'number' && n >= 0 && n < 1000) state.goalIndex[k] = Math.floor(n); });
+    }
+    if (typeof d.fill === 'boolean') state.fill = d.fill;
+    if (d.edits && typeof d.edits === 'object') {
+      Object.keys(d.edits).forEach(function (k) { if (typeof d.edits[k] === 'string') state.edits[k] = d.edits[k]; });
+    }
+    var v = d.v || {};
+    TEXTS.forEach(function (id) { if (typeof v[id] === 'string') $(id).value = v[id]; });
+  }
+  function snapshot() {
+    var v = {};
+    TEXTS.forEach(function (id) { v[id] = $(id).value; });
+    return { age: state.age, picked: state.picked, goalIndex: state.goalIndex, fill: state.fill, edits: state.edits, v: v };
+  }
+  // リセット：入力・書き換え・この端末の保存をすべて消して、最初の状態に戻す
+  $('resetPlan').addEventListener('click', function () {
+    if (!window.confirm('選んだ課題・入力した内容・書き換えた文章を消して、最初の状態に戻します。\nこの端末に保存していた内容も消えます。よろしいですか？')) return;
+    state = { age: 'lower', picked: [], goalIndex: {}, fill: false, edits: {} };
+    trait = '';
+    TEXTS.concat('issueSearch').forEach(function (id) { $(id).value = ''; });
+    renderAges();
+    renderAll();
+    auto.clear();
+    toast('入力を消して、最初の状態に戻しました');
+  });
+
+  auto = window.Otasuke.draft.auto({ id: 'jido-keikaku', fromUrl: fromUrl, restore: restore, get: snapshot, note: $('planSave'), hash: '#tool' });
   renderAges();
   renderAll();
+  auto.announce();
 })();

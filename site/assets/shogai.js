@@ -17,6 +17,9 @@
   (params.get('issues') || '').split(',').forEach(function (id) {
     if (issueById[id] && issueById[id].services.indexOf(state.svc) !== -1 && state.picked.indexOf(id) === -1 && state.picked.length < MAX) state.picked.push(id);
   });
+  var fromUrl = params.has('svc') || params.has('issues');
+  var auto = null; // 自動保存（下の「自動保存」）
+  function persist() { if (auto) auto.save(); }
 
   function available() {
     return D.issues.filter(function (i) { return i.services.indexOf(state.svc) !== -1; });
@@ -119,6 +122,7 @@
     $('sInfo').innerHTML = '<span class="coverage-label">見直し</span><span class="cov on"><span class="mk"></span>' + p.svc.review + 'か月に1回以上</span>';
     $('sMobileCount').textContent = has1 ? state.picked.length + '件の課題を選択中' : '';
     $('sMobileBar').classList.toggle('show', has1);
+    persist();
   }
   function renderAll() { renderPicked(); renderIssues(); renderDoc(); }
 
@@ -183,6 +187,7 @@
     if (!ed) return;
     state.edits[ed.getAttribute('data-key')] = ed.innerText.replace(/\n$/, '');
     ed.classList.add('is-edited');
+    persist();
   });
   doc.addEventListener('focusout', function (e) {
     var ed = e.target.closest('.ed');
@@ -221,6 +226,43 @@
     });
   });
 
+  // ── 自動保存（この端末の localStorage だけ。7日で消える。common.js の Otasuke.draft） ──
+  var TEXTS = ['sWishSelf', 'sWishFamily', 'sStrength'];
+  function restore(d) {
+    if (svcById[d.svc]) state.svc = d.svc;
+    if (Array.isArray(d.picked)) {
+      state.picked = [];
+      d.picked.forEach(function (id) {
+        if (typeof id === 'string' && issueById[id] && issueById[id].services.indexOf(state.svc) !== -1 && state.picked.indexOf(id) === -1 && state.picked.length < MAX) state.picked.push(id);
+      });
+    }
+    if (d.goalIndex && typeof d.goalIndex === 'object') {
+      Object.keys(d.goalIndex).forEach(function (k) { var n = d.goalIndex[k]; if (issueById[k] && typeof n === 'number' && n >= 0 && n < 1000) state.goalIndex[k] = Math.floor(n); });
+    }
+    if (d.edits && typeof d.edits === 'object') {
+      Object.keys(d.edits).forEach(function (k) { if (typeof d.edits[k] === 'string') state.edits[k] = d.edits[k]; });
+    }
+    var v = d.v || {};
+    TEXTS.forEach(function (id) { if (typeof v[id] === 'string') $(id).value = v[id]; });
+  }
+  function snapshot() {
+    var v = {};
+    TEXTS.forEach(function (id) { v[id] = $(id).value; });
+    return { svc: state.svc, picked: state.picked, goalIndex: state.goalIndex, edits: state.edits, v: v };
+  }
+  // リセット：入力・書き換え・この端末の保存をすべて消して、最初の状態に戻す
+  $('sReset').addEventListener('click', function () {
+    if (!window.confirm('選んだ課題・入力した内容・書き換えた文章を消して、最初の状態に戻します。\nこの端末に保存していた内容も消えます。よろしいですか？')) return;
+    state = { svc: 'b', picked: [], goalIndex: {}, edits: {} };
+    TEXTS.concat('sSearch').forEach(function (id) { $(id).value = ''; });
+    renderSvc();
+    renderAll();
+    auto.clear();
+    window.Otasuke.toast('入力を消して、最初の状態に戻しました');
+  });
+
+  auto = window.Otasuke.draft.auto({ id: 'shogai-keikaku', fromUrl: fromUrl, restore: restore, get: snapshot, note: $('sSave') });
   renderSvc();
   renderAll();
+  auto.announce();
 })();

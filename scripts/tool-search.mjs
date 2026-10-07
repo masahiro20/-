@@ -47,6 +47,18 @@ const READINGS = [
 ];
 
 export const SECTOR_NAMES = { jido: '児童支援', shogai: '障害福祉', kaigo: '介護' };
+// 同じ名前のツール（児童と障害の「個別支援計画の下書き」など）を見分けるための、業種の小さなバッジ。
+// 3業種すべてで使うツールは「共通」1つにまとめる。site/assets/common.js の secTags と同じ規則にする。
+export const SECTOR_SHORT = { jido: '児童', shogai: '障害', kaigo: '介護' };
+export function secTags(sectors) {
+  const list = sectors.length >= 3 ? [['all', '共通']] : sectors.map((x) => [x, SECTOR_SHORT[x]]);
+  return `<span class="sec-tags">${list.map(([id, n]) => `<span class="sec-tag sec-tag-${id}">${n}</span>`).join('')}</span>`;
+}
+// 業種ページごとに名前が違うツールの、一覧・検索・最近使ったツールでの名前（ページの見出しに合わせる）。
+// ほかの業種での名前は、検索の別名に自動で入る。
+const DISPLAY_NAMES = {
+  'jiko.html': '事故報告書の下書き',
+};
 const SECTOR_WORDS = { jido: '児童支援 じどう 放デイ 児発', shogai: '障害福祉 しょうがい', kaigo: '介護 かいご' };
 
 // 検索のための文字のそろえ方。site/assets/common.js の normalize と同じにする
@@ -65,14 +77,18 @@ export function allTools(SECTORS, TEMPLATES = []) {
   for (const sec of SECTORS) {
     for (const t of sec.tools) {
       const cur = byPath.get(t.path);
-      if (cur) { if (!cur.sectors.includes(sec.id)) cur.sectors.push(sec.id); continue; }
-      byPath.set(t.path, { path: t.path, name: t.name, desc: t.desc, tag: t.tag, sectors: [sec.id] });
+      if (cur) {
+        if (!cur.sectors.includes(sec.id)) cur.sectors.push(sec.id);
+        if (!cur.names.includes(t.name)) cur.names.push(t.name);
+        continue;
+      }
+      byPath.set(t.path, { path: t.path, name: DISPLAY_NAMES[t.path] || t.name, desc: t.desc, tag: t.tag, sectors: [sec.id], names: [t.name] });
     }
   }
   const tplByPath = Object.fromEntries(TEMPLATES.map((t) => [t.path, t]));
-  return [...byPath.values()].map((t) => {
+  return [...byPath.values()].map(({ names, ...t }) => {
     const tpl = tplByPath[t.path];
-    const words = [...(ALIASES[t.path] || []), ...((tpl && tpl.keywords) || [])];
+    const words = [...names.filter((n) => n !== t.name), ...(ALIASES[t.path] || []), ...((tpl && tpl.keywords) || [])];
     const base = [t.name, ...words].join(' ');
     const readings = READINGS.filter(([k]) => base.includes(k)).map(([, r]) => r);
     const sectorWords = t.sectors.map((s) => SECTOR_WORDS[s]).join(' ');
@@ -85,10 +101,12 @@ export function allTools(SECTORS, TEMPLATES = []) {
   });
 }
 
-// 検索に一致するか（common.js の matchTool と同じ規則）。0：一致しない、2：名前・別名で一致、1：説明文で一致
+// 検索に一致するか（common.js の score と同じ規則）。0：一致しない、3：名前で一致、2：別名で一致、1：説明文で一致
 export function matchTool(t, query) {
   const terms = String(query || '').split(/[\s　]+/).map(normalize).filter(Boolean);
   if (!terms.length) return 0;
+  const name = t.k.split('|')[0];
+  if (terms.every((w) => name.includes(w))) return 3;
   if (terms.every((w) => t.k.includes(w))) return 2;
   if (terms.every((w) => t.k.includes(w) || t.kd.includes(w))) return 1;
   return 0;

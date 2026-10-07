@@ -689,7 +689,7 @@ h1, h2, h3, .serif { font-family: var(--display); }
 /* スマホでは、書類テンプレートの下書きを画面の幅に収める（表の多い書類だけ横スクロール） */
 @media (max-width: 640px) {
   #fdDoc.doc { min-width: 0; padding: 14px 10px 18px; }
-  #fdDoc .fd-grid:not(.fd-labelcol) colgroup:has(col:nth-child(4)) col:first-child { width: 34px !important; }
+  #fdDoc .fd-grid:not(.fd-labelcol) colgroup:has(col:nth-child(4)) col:first-child { width: 42px !important; } /* 「10月」が1行に収まる幅 */
   #fdDoc .fd-grid.fd-labelcol colgroup col:first-child { width: 76px !important; } /* 1列目が「領域」などの見出しの表 */
   #fdDoc .fd-grid col:last-child:not(:first-child) { width: auto !important; }
   #fdDoc .fd-grid th, #fdDoc .fd-grid td { font-size: 11px; padding: 5px 4px; }
@@ -757,7 +757,9 @@ h1, h2, h3, .serif { font-family: var(--display); }
 .ts-list { display: grid; gap: 8px; }
 .ts-item { display: block; padding: 10px 14px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--paper); color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
 .ts-item:hover { border-color: var(--forest); color: var(--ink); box-shadow: 3px 3px 0 var(--apricot-soft); }
-.ts-item b { display: block; font-family: var(--display); font-weight: 900; font-size: 16px; color: var(--forest-ink); }
+.ts-name { display: flex; align-items: baseline; gap: 8px; }
+.ts-name .sec-tags { flex: none; position: relative; top: -2px; }
+.ts-item b { display: block; min-width: 0; font-family: var(--display); font-weight: 900; font-size: 16px; color: var(--forest-ink); }
 .ts-desc { display: block; margin-top: 2px; font-size: 13px; line-height: 1.6; color: var(--ink-2); }
 .ts-sec { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .ts-sec .pill, .all-tools-sec .pill { padding: 0 8px; font-size: 11.5px; }
@@ -782,6 +784,15 @@ h1, h2, h3, .serif { font-family: var(--display); }
 .all-tools-list a { color: var(--ink); text-decoration: none; font-weight: 700; }
 .all-tools-list a:hover { color: var(--forest); text-decoration: underline; }
 .all-tools-sec { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+/* 業種のバッジ（同じ名前のツールを見分ける。児童／障害／介護、3業種すべては「共通」） */
+.sec-tags { display: inline-flex; flex: none; gap: 3px; margin-right: 6px; vertical-align: 1px; }
+.sec-tag { display: inline-block; min-width: 2.6em; padding: 1px 6px; border-radius: 5px; background: #5d6670; color: #fff; font-family: var(--sans); font-size: 11.5px; font-weight: 700; line-height: 1.5; letter-spacing: .04em; text-align: center; white-space: nowrap; }
+.sec-tag-jido { background: #1f6a9e; }
+.sec-tag-shogai { background: #2f7a3d; }
+.sec-tag-kaigo { background: #b0521a; }
+.all-tools-list a { display: inline-flex; align-items: baseline; min-width: 0; }
+.all-tools-list .sec-tags { position: relative; top: -1px; }
+.recent-list .sec-tags { margin-right: 6px; }
 
 .fd-save { margin: -4px 0 10px; padding: 6px 10px; border-radius: 8px; background: var(--leaf-soft); color: var(--forest-ink); font-size: 12.5px; line-height: 1.6; }
 .fd-save a { color: var(--forest); font-weight: 700; }

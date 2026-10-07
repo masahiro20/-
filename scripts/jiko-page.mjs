@@ -57,9 +57,11 @@ export function jikoPage({ esc }) {
             <button class="btn btn-line btn-sm" id="jPrint" type="button">印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="jAi" type="button">AIで文章を整える</button>
             <button class="btn btn-line btn-sm" id="jShare" type="button">リンクで共有</button>
+            <button class="btn btn-line btn-sm" id="jReset" type="button" title="入力と書き換えをすべて消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">報告書は横にスクロールできます。</span></p>
+        <p class="fd-save" id="jSave" hidden></p>
         <div class="doc-scroll"><div class="doc doc-portrait" id="jDoc"></div></div>
         <div id="jWarn"></div>
       </div>

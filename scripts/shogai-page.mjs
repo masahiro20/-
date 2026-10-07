@@ -36,7 +36,7 @@ export function shogaiPage({ esc }) {
           <label class="field">ご本人の希望（本人の言葉で）<textarea id="sWishSelf" class="input" rows="2" placeholder="例：もっと作業ができるようになって、工賃を増やしたい。"></textarea></label>
           <label class="field">ご家族の希望<textarea id="sWishFamily" class="input" rows="2" placeholder="例：体調を崩さずに通い続けてほしい。"></textarea></label>
           <label class="field">得意なこと・好きなこと<span class="hint">支援の方針に書き込まれます</span><input id="sStrength" class="input" placeholder="例：細かい作業、音楽、パソコン"></label>
-          <p class="small muted" style="margin:14px 0 0">氏名・病名など、個人が特定できる情報は入力しないでください。入力内容はこの画面の中だけで使われます。</p>
+          <p class="small muted" style="margin:14px 0 0">氏名・病名など、個人が特定できる情報は入力しないでください。入力内容は送信されません（続きから使えるよう、この端末にだけ7日間保存します）。</p>
         </div>
       </div>
       <div class="doc-area">
@@ -48,9 +48,11 @@ export function shogaiPage({ esc }) {
             <button class="btn btn-line btn-sm" id="sPrint" type="button" disabled>印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="sAi" type="button" disabled>AIで文章を整える</button>
             <button class="btn btn-line btn-sm" id="sShare" type="button" disabled>リンクで共有</button>
+            <button class="btn btn-line btn-sm" id="sReset" type="button" title="入力と書き換えをすべて消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
+        <p class="fd-save" id="sSave" hidden></p>
         <div class="doc-scroll"><div class="doc" id="sDoc"></div></div>
       </div>
     </div>

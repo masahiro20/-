@@ -14,6 +14,9 @@
   var params = new URLSearchParams(location.search);
   if (typeById[params.get('type')]) state.type = params.get('type');
   state.factors = (params.get('f') || '').split(',').filter(Boolean);
+  var fromUrl = params.has('type') || params.has('f');
+  var auto = null; // 自動保存（下の「自動保存」）
+  function persist() { if (auto) auto.save(); }
 
   function allFactors() {
     var out = [];
@@ -94,6 +97,8 @@
       chosen: chosen,
     };
   }
+  // 入力欄（自動保存とリセットで使う）
+  var FIELDS = ['jDate', 'jTime', 'jPlace', 'jSituation', 'jFound', 'jDetail', 'jLevel', 'jVisit', 'jDiag'];
   function has(k) { return Object.prototype.hasOwnProperty.call(state.edits, k); }
   function val(k, v) { return has(k) ? state.edits[k] : v; }
   function cell(k, v, ph) {
@@ -135,6 +140,7 @@
     if (!p.chosen.length) warn = '原因（要因）を選ぶと、原因分析と再発防止策の文例が入ります。';
     else if (!groups.staff && !groups.env) warn = '原因が本人要因だけになっています。職員の動き方や環境（床・照明・用具・人員配置など）に変えられることがないか、あわせて検討しましょう。';
     $('jWarn').innerHTML = warn ? '<div class="redpen warn"><span class="redpen-label">赤ペン</span><p>' + esc(warn) + '</p></div>' : '';
+    persist();
   }
 
   function toText() {
@@ -166,7 +172,7 @@
     ['c-person', 'c-staff', 'c-env', 'm-proc', 'm-env', 'm-other'].forEach(function (k) { delete state.edits[k]; });
     renderDoc();
   });
-  ['jDate', 'jTime', 'jPlace', 'jSituation', 'jFound', 'jDetail', 'jLevel', 'jVisit', 'jDiag', 'jFamily'].forEach(function (id) {
+  FIELDS.concat('jFamily').forEach(function (id) {
     $(id).addEventListener('input', renderDoc);
     $(id).addEventListener('change', renderDoc);
   });
@@ -178,6 +184,7 @@
     if (!ed) return;
     state.edits[ed.getAttribute('data-key')] = ed.innerText.replace(/\n$/, '');
     ed.classList.add('is-edited');
+    persist();
   });
   doc.addEventListener('focusout', function (e) {
     var ed = e.target.closest('.ed');
@@ -208,9 +215,61 @@
     });
   });
 
-  var today = new Date();
-  $('jDate').value = today.toISOString().slice(0, 10);
+  // ── 自動保存（この端末の localStorage だけ。7日で消える。common.js の Otasuke.draft） ──
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function setSelect(el, v) {
+    if (typeof v === 'string' && Array.prototype.some.call(el.options, function (o) { return o.value === v; })) el.value = v;
+  }
+  function restore(d) {
+    if (typeById[d.type]) state.type = d.type;
+    if (Array.isArray(d.factors)) {
+      var ok = {};
+      allFactors().forEach(function (x) { ok[x.f.id] = true; });
+      state.factors = d.factors.filter(function (id, i, a) { return typeof id === 'string' && ok[id] && a.indexOf(id) === i; });
+    }
+    if (d.edits && typeof d.edits === 'object') {
+      Object.keys(d.edits).forEach(function (k) { if (typeof d.edits[k] === 'string') state.edits[k] = d.edits[k]; });
+    }
+    renderTypes(); // 「状況」の選択肢は種別で変わるので、先に作り直す
+    var v = d.v || {};
+    if (typeof v.jDate === 'string' && /^(\d{4}-\d{2}-\d{2})?$/.test(v.jDate)) $('jDate').value = v.jDate;
+    if (typeof v.jTime === 'string' && /^(\d{2}:\d{2}(:\d{2})?)?$/.test(v.jTime)) $('jTime').value = v.jTime;
+    if (typeof v.jDetail === 'string') $('jDetail').value = v.jDetail;
+    ['jPlace', 'jSituation', 'jFound', 'jLevel', 'jVisit', 'jDiag'].forEach(function (id) { setSelect($(id), v[id]); });
+    if (typeof d.family === 'boolean') $('jFamily').checked = d.family;
+    if (Array.isArray(d.agencies)) {
+      $('jAgencies').querySelectorAll('input').forEach(function (c) { c.checked = d.agencies.indexOf(Number(c.value)) !== -1; });
+    }
+  }
+  function snapshot() {
+    var v = {};
+    FIELDS.forEach(function (id) { v[id] = $(id).value; });
+    var ag = [];
+    $('jAgencies').querySelectorAll('input:checked').forEach(function (c) { ag.push(Number(c.value)); });
+    return { type: state.type, factors: state.factors, edits: state.edits, v: v, family: $('jFamily').checked, agencies: ag };
+  }
+  // リセット：入力・書き換え・この端末の保存をすべて消して、最初の状態に戻す
+  $('jReset').addEventListener('click', function () {
+    if (!window.confirm('入力した内容と書き換えた文章を消して、最初の状態に戻します。\nこの端末に保存していた内容も消えます。よろしいですか？')) return;
+    state.type = 'tento'; state.factors = []; state.edits = {};
+    renderTypes();
+    FIELDS.forEach(function (id) {
+      var el = $(id);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = el.defaultValue;
+    });
+    $('jDate').value = today();
+    $('jFamily').checked = $('jFamily').defaultChecked;
+    $('jAgencies').querySelectorAll('input').forEach(function (c) { c.checked = c.defaultChecked; });
+    renderFactors();
+    renderDoc();
+    auto.clear();
+    window.Otasuke.toast('入力を消して、最初の状態に戻しました');
+  });
+
+  $('jDate').value = today();
   renderTypes();
+  auto = window.Otasuke.draft.auto({ id: 'jiko', fromUrl: fromUrl, restore: restore, get: snapshot, note: $('jSave') });
   renderFactors();
   renderDoc();
+  auto.announce();
 })();

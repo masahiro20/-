@@ -240,7 +240,7 @@ function buildIndex() {
           <label class="field">好きなこと・得意なこと<span class="hint">支援の方針に書き込まれます</span><input id="likes" class="input" placeholder="例：電車、ブロック、絵を描くこと"></label>
           <label class="field">本人・家族の意向<textarea id="wish" class="input" rows="3" placeholder="例：（本人）友だちとゲームがしたい。（保護者）学校の準備を自分でできるようになってほしい。"></textarea></label>
           <label class="field">支援の標準的な提供時間等<input id="time" class="input" placeholder="例：月・水・金 14:30〜17:30"></label>
-          <p class="small muted" style="margin:14px 0 0">氏名など、個人が特定できる情報は入力しないでください。入力内容はこの画面の中だけで使われます。</p>
+          <p class="small muted" style="margin:14px 0 0">氏名など、個人が特定できる情報は入力しないでください。入力内容は送信されません（続きから使えるよう、この端末にだけ7日間保存します）。</p>
         </div>
       </div>
 
@@ -253,9 +253,11 @@ function buildIndex() {
             <button class="btn btn-line btn-sm" id="printPlan" type="button" disabled>印刷</button>
             <button class="btn btn-line btn-sm ai-btn" id="aiPlan" type="button" disabled>AIで文章を整える</button>
             <button class="btn btn-line btn-sm" id="shareLink" type="button" disabled>リンクで共有</button>
+            <button class="btn btn-line btn-sm" id="resetPlan" type="button" title="入力と書き換えをすべて消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
           </div>
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。書き換えた箇所は、課題を選び直しても残ります。<span class="sp-only">計画書は横にスクロールできます。</span></p>
+        <p class="fd-save" id="planSave" hidden></p>
         <div class="doc-scroll"><div class="doc" id="doc"></div></div>
         <div id="warn"></div>
         <div class="tool-cta">

@@ -88,6 +88,66 @@
     clear: function (id) { store.del(DRAFT_PREFIX + id); },
     available: store.ok,
   };
+
+  // 古い作りのツール（事故報告・個別支援計画）向けの自動保存のまとめ役。formdoc.js・renrakucho.js と同じ動きにそろえる。
+  // opts: { id, fromUrl: 共有リンクの指定があるか, restore(d): 保存していた内容を画面に戻す, get(): 保存する内容, note: 案内を出す要素, hash: もどすリンクにつける # }
+  // 返り値: save()（入力のたびに呼ぶ。400ms まとめて保存）、clear()（リセット。保存とURLの指定を消す）、announce()（復元したら知らせる）
+  draft.auto = function (opts) {
+    var id = opts.id;
+    var canSave = draft.available();
+    var fromUrl = !!opts.fromUrl;
+    var saved = canSave ? draft.load(id) : null;
+    var restored = null;
+    // 共有リンク（URLの指定）で開いたときは、URLの内容を優先する
+    if (saved && !fromUrl && saved.d && typeof saved.d === 'object') {
+      try { opts.restore(saved.d); restored = saved.t; } catch (e) { restored = null; }
+    }
+    var timer = null;
+    var ready = false;
+    function note() {
+      var el = opts.note;
+      if (!el) return;
+      if (!canSave) { el.hidden = true; return; }
+      var html = '<b>自動保存</b>：この端末にだけ保存しています（' + DRAFT_DAYS + '日で自動的に消えます）。共有の端末では「リセット」で消してください。';
+      if (fromUrl && saved) html += '<br>共有リンクの内容を表示しています（この端末に保存していた入力より優先）。ここで入力すると、保存していた入力は置きかわります。<a href="' + escHtml(location.pathname + (opts.hash || '')) + '">保存していた入力にもどす</a>';
+      el.innerHTML = html;
+      el.hidden = false;
+    }
+    function saveNow() {
+      clearTimeout(timer); timer = null;
+      if (!canSave) return;
+      draft.save(id, opts.get());
+      // 共有リンクから入力を始めたら、前の保存は置きかわるので「もどす」の案内を消す
+      if (fromUrl && saved) { saved = null; note(); }
+    }
+    function flush() { if (timer) saveNow(); }
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+    note();
+    return {
+      canSave: canSave,
+      restored: restored,
+      // 最初の表示が終わってから呼ぶ。これより前の save() は無視する（開いただけでは保存しない）
+      announce: function () {
+        ready = true;
+        if (!restored) return;
+        var dt = new Date(restored);
+        toast('前回の入力（' + (dt.getMonth() + 1) + '月' + dt.getDate() + '日 ' + dt.getHours() + ':' + String(dt.getMinutes()).padStart(2, '0') + '）を復元しました');
+      },
+      save: function () {
+        if (!canSave || !ready) return;
+        clearTimeout(timer);
+        timer = setTimeout(saveNow, 400);
+      },
+      clear: function () {
+        clearTimeout(timer); timer = null;
+        if (canSave) draft.clear(id);
+        if (location.search && window.history && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+        fromUrl = false; saved = null; restored = null;
+        note();
+      },
+    };
+  };
   (function sweep() {
     try {
       var ls = window.localStorage, old = [];
@@ -137,7 +197,14 @@
   var escHtml = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
-  var SECTOR_NAMES = { jido: '児童支援', shogai: '障害福祉', kaigo: '介護' };
+  // 業種の小さなバッジ（同じ名前のツールを見分ける）。scripts/tool-search.mjs の secTags と同じ規則：3業種すべては「共通」
+  var SECTOR_SHORT = { jido: '児童', shogai: '障害', kaigo: '介護' };
+  function secTags(sectors) {
+    sectors = Array.isArray(sectors) ? sectors.filter(function (x) { return SECTOR_SHORT[x]; }) : [];
+    if (!sectors.length) return '';
+    var list = sectors.length >= 3 ? [['all', '共通']] : sectors.map(function (x) { return [x, SECTOR_SHORT[x]]; });
+    return '<span class="sec-tags">' + list.map(function (a) { return '<span class="sec-tag sec-tag-' + a[0] + '">' + a[1] + '</span>'; }).join('') + '</span>';
+  }
 
   // トップの「最近使ったツール」。記録がなければ何も出さない
   function initRecent(tools) {
@@ -149,7 +216,8 @@
     var items = recentList().filter(function (x) { return !tools || byP[x.p]; });
     if (!items.length) { box.hidden = true; return; }
     box.querySelector('.recent-list').innerHTML = items.map(function (x) {
-      return '<li><a href="' + escHtml(x.p) + '">' + escHtml(byP[x.p] ? byP[x.p].n : x.n) + '</a></li>';
+      var t = byP[x.p];
+      return '<li><a href="' + escHtml(x.p) + '">' + (t ? secTags(t.s) : '') + '<span class="sec-name">' + escHtml(t ? t.n : x.n) + '</span></a></li>';
     }).join('');
     box.hidden = false;
     box.querySelector('.recent-clear').onclick = function () {
@@ -170,16 +238,17 @@
       .replace(/の/g, '');
   }
   function termsOf(q) { return String(q || '').split(/[\s\u3000]+/).map(normalize).filter(Boolean); }
-  // 2：名前・別名で一致、1：説明文で一致、0：一致しない
+  // 3：名前で一致、2：別名で一致、1：説明文で一致、0：一致しない（k の先頭は名前）
   function score(t, terms) {
     if (!terms.length) return 0;
+    var name = t.k.split('|')[0];
+    if (terms.every(function (w) { return name.indexOf(w) !== -1; })) return 3;
     if (terms.every(function (w) { return t.k.indexOf(w) !== -1; })) return 2;
     if (terms.every(function (w) { return t.k.indexOf(w) !== -1 || t.kd.indexOf(w) !== -1; })) return 1;
     return 0;
   }
   function itemHtml(t) {
-    return '<a class="ts-item" href="' + escHtml(t.p) + '"><b>' + escHtml(t.n) + '</b><span class="ts-desc">' + escHtml(t.d) + '</span>' +
-      '<span class="ts-sec">' + t.s.map(function (x) { return '<span class="pill pill-sector pill-' + x + '">' + SECTOR_NAMES[x] + '</span>'; }).join('') + '</span></a>';
+    return '<a class="ts-item" href="' + escHtml(t.p) + '"><span class="ts-name">' + secTags(t.s) + '<b>' + escHtml(t.n) + '</b></span><span class="ts-desc">' + escHtml(t.d) + '</span></a>';
   }
   function noneHtml(q) {
     return '<div class="ts-none"><p><b>「' + escHtml(q) + '」に合うツールは、まだありません。</b></p>' +
@@ -226,7 +295,7 @@
           var t = byP[c.getAttribute('href')];
           var sc = t ? score(t, terms) : (terms.every(function (w) { return normalize(c.textContent).indexOf(w) !== -1; }) ? 1 : 0);
           c.hidden = !sc;
-          c.style.order = sc === 2 ? '0' : '1'; // 名前で一致したものを先に
+          c.style.order = sc === 3 ? '0' : sc === 2 ? '1' : '2'; // 名前で一致したものを先に
           if (sc) n++;
         });
         var others = ranked(tools.filter(function (t) { return !inGrid[t.p]; }), terms);

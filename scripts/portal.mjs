@@ -1,6 +1,6 @@
 // 総合サイトの入口（トップ・業種別ページ）と、共通パーツ（共有ボタン・PR枠）。
 import { TEMPLATES } from '../data/templates.mjs';
-import { allTools, searchBox, SECTOR_NAMES } from './tool-search.mjs';
+import { allTools, searchBox, secTags } from './tool-search.mjs';
 
 export const SECTORS = [
   {
@@ -17,7 +17,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['安全計画（送迎・置き去り防止）の下書き', '保育所等訪問支援の報告書'],
+    upcoming: ['保育所等訪問支援の報告書', '送迎記録・バイタルの記録'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -28,7 +28,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['工賃（賃金）向上計画の下書き', '身体拘束の3要件の検討記録'],
+    upcoming: ['虐待防止のセルフチェック表', '苦情受付・対応の記録'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -129,7 +129,7 @@ export function portalPages({ esc, CONFIG }) {
     </div>
     <details class="all-tools" id="all-tools">
       <summary>すべてのツールの一覧（${TOOLS.length}）</summary>
-      <ul class="all-tools-list">${TOOLS.map((t) => `<li><a href="${esc(t.path)}">${esc(t.name)}</a><span class="all-tools-sec">${t.sectors.map((x) => `<span class="pill pill-sector pill-${x}">${SECTOR_NAMES[x]}</span>`).join('')}</span></li>`).join('')}</ul>
+      <ul class="all-tools-list">${TOOLS.map((t) => `<li><a href="${esc(t.path)}">${secTags(t.sectors)}<span class="sec-name">${esc(t.name)}</span></a></li>`).join('')}</ul>
     </details>
   </div>
 </section>
