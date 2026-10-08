@@ -21,7 +21,7 @@
 1. [Search Console](https://search.google.com/search-console) を開き、「プロパティを追加」→ **URLプレフィックス** に `https://fukushi-otasuke.vercel.app/` を入れる。
 2. 確認方法で「HTMLタグ」を選び、表示された `<meta name="google-site-verification" content="〇〇〇〇">` の **〇〇〇〇 の部分** をコピーして Claude に送る（`data/config.mjs` の `searchConsoleVerification` に入れて公開し直す）。**← 済み（全ページに入れて公開済み）**
 3. 公開し直したら、Search Console の画面で「確認」を押す。
-4. 左のメニュー「サイトマップ」に `sitemap.xml` と入れて送信する。
+4. 左のメニュー「サイトマップ」に `sitemap.xml` と入れて送信する。**← 済み（2026-10-08）**
 5. 数日〜1週間で、検索での表示回数・クリック数が見られるようになる。
 
 ## （別の方法）Cloudflare Pages で公開する（10分）👤
