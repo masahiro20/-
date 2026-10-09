@@ -31,16 +31,29 @@
     ['sejo', '居室の施錠・隔離', '自分の意思で開けることのできない居室などに隔離する（施錠する）'],
     ['kusuri', '向精神薬の過剰な使用', '行動を落ち着かせるために、向精神薬を過剰に使う'],
   ];
-  // 心配されていること：[id, 選択肢, 記録の文]
+  // 心配されていること：[id, 選択肢, 記録の文, 合う行為（null はどの行為にも合う）]
+  // 選んだ行為に合うものだけを候補に出す（例：「居室の施錠」に「転倒・転落のおそれ」は出さない）。
   var REASON = [
-    ['tento', '転倒・転落のおそれ', 'ベッドや車いすから一人で降りようとして、転倒・転落するおそれがある。'],
-    ['tube', 'チューブ（点滴・経管栄養）を抜くおそれ', '点滴や経管栄養のチューブを自分で抜いてしまい、必要な水分・栄養・薬がとれなくなるおそれがある。'],
-    ['hifu', '皮膚をかきむしる・傷つける', '皮膚をかきむしり、傷が悪化するおそれがある。'],
-    ['jisho', '自分を傷つける行動', '頭を強く打ちつけるなど、自分を傷つける行動がある。'],
-    ['tagai', 'ほかの方を傷つけるおそれ', 'ほかの方をたたく・押すなど、ほかの方を傷つけるおそれがある。'],
-    ['gaishutsu', '一人で外に出て危険にあうおそれ', '一人で外に出て、交通事故などの危険にあうおそれがある。'],
-    ['other', 'その他（下に記入）', ''],
+    ['tento', '転倒・転落のおそれ', 'ベッド・車いす・いすから一人で降りたり立ち上がったりしようとして、転倒・転落するおそれがある。', ['saku', 'belt', 'himo', 'isu']],
+    ['tube', 'チューブ（点滴・経管栄養）を抜くおそれ', '点滴や経管栄養のチューブを自分で抜いてしまい、必要な水分・栄養・薬がとれなくなるおそれがある。', ['himo', 'mitten', 'tsunagi']],
+    ['hifu', '皮膚をかきむしる・傷つける', '皮膚をかきむしり、傷が悪化するおそれがある。', ['himo', 'mitten', 'tsunagi']],
+    ['omutsu', 'おむつを外す・服を脱ぐ（皮膚のトラブル）', 'おむつを外したり服を脱いだりして、皮膚のかぶれや傷が悪化するおそれがある。', ['tsunagi']],
+    ['jisho', '自分を傷つける行動', '頭を強く打ちつけるなど、自分を傷つける行動がある。', ['himo', 'mitten', 'sejo', 'kusuri']],
+    ['tagai', 'ほかの方を傷つけるおそれ', 'ほかの方をたたく・押すなど、ほかの方を傷つけるおそれがある。', ['himo', 'sejo', 'kusuri']],
+    ['gaishutsu', '一人で外に出て危険にあうおそれ', '一人で外に出て、交通事故などの危険にあうおそれがある。', ['sejo', 'kusuri']],
+    ['inochi', '本人の命にかかわる危険', '本人の命にかかわる危険が生じるおそれがある。', null],
+    ['other', 'その他（下に記入）', '', null],
   ];
+  // 「心配されていること」の候補。行為を1つも選んでいない（「そのほかの行為」だけ）ときは、すべて出す。
+  // 先頭は「選んでください」。行為を選び直して、選んでいた理由が候補から外れたときは、
+  // エンジン（formdoc.js の clean）が先頭の値に戻すため、ほかの理由に勝手に置きかわらず「未選択」になる。
+  function reasonOpts(v) {
+    var acts = v.acts || [];
+    var list = REASON.filter(function (x) {
+      return !acts.length || !x[3] || x[3].some(function (a) { return acts.indexOf(a) !== -1; });
+    });
+    return [['', '（選んでください）']].concat(list.map(function (x) { return [x[0], x[1]]; }));
+  }
   // 代わりの方法：[id, 選択肢, 記録の文]
   var ALT = [
     ['riyu', '行動の理由を探り、先回りして対応した', '行動の理由（トイレ・痛み・不安・のどの渇きなど）を探り、先回りして対応した。'],
@@ -74,6 +87,7 @@
   ];
   var NEXT = [['3', '3日後'], ['7', '1週間後'], ['14', '2週間後'], ['30', '1か月後']];
 
+  function reasonLabel(id) { return (texts(REASON, [id])[0] || ['', ''])[1].replace(/（下に記入）$/, ''); }
   function sec(v) { return v.sector === 'shogai' ? 'shogai' : 'kaigo'; }
   function texts(list, ids) { return list.filter(function (x) { return ids.indexOf(x[0]) !== -1; }); }
   function addDays(s, n) {
@@ -121,7 +135,7 @@
       { title: '検討した行為と理由', fields: [
         { id: 'acts', type: 'chips', label: '検討した行為', options: ACTS.map(function (x) { return [x[0], x[1]]; }) },
         { id: 'actOther', type: 'text', label: 'そのほかの行為', ph: '例：夜間、居室のドアの外にいすを置く' },
-        { id: 'reason', type: 'select', label: '心配されていること', options: REASON.map(function (x) { return [x[0], x[1]]; }) },
+        { id: 'reason', type: 'select', label: '心配されていること', hint: '選んだ行為に合うものが出ます', options: reasonOpts },
         { id: 'scene', type: 'textarea', label: 'どんな場面で・どんな様子か', hint: '氏名は書かないでください', rows: 3, ph: '例：夜中の2時ごろ、トイレに行こうとして一人でベッドから降りようとすることが続いている。10月1日には、ベッドの横の床に座り込んでいるところを見つけた（けがなし）。' },
       ] },
       { title: 'まず、代わりの方法を考える', small: '非代替性', note: '身体拘束をしないで済む方法を、先に考えます。試した方法と、その結果を残しましょう。', fields: [
@@ -270,6 +284,8 @@
     warn: function (v) {
       var j = judge(v);
       if (!v.acts.length && !v.actOther.trim()) return '「二」で、検討した行為を選んでください。';
+      if (!v.reason && !v.scene.trim()) return '「二」で、心配されていること（選んだ行為に合うものが出ます）を選ぶか、どんな場面で・どんな様子かを書いてください。';
+      if ((v.reason === 'inochi' || v.reason === 'other') && !v.scene.trim()) return '「' + reasonLabel(v.reason) + '」を選んだときは、どんな場面で・どんな危険があるのかを「どんな場面で・どんな様子か」に具体的に書いてください。';
       if (!v.alt.length) return 'まず「三」で、身体拘束をしないで済む方法（代わりの方法）を選び、試した結果を書きましょう。3つの要件の確認は、そのあとです。';
       var staff = v.members.filter(function (x) { return x !== 'honnin' && x !== 'kazoku'; });
       if (v.members.indexOf('kanri') === -1 || staff.length < 2) return '判断は担当者一人ではせず、組織で行います。管理者を含め、看護職員や現場の職員など複数の職種で検討しましょう。';
