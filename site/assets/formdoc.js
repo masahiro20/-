@@ -43,6 +43,65 @@
     return (options || []).map(function (o) { return typeof o === 'string' ? [o, o] : o; });
   }
 
+  // ── よく使う入力（プロフィール。common.js の Otasuke.profile、キー otasuke:profile） ──
+  // どの欄が「事業所名」「記入者」「責任者」「サービスの種類」にあたるかの対応表（'ツールのid.欄のid': 種類）。
+  // テンプレートのファイルは変えずに、ここだけで対応づける。欄の id が変わったら、その欄は入らなくなるだけ（壊れない）。
+  // テンプレート側で欄に profile: 'office' などと書いても対応づけられる（こちらの表より優先）。
+  var PROFILE_FIELDS = {
+    'otayori.name': 'office', 'kouchin.name': 'office', 'anzen-keikaku.name': 'office',
+    'houmon-hokoku.office': 'office',
+    'kouchin.staff': 'writer', 'houmon-hokoku.staff': 'writer',
+    'kouchin.boss': 'boss', 'anzen-keikaku.boss': 'boss',
+    'assessment.svc': 'svc', 'monitoring.svc': 'svc', 'shien-kiroku.svc': 'svc', 'kouchin.kind': 'svc',
+    'otayori.svc': 'svc', 'anzen-keikaku.svc': 'svc', 'iinkai.svc': 'svc', 'kenshu-keikaku.svc': 'svc',
+    'kaigi.sector': 'svc', 'kosoku.sector': 'svc',
+  };
+  // 表にない文字の欄は、見出しがこれに当たれば対応づける（新しいテンプレートでも、見出しが同じなら入る）
+  var PROFILE_LABELS = [
+    [/^事業所名(（[^）]*）)?$/, 'office'],
+    [/^(記入者|記録者|作成者|報告者)(名|氏名)?(（[^）]*）)?$/, 'writer'],
+  ];
+  // サービスの種類は、ツールごとに選択肢の値が違う。覚えるのは共通の値（b・a・iko・jiritsu・seikatsu・gh・jihatsu・hodei・tagino・center
+  // または iinkai などの大きな区分 k-shisetsu・s-nitchu・jido など）にして、入れるときに「細かい → 区分 → 業種」の順に合うものを探す。
+  var SVC_PARENT = { b: 's-nitchu', a: 's-nitchu', iko: 's-nitchu', jiritsu: 's-nitchu', seikatsu: 's-nitchu', gh: 's-nitchu', jihatsu: 'jido', hodei: 'jido', tagino: 'jido', center: 'jido' };
+  function svcSector(c) { return /^k-/.test(c) ? 'kaigo' : /^s-/.test(c) ? 'shogai' : c; }
+  // ツールの選択肢の値 ↔ 共通の値がちがうもの（canon: 共通 → 選択肢、back: 選択肢 → 共通）
+  var SVC_ALIAS = {
+    houday: 'hodei', // assessment・monitoring
+  };
+  var SVC_TO_OPT = {
+    'iinkai.svc': { 'k-tanki': 'k-kyoju', 'k-tsusho': 'k-kyotaku', 'k-houmon': 'k-kyotaku' },
+  };
+  function svcChain(c) {
+    var out = [c], p = SVC_PARENT[c];
+    if (p) out.push(p);
+    var s = svcSector(p || c);
+    if (out.indexOf(s) === -1) out.push(s);
+    return out;
+  }
+  // 覚えている値 c に合う、この欄の選択肢の値（なければ ''）
+  function svcResolve(key, opts, c) {
+    var ids = opts.map(function (o) { return o[0]; });
+    var toOpt = SVC_TO_OPT[key] || {};
+    var chain = svcChain(c);
+    for (var i = 0; i < chain.length; i++) {
+      var x = chain[i];
+      var cand = [toOpt[x], x].concat(ids.filter(function (id) { return SVC_ALIAS[id] === x; }));
+      for (var j = 0; j < cand.length; j++) if (cand[j] && ids.indexOf(cand[j]) !== -1) return cand[j];
+    }
+    return '';
+  }
+  function profileKindOf(toolId, f, labels) {
+    var k = f.profile || PROFILE_FIELDS[toolId + '.' + f.id];
+    if (!k && (!f.type || f.type === 'text') && f.label) {
+      for (var i = 0; i < PROFILE_LABELS.length; i++) if (PROFILE_LABELS[i][0].test(f.label)) { k = PROFILE_LABELS[i][1]; break; }
+    }
+    if (!k || !labels[k]) return '';
+    var isText = !f.type || f.type === 'text' || f.type === 'textarea';
+    var isPick = f.type === 'seg' || f.type === 'select';
+    return (k === 'svc' ? isPick : isText) ? k : '';
+  }
+
   function run(T) {
     var state = { v: {}, edits: {} };
     var fields = [];
@@ -96,10 +155,70 @@
       }
       restored = saved.t;
     }
+
+    // ── よく使う入力（プロフィール）：初めて開いたとき（下書きを戻していないとき）だけ、空の欄に入れる ──
+    // 優先する順：共有リンク（URLの指定）・下書き ＞ プロフィール ＞ 初期値。文字の欄は空のときだけ入れる。
+    var P = window.Otasuke && window.Otasuke.profile;
+    var profKind = {};
+    if (P) fields.forEach(function (f) { var k = profileKindOf(draftId, f, P.labels); if (k) profKind[f.id] = k; });
+    var hasProf = Object.keys(profKind).length > 0;
+    var profFilled = [];   // この画面で入れた種類
+    var profFilledIds = {}; // この画面で入れた欄（見出しに「前回の入力から」と出す）
+    var profSaved = [];    // この画面で覚えた種類
+    var profDirty = {};    // 利用者が変えた欄（保存のときに覚える）
+    var profOff = false;   // この画面で「覚えている入力を消す」を押したら、この画面では覚えない
+    var profCleared = false;
+    function fieldById(id) { for (var i = 0; i < fields.length; i++) if (fields[i].id === id) return fields[i]; return null; }
+    function applyProfile() {
+      profFilled = []; profFilledIds = {};
+      if (!hasProf || !canSave || profOff) return;
+      var p = P.load();
+      if (!p) return;
+      fields.forEach(function (f) {
+        var k = profKind[f.id];
+        if (!k || !p[k]) return;
+        if (fromUrl && params.has(f.id)) return; // 共有リンクの指定を優先
+        if (k === 'svc') {
+          var v = svcResolve(draftId + '.' + f.id, optionsOf(f), p.svc);
+          if (!v || v === state.v[f.id]) return;
+          state.v[f.id] = v;
+        } else {
+          if (state.v[f.id]) return; // 空の欄だけ
+          state.v[f.id] = p[k];
+        }
+        profFilledIds[f.id] = true;
+        if (profFilled.indexOf(k) === -1) profFilled.push(k);
+      });
+      if (profFilled.length) P.touch();
+    }
+    function markProfile(id) { if (profKind[id]) profDirty[id] = true; }
+    function saveProfile() {
+      var ids = Object.keys(profDirty);
+      profDirty = {};
+      if (!ids.length || profOff || !canSave) return;
+      var p = P.load() || {};
+      var added = [];
+      ids.forEach(function (id) {
+        var k = profKind[id], v = state.v[id], f = fieldById(id);
+        if (typeof v !== 'string' || !f) return;
+        if (k === 'svc') {
+          // 覚えている値のままで同じ選択肢になるなら、細かいほうを残す（例：B型を覚えていて、委員会で「障害福祉：通所…」を選んだ）
+          if (p.svc && svcResolve(draftId + '.' + id, optionsOf(f), p.svc) === v) return;
+          v = SVC_ALIAS[v] || v;
+        }
+        v = v.trim();
+        if (!v || p[k] === v) return;
+        if (P.set(k, v)) { p[k] = v; if (profSaved.indexOf(k) === -1) added.push(k); }
+      });
+      if (added.length) { profSaved = profSaved.concat(added); profCleared = false; showSaveNote(); }
+    }
+    if (!restored) applyProfile();
+
     var saveTimer = null;
     function saveNow() {
       clearTimeout(saveTimer); saveTimer = null;
       if (canSave) D.save(draftId, { v: state.v, e: state.edits });
+      saveProfile();
       // 共有リンクから入力を始めたら、前の保存は置きかわるので「もどす」の案内を消す
       if (fromUrl && saved) { saved = null; showSaveNote(); }
     }
@@ -125,7 +244,8 @@
     // ── 左の入力欄 ──
     function fieldHtml(f) {
       var v = state.v[f.id];
-      var label = f.label ? esc(f.label) + (f.hint ? '<span class="hint">' + esc(f.hint) + '</span>' : '') : '';
+      var label = f.label ? esc(f.label) + (f.hint ? '<span class="hint">' + esc(f.hint) + '</span>' : '') +
+        (profFilledIds[f.id] ? '<span class="hint fd-prof-hint">前回の入力から入れました（変更できます）</span>' : '') : '';
       var opts = optionsOf(f);
       if (f.type === 'seg') {
         return (label ? '<p class="field fd-label">' + label + '</p>' : '') + '<div class="seg' + (f.wide ? ' seg-wide' : '') + '" role="group" data-f="' + f.id + '">' +
@@ -257,6 +377,7 @@
       if (!b) return;
       var id = b.parentNode.getAttribute('data-f');
       state.v[id] = b.getAttribute('data-v');
+      markProfile(id);
       b.parentNode.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       changed(true);
     });
@@ -266,19 +387,20 @@
       var id = box.getAttribute('data-f');
       var f = fields.filter(function (x) { return x.id === id; })[0];
       // 文字・日付の欄は input で反映済み。change（フォーカスが外れたとき）で描き直すと入力位置を見失う
-      if (f.type !== 'chips' && f.type !== 'select') { state.v[id] = e.target.value; renderDoc(); persist(); return; }
+      if (f.type !== 'chips' && f.type !== 'select') { state.v[id] = e.target.value; markProfile(id); renderDoc(); persist(); return; }
       if (f.type === 'chips') {
         var list = [];
         box.querySelectorAll('input:checked').forEach(function (c) { list.push(c.value); });
         if (f.max && list.length > f.max) { e.target.checked = false; window.Otasuke.toast(f.max + 'つまで選べます'); return; }
         state.v[id] = list;
-      } else state.v[id] = e.target.value;
+      } else { state.v[id] = e.target.value; markProfile(id); }
       changed(true);
     });
     panel.addEventListener('input', function (e) {
       var el = e.target.closest('input[data-f]:not([type=checkbox]),textarea[data-f]');
       if (!el) return;
       state.v[el.getAttribute('data-f')] = el.value;
+      markProfile(el.getAttribute('data-f'));
       renderDoc();
       persist();
     });
@@ -309,10 +431,13 @@
       clearTimeout(saveTimer); saveTimer = null;
       if (canSave) D.clear(draftId);
       setDefaults();
-      clean();
-      state.edits = {};
       if (location.search && window.history && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
       fromUrl = false; restored = null;
+      // 最初に開いたときと同じく、覚えている入力（事業所名など）は入れ直す。「覚えている入力を消す」で消せる
+      profDirty = {}; profSaved = [];
+      applyProfile();
+      clean();
+      state.edits = {};
       renderPanel();
       renderDoc();
       showSaveNote();
@@ -333,12 +458,32 @@
     });
 
     // 保存の案内（保存できない環境では出さない）
+    // よく使う入力の案内（入れたとき・覚えたときだけ）。「覚えている入力を消す」ボタンつき
+    function profNames(list) { return list.map(function (k) { return P.labels[k]; }).join('・'); }
+    function profileNote() {
+      if (!hasProf) return '';
+      var btn = '<button type="button" class="link-btn fd-prof-clear">覚えている入力を消す</button>';
+      if (profCleared) return '<br><span class="fd-prof">覚えている入力を消しました（この画面の入力はそのままです）。</span>';
+      if (profFilled.length) return '<br><span class="fd-prof"><b>' + esc(profNames(profFilled)) + '</b>を前回の入力から入れました（変更できます）。' + btn + '</span>';
+      if (profSaved.length) return '<br><span class="fd-prof"><b>' + esc(profNames(profSaved)) + '</b>を覚えました。ほかのツールを初めて開いたときに入ります（' + P.days + '日使わないと消えます）。' + btn + '</span>';
+      return '';
+    }
+    if ($('fdSave')) $('fdSave').addEventListener('click', function (e) {
+      if (!e.target.closest('.fd-prof-clear')) return;
+      P.clear();
+      profOff = true; profDirty = {}; profFilled = []; profFilledIds = {}; profSaved = []; profCleared = true;
+      renderPanel();
+      showSaveNote();
+      window.Otasuke.toast('覚えている入力を消しました');
+    });
+
     function showSaveNote() {
       var el = $('fdSave');
       if (!el) return;
       if (!canSave) { el.hidden = true; return; }
       var html = '<b>自動保存</b>：この端末にだけ保存しています（' + D.days + '日で自動的に消えます）。共有の端末では「リセット」で消してください。';
       if (fromUrl && saved) html += '<br>共有リンクの内容を表示しています（この端末に保存していた入力より優先）。ここで入力すると、保存していた入力は置きかわります。<a href="' + esc(location.pathname) + '">保存していた入力にもどす</a>';
+      html += profileNote();
       el.innerHTML = html;
       el.hidden = false;
     }

@@ -17,7 +17,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['保育所等訪問支援の報告書', '送迎記録・バイタルの記録'],
+    upcoming: ['送迎記録・バイタルの記録', '避難訓練・BCP訓練の記録'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -28,7 +28,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['虐待防止のセルフチェック表', '苦情受付・対応の記録'],
+    upcoming: ['苦情受付・対応の記録', '退所・利用終了時の引き継ぎ書'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -38,7 +38,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
-    upcoming: ['ヒヤリハットの月別集計表', 'サービス担当者会議の要点'],
+    upcoming: ['ヒヤリハットの月別集計表', '苦情受付・対応の記録'],
   },
 ];
 
@@ -88,10 +88,14 @@ export function affiliateBlock({ esc, CONFIG, sector }) {
 </aside>`;
 }
 
+// 業種ページのカード。ほかの業種と共有しているツールには、業種の小さなバッジ（secTags）を名前の前に付ける
+const TOOL_BY_PATH = Object.fromEntries(TOOLS.map((t) => [t.path, t]));
 function toolCard(t, esc) {
+  const all = TOOL_BY_PATH[t.path];
+  const tags = all && all.sectors.length > 1 ? secTags(all.sectors) : '';
   return `<a class="tool-card" href="${esc(t.path)}">
     ${t.tag ? `<span class="pill pill-shu">${esc(t.tag)}</span>` : ''}
-    <b>${esc(t.name)}</b><span>${esc(t.desc)}</span><em>使ってみる →</em></a>`;
+    <b>${tags}${esc(t.name)}</b><span>${esc(t.desc)}</span><em>使ってみる →</em></a>`;
 }
 
 export function portalPages({ esc, CONFIG }) {
@@ -102,6 +106,7 @@ export function portalPages({ esc, CONFIG }) {
       <div class="recent-head"><p class="recent-title">最近使ったツール</p><button type="button" class="link-btn recent-clear">履歴を消す</button></div>
       <ul class="recent-list"></ul>
     </div>
+    <p class="profile-note" id="profileNote" hidden>この端末は、ツールでよく使う入力（<span class="profile-what"></span>）を覚えています。<button type="button" class="link-btn profile-clear">覚えている入力を消す</button></p>
     <span class="pill">介護・障害福祉・児童支援で働く方へ</span>
     <h1>福祉の現場の書類を、<br><span class="hl">もっとかんたんに。</span></h1>
     <p class="lead">計画書や報告書の「最初の一文が出てこない」を、選ぶだけの下書きで助けます。すべて無料・登録不要。入力した内容はどこにも送られません。</p>

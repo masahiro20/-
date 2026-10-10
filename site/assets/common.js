@@ -148,7 +148,46 @@
       },
     };
   };
+  // ── よく使う入力（プロフィール）。キー otasuke:profile、中身 { t: 最後に使った時刻, office, writer, boss, svc } ──
+  // 事業所名・記入者などを1組だけ覚えて、ほかのツールを初めて開いたときに空の欄へ入れる（formdoc.js が使う）。
+  // その端末の中だけ。最後に使って（入れて・覚えて）から90日たつと自動的に消す。
+  var PROFILE_KEY = 'otasuke:profile';
+  var PROFILE_DAYS = 90;
+  var PROFILE_MS = PROFILE_DAYS * 24 * 60 * 60 * 1000;
+  var PROFILE_LABELS = { office: '事業所名', writer: '記入者', boss: '責任者', svc: 'サービスの種類' };
+  function profileExpired(o) { return !o || typeof o !== 'object' || typeof o.t !== 'number' || Date.now() - o.t > PROFILE_MS || o.t > Date.now() + 60000; }
+  var profile = {
+    days: PROFILE_DAYS,
+    labels: PROFILE_LABELS,
+    // 覚えている入力（なければ null）。値は文字列だけを返す
+    load: function () {
+      var o = store.get(PROFILE_KEY);
+      if (!o) return null;
+      if (profileExpired(o)) { store.del(PROFILE_KEY); return null; }
+      var out = { t: o.t }, n = 0;
+      Object.keys(PROFILE_LABELS).forEach(function (k) { if (typeof o[k] === 'string' && o[k]) { out[k] = o[k]; n++; } });
+      return n ? out : null;
+    },
+    // 1つの種類を覚える（空は覚えない）。覚えたら true
+    set: function (kind, value) {
+      if (!PROFILE_LABELS[kind]) return false;
+      value = String(value == null ? '' : value).trim().slice(0, 80);
+      if (!value) return false;
+      var o = profile.load() || {};
+      o[kind] = value;
+      o.t = Date.now();
+      return store.set(PROFILE_KEY, o);
+    },
+    // 使ったときに期限をのばす（1日に1回まで書き込む）
+    touch: function () {
+      var o = profile.load();
+      if (o && Date.now() - o.t > 24 * 60 * 60 * 1000) { o.t = Date.now(); store.set(PROFILE_KEY, o); }
+    },
+    clear: function () { store.del(PROFILE_KEY); },
+  };
+
   (function sweep() {
+    profile.load(); // 期限切れなら消える
     try {
       var ls = window.localStorage, old = [];
       for (var i = 0; i < ls.length; i++) {
@@ -169,6 +208,7 @@
     copyAiPrompt: function (opts) { return copyText(buildPrompt(opts)).then(showAiDialog); },
     store: store,
     draft: draft,
+    profile: profile,
   };
 
   // ── 最近使ったツール（キー otasuke:recent。[{ p: パス, n: 名前, t: 時刻 }]、新しい順に最大6件） ──
@@ -328,8 +368,25 @@
     window.addEventListener('pageshow', function () { if (input.value) run(); });
   }
 
+  // トップの「覚えている入力」の案内。覚えているときだけ出す
+  function initProfileNote() {
+    var box = document.getElementById('profileNote');
+    if (!box) return;
+    var p = profile.load();
+    if (!p) { box.hidden = true; return; }
+    var names = Object.keys(PROFILE_LABELS).filter(function (k) { return p[k]; }).map(function (k) { return PROFILE_LABELS[k]; });
+    box.querySelector('.profile-what').textContent = names.join('・');
+    box.hidden = false;
+    box.querySelector('.profile-clear').onclick = function () {
+      profile.clear();
+      box.hidden = true;
+      toast('覚えている入力（' + names.join('・') + '）を消しました');
+    };
+  }
+
   function initPortal() {
     var tools = window.OTASUKE_TOOLS;
+    initProfileNote();
     initRecent(tools);
     initSearch(tools);
   }

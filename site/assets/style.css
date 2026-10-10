@@ -796,6 +796,16 @@ h1, h2, h3, .serif { font-family: var(--display); }
 
 .fd-save { margin: -4px 0 10px; padding: 6px 10px; border-radius: 8px; background: var(--leaf-soft); color: var(--forest-ink); font-size: 12.5px; line-height: 1.6; }
 .fd-save a { color: var(--forest); font-weight: 700; }
+/* よく使う入力（プロフィール）の案内：ツールの保存表示とトップ */
+.fd-save .link-btn, .profile-note .link-btn { display: inline-block; margin-left: 4px; padding: 2px 2px; color: var(--forest); font-size: 12.5px; font-weight: 700; line-height: 1.6; }
+.field .fd-prof-hint { color: var(--forest); font-weight: 700; }
+.profile-note { margin: -8px 0 20px; max-width: 720px; padding: 0 4px; color: var(--ink-2); font-size: 12.5px; line-height: 1.7; overflow-wrap: anywhere; }
+.profile-note[hidden] { display: none !important; }
+.recent[hidden] + .profile-note { margin-top: 0; }
+/* 業種ページのカードの業種バッジ（.tool-card span の文字の大きさ・色を受けつがない） */
+.tool-card b .sec-tags { position: relative; top: -2px; }
+.tool-card span.sec-tags { font-size: inherit; color: inherit; }
+.tool-card span.sec-tag { font-size: 11.5px; color: #fff; }
 @media (max-width: 640px) {
   .tool-search { padding: 14px 14px 12px; }
   .recent { padding: 10px 12px 12px; }
@@ -804,4 +814,4 @@ h1, h2, h3, .serif { font-family: var(--display); }
   .all-tools-list { grid-template-columns: minmax(0, 1fr); padding: 0 14px 12px; }
   .all-tools summary { padding: 12px 14px; }
 }
-@media print { .tool-search, .recent, .fd-save, .all-tools { display: none !important; } }
+@media print { .tool-search, .recent, .profile-note, .fd-save, .all-tools { display: none !important; } }
