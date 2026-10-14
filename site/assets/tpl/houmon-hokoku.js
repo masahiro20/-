@@ -3,11 +3,13 @@
 (function () {
   'use strict';
 
-  // 訪問先 [id, 名前, 種類]。種類で、見る場面の選択肢と「先生／職員」の呼び方が変わる
+  // 訪問先 [id, 名前, 種類, 市町村が認める施設か]。種類で、見る場面の選択肢と「先生／職員」の呼び方が変わる
+  // 4つ目が true の施設は、児童福祉法施行規則 第1条の2の5 に名前がなく、「その他児童が集団生活を営む施設として市町村が認める施設」として訪問先になるもの
+  // （名前があるのは、乳児院・保育所・児童養護施設・幼稚園・小学校（義務教育学校の前期課程を含む）・特別支援学校・認定こども園）
   var PLACE = [
     ['hoikusho', '保育所', 'en'], ['youchien', '幼稚園', 'en'], ['kodomoen', '認定こども園', 'en'],
-    ['sho', '小学校', 'gakko'], ['chu', '中学校', 'gakko'], ['koko', '高等学校', 'gakko'], ['tokushi', '特別支援学校', 'gakko'],
-    ['club', '放課後児童クラブ（学童保育）', 'club'], ['jidokan', '児童館', 'club'],
+    ['sho', '小学校', 'gakko'], ['chu', '中学校', 'gakko', true], ['koko', '高等学校', 'gakko', true], ['tokushi', '特別支援学校', 'gakko'],
+    ['club', '放課後児童クラブ（学童保育）', 'club', true], ['jidokan', '児童館', 'club', true],
     ['nyujiin', '乳児院', 'shisetsu'], ['yougo', '児童養護施設', 'shisetsu'], ['sonota', 'その他（市町村が認めた施設）', 'shisetsu'],
   ];
   // 種類ごとの呼び方 [施設の呼び方, 職員, 職員（ていねい・複数）, 「〜からは」]
@@ -141,7 +143,7 @@
         { id: 'to', type: 'seg', label: '報告先', options: TO, def: 'hogo' },
         { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇保育所等訪問支援事業所', half: true },
         { id: 'staff', type: 'text', label: '訪問支援員（名前）', ph: '例：福祉 花子', profile: 'writer', half: true },
-        { id: 'place', type: 'select', label: '訪問先の種類', options: PLACE.map(function (x) { return [x[0], x[1]]; }) },
+        { id: 'place', type: 'select', label: '訪問先の種類', hint: '※の施設（中学校・高等学校・放課後児童クラブ・児童館）は、法令（施行規則）に名前が出ていない施設で、「市町村が認める施設」として訪問先になります。訪問先にできるかは、支給を決める市町村に確かめましょう。', options: PLACE.map(function (x) { return [x[0], x[1] + (x[3] ? ' ※' : '')]; }) },
         { id: 'date', type: 'date', label: '訪問日', today: true, half: true },
         { id: 'kai', type: 'select', label: '訪問の回数', options: KAI, def: '2', half: true },
         { id: 'start', type: 'time', label: '始まり', def: '10:00', half: true },
