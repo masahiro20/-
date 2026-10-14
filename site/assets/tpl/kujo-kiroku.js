@@ -117,7 +117,7 @@
         { id: 'method', type: 'seg', label: '受付の方法', options: METHOD },
         { id: 'from', type: 'seg', label: '申出人', options: function (v) { return FROM[sec(v)]; }, def: 'kazoku' },
         { id: 'fromNote', type: 'text', label: '申出人（続柄など）', hint: '氏名は事業所の決まりに沿って', ph: '例：〇〇さんの長女', show: function (v) { return v.from !== 'tokumei'; } },
-        { id: 'writer', type: 'text', label: '受付担当者（記入者）', ph: '例：福祉 花子', profile: 'writer', half: true },
+        { id: 'writer', type: 'text', label: '受付担当者（記入者）', ph: '例：相談員 〇〇', profile: 'writer', half: true },
         { id: 'boss', type: 'text', label: '苦情解決責任者', ph: '例：管理者 〇〇', profile: 'boss', half: true },
       ] },
       { title: '苦情の内容', note: '申出の内容（出来事）と、申出人の言葉は分けて書きます。感想や推測は入れません。', fields: [
@@ -248,12 +248,12 @@
       if (b) return '「' + b + '」のように、申出人を責めたり決めつけたりする言葉が入っています。記録は、申出人や第三者委員、市町村が読むこともあります。「〇〇と話された」「〇〇を確かめた」のように、言葉と事実をそのまま書きましょう。';
       var e = found(v, EXCUSE);
       if (e) return '「' + e + '」のような書き方は、言い訳に読まれやすくなります。理由を書くときは、事実（その時間の職員の人数・何があったか）と、事業所として何を変えるかを一緒に書きましょう。';
-      if (!answered(v)) return '申出人への回答が「未回答」のままです。すぐに答えられないときも、まず「受け付けたこと」と「いつまでに・誰が回答するか」を伝え、回答の予定日を入れましょう。回答するまで、この苦情は完了になりません。';
-      if (!v.cats.length) return '「二」で、苦情の分類を選んでください。分類ごとに改善策の文例が出ます。';
-      if (!v.fact.trim() && !v.words.trim()) return '「二」に、申出の内容（出来事）と申出人の言葉を分けて書きましょう。';
+      if (!answered(v)) return '申出人への回答が「未回答」のままです。すぐに答えられないときも、まず「受け付けたこと」と「いつまでに・誰が回答するか」を伝え、回答の予定日を入れましょう。回答が済むまでは、対応は終わっていません。';
+      if (!v.cats.length) return '「苦情の内容」で、苦情の分類を選んでください。分類ごとに改善策の文例が出ます。';
+      if (!v.fact.trim() && !v.words.trim()) return '「苦情の内容」に、申出の内容（出来事）と申出人の言葉を分けて書きましょう。';
       if (v.tp === 'none') return '国の指針では、苦情解決に客観性を持たせるため、第三者委員を置くこととされています（社会福祉事業を行う事業者が対象。ほかの事業者も参考にすることが望まれています）。置いていない場合は、法人で検討しましょう。';
       if (v.from === 'tokumei' && v.tp !== 'yes') return '匿名の苦情（意見箱など）も、第三者委員に報告して対応します。';
-      if (!v.checkHow.length && !v.checkText.trim()) return '「四」で、事実をどうやって確かめたかを選びましょう。申出人の話だけで結論を出さず、記録や職員の話も確かめます。';
+      if (!v.checkHow.length && !v.checkText.trim()) return '「事実の確認」で、事実をどうやって確かめたかを選びましょう。申出人の話だけで結論を出さず、記録や職員の話も確かめます。';
       if (v.react === 'ng') return '申出人が納得されていません。話し合いを続け、必要に応じて第三者委員の助言や立ち会いを求めましょう。事業所のほかに相談できる窓口（市町村・運営適正化委員会など）があることも伝えます。';
       if (v.gaibu !== 'yes') return '申出人には、事業所のほかに相談できる窓口（市町村' + (sec(v) === 'kaigo' ? '・国保連' : '') + '・運営適正化委員会）があることも伝えましょう。';
       if (!v.share.length) return '再発防止のため、職員への共有の方法を選びましょう。';

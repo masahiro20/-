@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>送迎記録の下書き（乗車・降車の人数確認つき）【無料・児童支援・障害福祉】｜ふくしのおたすけ帳</title>
+<meta name="description" content="毎日の送迎記録の下書き。迎え・送りの便、時刻、予定と実際の人数、乗るとき・降りるときの人数確認、車内の見回り、引き渡し先、欠席・変更、特記事項を押していくと、A4の送迎記録にまとまります。 登録不要・無料。入力した内容は送信されません。">
+<link rel="canonical" href="https://fukushi-otasuke.vercel.app/sougei-kiroku.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送迎記録の下書き（乗車・降車の人数確認つき）【無料・児童支援・障害福祉】｜ふくしのおたすけ帳">
+<meta property="og:description" content="毎日の送迎記録の下書き。迎え・送りの便、時刻、予定と実際の人数、乗るとき・降りるときの人数確認、車内の見回り、引き渡し先、欠席・変更、特記事項を押していくと、A4の送迎記録にまとまります。 登録不要・無料。入力した内容は送信されません。">
+<meta property="og:url" content="https://fukushi-otasuke.vercel.app/sougei-kiroku.html">
+<meta property="og:site_name" content="ふくしのおたすけ帳">
+<meta property="og:image" content="https://fukushi-otasuke.vercel.app/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="theme-color" content="#1f5c4a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f5c4a'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<link rel="stylesheet" href="./assets/style.css">
+
+<meta name="google-site-verification" content="fnAAUDesvY7BpXQV8NPD-PKuIAs4n8qq76oNTaiCXBg">
+
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body data-tool="sougei-kiroku.html" data-tool-name="送迎記録の下書き（乗車・降車の人数確認つき）">
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="./index.html">
+      <span class="brand-seal" aria-hidden="true">帳</span>
+      <span class="brand-name">ふくしのおたすけ帳<span class="brand-sub">介護・障害福祉・児童支援の書類づくりを、無料で</span></span>
+    </a>
+    <nav class="nav" aria-label="メインメニュー">
+      <a href="./jido.html">児童支援</a>
+      <a href="./shogai.html">障害福祉</a>
+      <a href="./kaigo.html">介護</a>
+      <a class="nav-cta" href="./iken.html">意見箱</a>
+    </nav>
+  </div>
+</header>
+<main>
+
+<section class="tool-section" style="border-top:0">
+  <div class="wrap">
+    <nav class="breadcrumb"><a href="index.html">トップ</a> ／ <a href="jido.html">児童支援</a></nav>
+    <div class="section-head tool-head">
+      <div>
+        <span class="pill">無料・登録不要</span> <span class="pill pill-sector pill-jido">児童支援</span> <span class="pill pill-sector pill-shogai">障害福祉</span>
+        <h1 style="margin:10px 0 4px;font-size:clamp(24px,3.4vw,32px)">送迎記録の下書きをつくる（乗車・降車の人数確認つき）</h1>
+        <p class="section-sub">放課後等デイサービス・児童発達支援や、生活介護・就労継続支援などの送迎の記録です。便（迎え・送り）、車、乗った職員、時刻、人数、乗るとき・降りるときの人数確認、車内の見回り、引き渡した相手などを押していくだけで、1便ずつ、または迎えと送りの2便を1枚にした送迎記録になります。人数の確認が「未」のままだと、赤ペンで知らせます。</p>
+      </div>
+    </div>
+    <div class="tool">
+      <div class="panel" id="fdPanel"><noscript><p>このツールを使うには、JavaScriptを有効にしてください。</p></noscript></div>
+      <div class="doc-area">
+        <div class="doc-bar">
+          <div class="coverage" id="fdInfo"></div>
+          <div class="doc-actions">
+            <button class="btn btn-sm" id="fdCopy" type="button">文章でコピー</button>
+            <button class="btn btn-line btn-sm" id="fdPrint" type="button">印刷</button>
+            <button class="btn btn-line btn-sm ai-btn" id="fdAi" type="button">AIで文章を整える</button>
+            <button class="btn btn-line btn-sm" id="fdShare" type="button">リンクで共有</button>
+            <button class="btn btn-line btn-sm" id="fdReset" type="button" title="入力と書き換えをすべて消して、最初の状態に戻します（この端末の保存も消えます）">リセット</button>
+          </div>
+        </div>
+        <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">書類は横にスクロールできます。</span></p>
+        <p class="fd-save" id="fdSave" hidden></p>
+        <div class="doc-scroll"><div class="doc doc-portrait" id="fdDoc"></div></div>
+        <div id="fdWarn"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow article" style="padding-top:0">
+    <h2>乗るとき・降りるときは「顔を見て名前を呼ぶ」、降りたら一番後ろまで見回る</h2>
+    <p>人数を数えるだけでなく、一人ひとりの顔を見て名前を呼び（点呼）、乗車名簿にチェックします。全員が降りたら、運転者が車内の前から一番後ろの席まで歩き、座席の下や物かげまで見回ります。もう1人の職員も同じように確かめると安心です（ダブルチェック）。運転者だけの便では、事業所に着いたあとに別の職員が見回ります。児童発達支援・放課後等デイサービスでは、子どもが乗るとき・降りるときに点呼などで居場所を確かめることが基準で決まっています。くわしい手順は<a href="anzen-keikaku.html">安全計画の下書き</a>の「送迎時の所在確認」にまとめています。</p>
+    <h2>送迎の記録は「便ごと」に、時刻と実際の人数を残す</h2>
+    <p>迎えと送りは別の便として、出発・到着の時刻、予定と実際の人数、乗せた場所・降ろした場所（引き渡した相手）を書きます。送迎加算は、家などと事業所の間の送迎をしたときに算定するもので、請求のもとになる実績（サービス提供実績記録票など）と照らし合わせやすくなります。事業所の最寄り駅などの集合場所までの送迎は、障害福祉サービス（生活介護など）の取扱いでは、あらかじめ場所を決めて利用者から同意を得ておくことが求められています（児童の場合の扱いは、通知と市区町村の案内でご確認ください）。生活介護などの送迎加算は「1回の送迎の平均の人数」と「週に何回送迎したか」で区分が決まるため、実際に乗った人数を毎回残しておきましょう。</p>
+    <h2>欠席・変更・ヒヤリは、その日のうちに書いて伝える</h2>
+    <p>急な欠席や、時間・場所の変更、家族が迎えに来ることになったときは、連絡を受けた時刻と相手を書き、乗車名簿と事業所の出欠を直してから出発します。欠席の連絡の記録は<a href="kesseki.html">欠席時対応の記録</a>で作れます。ヒヤリとしたこと、体調の変化、忘れ物は、その日の終わりまでに管理者に伝え、ヒヤリ・ハットは<a href="hiyari.html">ヒヤリハット報告書の下書き</a>にも残しましょう。いつもと違う人に引き渡すときは、前もって保護者から連絡をもらっておくと安心です。</p>
+    <p class="source">乗るとき・降りるときの所在の確認は、「児童福祉法に基づく指定通所支援の事業等の人員、設備及び運営に関する基準」（平成24年厚生労働省令第15号）第40条の3（自動車を運行する場合の所在の確認）によります（放課後等デイサービスは第71条で準用）。サービスの提供の記録は同 第21条、記録の整備と保存は同 第54条です。送迎加算の取扱いは、障害児支援は「児童福祉法に基づく指定通所支援及び基準該当通所支援に要する費用の額の算定に関する基準等の制定に伴う実施上の留意事項について」（平成24年3月30日 障発0330第16号）、生活介護・就労継続支援などは「障害者の日常生活及び社会生活を総合的に支援するための法律に基づく指定障害福祉サービス等及び基準該当障害福祉サービスに要する費用の額の算定に関する基準等の制定に伴う実施上の留意事項について」（平成18年10月31日 障発第1031001号）の「送迎加算の取扱い」で確かめました（どちらも厚生労働省・こども家庭庁のウェブサイトに掲載されています。改正が重なっているため、最新の改正後の通知をご確認ください）。単位数・算定の要件（同乗する職員、同じ敷地内の送迎の扱いなど）は改定されることがあるため、算定のときは最新の告示・通知と指定権者（都道府県・市）の資料をご確認ください。送迎の手順は「こどものバス送迎・安全徹底マニュアル」（令和4年10月12日、内閣官房・内閣府・文部科学省・厚生労働省。保育所・幼稚園・特別支援学校などが対象）の送迎業務モデル例を参考に、編集部でまとめました。様式は国で決まったものではないため、事業所の乗車名簿や自治体の様式に合わせて書き換えてください。</p>
+    <div class="ask-box">
+      <p><b>「この項目もほしい」「この書類も作ってほしい」</b><br>現場の声でツールを増やしています。意見箱からお気軽にどうぞ。</p>
+      <a class="btn btn-line btn-sm" href="iken.html?doc=%E9%80%81%E8%BF%8E%E8%A8%98%E9%8C%B2%E3%81%AE%E4%B8%8B%E6%9B%B8%E3%81%8D%EF%BC%88%E4%B9%97%E8%BB%8A%E3%83%BB%E9%99%8D%E8%BB%8A%E3%81%AE%E4%BA%BA%E6%95%B0%E7%A2%BA%E8%AA%8D%E3%81%A4%E3%81%8D%EF%BC%89">意見箱に送る</a>
+    </div>
+  </div>
+</section><section class="section"><div class="wrap narrow"><div class="share">
+  <p class="share-title">同じ職場の方にも、教えてあげてください</p>
+  <div class="share-btns">
+    <a class="share-btn share-line" href="https://social-plugins.line.me/lineit/share?url=https%3A%2F%2Ffukushi-otasuke.vercel.app%2Fsougei-kiroku.html" target="_blank" rel="noopener">LINEで送る</a>
+    <a class="share-btn share-x" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Ffukushi-otasuke.vercel.app%2Fsougei-kiroku.html&text=%E3%81%B5%E3%81%8F%E3%81%97%E3%81%AE%E3%81%8A%E3%81%9F%E3%81%99%E3%81%91%E5%B8%B3%EF%BD%9C%E7%84%A1%E6%96%99%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E6%9B%B8%E9%A1%9E%E3%81%AE%E4%B8%8B%E6%9B%B8%E3%81%8D%E3%83%84%E3%83%BC%E3%83%AB" target="_blank" rel="noopener">Xでシェア</a>
+    <button type="button" class="share-btn" data-copy-url="https://fukushi-otasuke.vercel.app/sougei-kiroku.html">URLをコピー</button>
+  </div>
+  <p class="share-sub">事務所に貼れる<a href="flyer.html">紹介チラシ（QRコードつき）</a>もあります。</p>
+</div></div></section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div><p class="brand-name" style="margin:0 0 6px">ふくしのおたすけ帳</p><p class="small muted" style="margin:0">介護・障害福祉・児童支援の書類づくりを、無料で</p></div>
+      <div><p class="footer-h"><a href="./jido.html">児童支援</a></p><ul class="footer-list"><li><a href="./jido-keikaku.html">個別支援計画の下書き</a></li><li><a href="./renrakucho.html">連絡帳の文例メーカー</a></li><li><a href="./program.html">支援プログラムの下書き</a></li><li><a href="./otayori.html">おたより（月1回のお知らせ）の文例</a></li><li><a href="./anzen-keikaku.html">安全計画の下書き（送迎・置き去り防止つき）</a></li><li><a href="./sougei-kiroku.html">送迎記録の下書き（乗車・降車の人数確認つき）</a></li><li><a class="footer-more" href="./jido.html">児童支援のツールをすべて見る（21）</a></li></ul></div><div><p class="footer-h"><a href="./shogai.html">障害福祉</a></p><ul class="footer-list"><li><a href="./shogai-keikaku.html">個別支援計画の下書き</a></li><li><a href="./assessment.html">アセスメントシートの下書き</a></li><li><a href="./kouchin.html">工賃（賃金）向上計画の下書き</a></li><li><a href="./gyakutai-check.html">虐待防止のセルフチェック表</a></li><li><a href="./shien-kiroku.html">支援記録（日々の記録）の文例</a></li><li><a href="./monitoring.html">モニタリング記録の下書き</a></li><li><a class="footer-more" href="./shogai.html">障害福祉のツールをすべて見る（19）</a></li></ul></div><div><p class="footer-h"><a href="./kaigo.html">介護</a></p><ul class="footer-list"><li><a href="./jiko.html">事故報告書の下書き</a></li><li><a href="./hiyari.html">ヒヤリハット報告書の下書き</a></li><li><a href="./hiyari-shukei.html">ヒヤリハットの月別集計表</a></li><li><a href="./kaigo-kiroku.html">介護記録（ケース記録）の文例</a></li><li><a href="./moushiokuri.html">申し送りメモの下書き</a></li><li><a href="./tantousha-kaigi.html">サービス担当者会議の要点（第4表）の下書き</a></li><li><a class="footer-more" href="./kaigo.html">介護のツールをすべて見る（14）</a></li></ul></div>
+      <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
+        <li><a href="./iken.html">意見箱（ほしい書類・ご要望）</a></li>
+        <li><a href="./flyer.html">職場で紹介するチラシ（印刷用）</a></li>
+        <li><a href="./about.html">運営者情報・プライバシー</a></li>
+        <li><a href="./contact.html">お問い合わせ</a></li>
+        <li><a href="./terms.html">利用規約</a></li>
+        <li><a href="./template.html">文例つきExcelセット（放デイ・児発）</a></li>
+        <li><a href="./tokushoho.html">特定商取引法に基づく表記</a></li>
+      </ul></div>
+    </div>
+    <p class="fine">掲載している文例・下書きは、書類を書き始めるためのものです。実際の書類は、ご本人のアセスメントと意向・事実に基づいて作成し、様式や記載方法は指定権者（自治体）の資料をご確認ください。サイト内の「PR」は広告です。<br>&copy; 2026 ふくしのおたすけ帳 編集部</p>
+  </div>
+</footer>
+<script src="./assets/common.js"></script>
+<script src="./assets/formdoc.js"></script>
+<script src="./assets/tpl/sougei-kiroku.js"></script>
+</body>
+</html>

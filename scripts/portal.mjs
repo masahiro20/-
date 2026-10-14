@@ -17,7 +17,7 @@ export const SECTORS = [
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['送迎記録・バイタルの記録', '避難訓練・BCP訓練の記録'],
+    upcoming: ['避難訓練・BCP訓練の記録', '日々のバイタル・健康観察の記録'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -28,7 +28,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['苦情受付・対応の記録', '退所・利用終了時の引き継ぎ書'],
+    upcoming: ['退所・利用終了時の引き継ぎ書', '就労B型の作業日報・出来高の記録'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -38,7 +38,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
-    upcoming: ['ヒヤリハットの月別集計表', '苦情受付・対応の記録'],
+    upcoming: ['避難訓練・BCP訓練の記録', '退所・利用終了時の引き継ぎ書'],
   },
 ];
 

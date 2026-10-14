@@ -69,7 +69,7 @@
       if (!rows.length) rows.push(['', '', '']);
       return {
         title: '申し送り',
-        left: (v.office.trim() ? v.office.trim() + '\n' : '') + (v.who ? '対象：' + v.who : '対象：'),
+        left: H.blank(v.office, '事業所名：') + '\n' + (v.who ? '対象：' + v.who : '対象：'),
         right: H.date(v.date) + '\n' + v.shift + '\n記入者：' + H.blank(v.writer),
         sections: [
           { key: 'g', grid: { head: ['項目', '状況', '次の勤務へのお願い'], widths: ['90px', '', ''], rows: rows, ph: '（記入）' } },
