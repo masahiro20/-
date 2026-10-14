@@ -243,6 +243,10 @@
       { title: '申し送り', fields: [
         { id: 'next', type: 'chips', options: phaseOpts(NEXT) },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：介護職員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var go = isGo(v);
@@ -283,8 +287,8 @@
       }
       return {
         title: '看取り期の経過記録',
-        left: '対象：' + (v.who.trim() || '　　　　'),
-        right: '記録者：',
+        left: H.blank(v.office, '事業所名：') + '\n対象：' + (v.who.trim() || '　　　　'),
+        right: '記録者：' + H.blank(v.writer),
         sections: [{ h: '記録', w2: '120px', rows: rows }],
         foot: go
           ? '死亡の確認・死亡診断は医師が行います。介護職員の記録には、気づいた時刻と見たこと、連絡した相手と時刻を書きます。' +

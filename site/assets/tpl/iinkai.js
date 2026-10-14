@@ -105,6 +105,10 @@
       { title: '周知の方法', fields: [
         { id: 'shuchi', type: 'chips', options: SHUCHI.map(function (x) { return [x[0], x[1].replace(/。$/, '')]; }), def: ['kairan'] },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：生活相談員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var names = v.types.map(function (t) { return TYPES.filter(function (x) { return x[0] === t; })[0][1]; });
@@ -129,7 +133,8 @@
       var freq = v.types.map(function (t) { return TYPES.filter(function (x) { return x[0] === t; })[0][1] + '：' + freqText(FREQ[t][v.svc]); }).join('\n');
       return {
         title: (names.join('・') || '　　') + '委員会 議事録',
-        right: '記録者：',
+        left: H.blank(v.office, '事業所名：'),
+        right: '記録者：' + H.blank(v.writer),
         sections: [
           { h: '開催の概要', rows: [
             ['日時', 'when', H.date(v.date) + '　' + (v.time || '　　:　　〜　　:　　')],

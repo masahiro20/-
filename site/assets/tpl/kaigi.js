@@ -52,6 +52,10 @@
         { id: 'decide', type: 'chips', label: '決まったこと', options: DECIDE.map(function (x) { return [x[0], x[1]]; }), def: ['gen', 'mon'] },
         { id: 'kadai', type: 'textarea', label: '残された課題', ph: '例：通所の手段（送迎の有無）は、次回までに家族と相談する。' },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：サービス管理責任者 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var sm = v.sector === 'shogai';
@@ -64,8 +68,8 @@
         : '会議で検討した原案を保護者（本人）に説明し、文書で同意を得たうえで、個別支援計画を交付する。相談支援事業所にも共有する。';
       return {
         title: '個別支援会議 記録',
-        left: SECTOR.filter(function (x) { return x[0] === v.sector; })[0][1],
-        right: '記録者：',
+        left: H.blank(v.office, '事業所名：') + '\n' + SECTOR.filter(function (x) { return x[0] === v.sector; })[0][1],
+        right: '記録者：' + H.blank(v.writer),
         sections: [
           { h: '概要', rows: [
             ['日時', 'when', H.date(v.date) + '　' + (v.time || '　　:　　〜　　:　　')],

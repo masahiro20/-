@@ -164,6 +164,10 @@
         { id: 'watch', type: 'chips', list: true, label: '観察すること', options: function (v) { return WATCH.filter(function (x) { return x[0] !== 'hazusu' || doing(v); }).map(function (x) { return [x[0], x[1]]; }); }, def: ['teiki', 'kokoro', 'alt'] },
         { id: 'next', type: 'seg', label: '次の再検討', options: NEXT, def: '7' },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：看護職員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var s = sec(v), kaigo = s === 'kaigo';
@@ -248,8 +252,8 @@
 
       return {
         title: '身体拘束の3要件の検討記録',
-        left: H.label(SECTOR, s) + '\n' + kindLabel,
-        right: '記録日：' + H.date(v.date) + '\n記録者：',
+        left: H.blank(v.office, '事業所名：') + '\n' + H.label(SECTOR, s) + '\n' + kindLabel,
+        right: '記録日：' + H.date(v.date) + '\n記録者：' + H.blank(v.writer),
         sections: [
           { h: '検討の概要', rows: [
             ['対象の方', 'person', '', '（〇〇さん・居室など、事業所の決まりに沿って記入）'],

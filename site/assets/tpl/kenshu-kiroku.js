@@ -128,6 +128,10 @@
         { id: 'voice', type: 'textarea', label: '参加者の感想・意見', ph: '例：夜勤帯の声かけについて、具体的な言い方をそろえたいという意見があった。' },
         { id: 'next', type: 'textarea', label: '今後の取り組み', ph: '例：委員会で声かけの例をまとめ、来月の職員会議で共有する。' },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：研修担当 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var t = THEMES[v.theme];
@@ -136,7 +140,8 @@
       var absent = num && total && Number(total) > Number(num) ? Number(total) - Number(num) : '';
       return {
         title: '研修 実施記録',
-        right: '記録者：',
+        left: H.blank(v.office, '事業所名：'),
+        right: '記録者：' + H.blank(v.writer),
         sections: [
           { h: '概要', rows: [
             ['テーマ', 'theme', t[0]],

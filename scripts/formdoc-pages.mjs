@@ -1,11 +1,24 @@
 // 「選ぶだけの下書き」テンプレートのページ。本体は site/assets/formdoc.js と site/assets/tpl/<id>.js。
+import { readFileSync } from 'node:fs';
 import { TEMPLATES } from '../data/templates.mjs';
+
+// 印刷の向き。tpl の Formdoc.run({ landscape: true }) ならA4横、それ以外はA4縦（.doc-portrait）。
+// 向きを決めるのは formdoc.js（実行時）。ここは、最初に表示される形を同じにするために tpl の設定を読むだけ。
+function isLandscape(id) {
+  try {
+    const src = readFileSync(new URL(`../site/assets/tpl/${id}.js`, import.meta.url), 'utf8');
+    return /^\s*landscape:\s*true\b/m.test(src);
+  } catch {
+    return false;
+  }
+}
 
 const SECTOR_NAMES = { jido: '児童支援', shogai: '障害福祉', kaigo: '介護' };
 
 export function formdocPages({ esc, CONFIG }) {
   return TEMPLATES.map((t) => {
     const parent = t.sectors[0];
+    const docClass = isLandscape(t.id) ? 'doc doc-landscape' : 'doc doc-portrait';
     const body = `
 <section class="tool-section" style="border-top:0">
   <div class="wrap">
@@ -32,7 +45,7 @@ export function formdocPages({ esc, CONFIG }) {
         </div>
         <p class="edit-hint">文章は<mark>クリックすると、その場で書き換え</mark>られます。<span class="sp-only">書類は横にスクロールできます。</span></p>
         <p class="fd-save" id="fdSave" hidden></p>
-        <div class="doc-scroll"><div class="doc doc-portrait" id="fdDoc"></div></div>
+        <div class="doc-scroll"><div class="${docClass}" id="fdDoc"></div></div>
         <div id="fdWarn"></div>
       </div>
     </div>

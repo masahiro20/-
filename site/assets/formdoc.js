@@ -7,6 +7,8 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   };
   var KANJI = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+  // 左の入力欄の番号（1→一、11→十一、20→二十）
+  function kanji(n) { return n <= 10 ? KANJI[n - 1] : (n >= 20 ? KANJI[Math.floor(n / 10) - 1] : '') + '十' + (n % 10 ? KANJI[n % 10 - 1] : ''); }
 
   // テンプレートから使う小さな道具
   var H = {
@@ -22,6 +24,11 @@
     month: function (s) {
       var m = /^(\d{4})-(\d{2})/.exec(s || '');
       return m ? Number(m[2]) : new Date().getMonth() + 1;
+    },
+    // 入力があればその文字、空なら手書き用の空欄（見出しの「事業所名：」「記録者：」など）。label は空のときだけ前につける
+    blank: function (s, label) {
+      var t = String(s == null ? '' : s).trim();
+      return t || (label || '') + '　　　　　　';
     },
     bullets: function (arr) { return (arr || []).filter(Boolean).map(function (t) { return '・' + t; }).join('\n'); },
     pick: function (list, ids) {
@@ -104,6 +111,10 @@
 
   function run(T) {
     var state = { v: {}, edits: {} };
+    // 印刷の向き：既定はA4縦。横長の様式は Formdoc.run({ landscape: true, ... }) でA4横にする
+    // （style.css の @page の既定がA4横、.doc-portrait の書類だけA4縦。ページの最初の形は formdoc-pages.mjs が同じ設定から作る）
+    var docBox = $('fdDoc');
+    if (docBox) { docBox.classList.toggle('doc-portrait', !T.landscape); docBox.classList.toggle('doc-landscape', !!T.landscape); }
     var fields = [];
     T.blocks.forEach(function (b) { b.fields.forEach(function (f) { fields.push(f); }); });
     // 選んだ値で、ほかの欄の選択肢や表示が変わるテンプレートか
@@ -275,7 +286,7 @@
           if (f.half && g && g.half) { pairs.push('<div class="field-row">' + fieldHtml(f) + fieldHtml(g) + '</div>'); k++; }
           else pairs.push(fieldHtml(f));
         }
-        return '<div class="panel-block"><h3 class="panel-title"><span class="no">' + KANJI[no++] + '</span>' + esc(b.title) + (b.small ? '<small>' + esc(b.small) + '</small>' : '') + '</h3>' +
+        return '<div class="panel-block"><h3 class="panel-title"><span class="no">' + kanji(++no) + '</span>' + esc(b.title) + (b.small ? '<small>' + esc(b.small) + '</small>' : '') + '</h3>' +
           (b.note ? '<p class="fd-note">' + esc(b.note) + '</p>' : '') + pairs.join('') + '</div>';
       }).join('');
     }
@@ -331,6 +342,7 @@
     function toText() {
       var d = lastDoc;
       var out = [d.title || T.title];
+      if (d.left) out.push(d.left.replace(/\n/g, '　'));
       if (d.right) out.push(d.right.replace(/\n/g, '　'));
       out.push('');
       d.sections.forEach(function (s, si) {
@@ -461,11 +473,15 @@
     // よく使う入力の案内（入れたとき・覚えたときだけ）。「覚えている入力を消す」ボタンつき
     function profNames(list) { return list.map(function (k) { return P.labels[k]; }).join('・'); }
     function profileNote() {
-      if (!hasProf) return '';
+      if (!P) return '';
       var btn = '<button type="button" class="link-btn fd-prof-clear">覚えている入力を消す</button>';
       if (profCleared) return '<br><span class="fd-prof">覚えている入力を消しました（この画面の入力はそのままです）。</span>';
       if (profFilled.length) return '<br><span class="fd-prof"><b>' + esc(profNames(profFilled)) + '</b>を前回の入力から入れました（変更できます）。' + btn + '</span>';
       if (profSaved.length) return '<br><span class="fd-prof"><b>' + esc(profNames(profSaved)) + '</b>を覚えました。ほかのツールを初めて開いたときに入ります（' + P.days + '日使わないと消えます）。' + btn + '</span>';
+      // 下書きを戻したときや、欄のないツールでも、覚えている入力があれば消せるようにする（共有の端末で使い終わったとき）
+      var p = profOff ? null : P.load();
+      var kinds = p ? Object.keys(P.labels).filter(function (k) { return p[k]; }) : [];
+      if (kinds.length) return '<br><span class="fd-prof">この端末は<b>' + esc(profNames(kinds)) + '</b>を覚えています。' + btn + '</span>';
       return '';
     }
     if ($('fdSave')) $('fdSave').addEventListener('click', function (e) {

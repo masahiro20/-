@@ -154,6 +154,10 @@
       { title: '考えられる要因', small: '当てはまるものすべて', fields: GROUPS.map(function (g) {
         return { id: g[0], type: 'chips', label: g[1], list: true, options: function (v) { return factorList(v, g[0]).map(function (x) { return [x[0], x[1]]; }); } };
       }) },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '報告者（職種）', ph: '例：介護職員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var what = (WHAT[v.type] || []).filter(function (x) { return v.what.indexOf(v.type + '-' + x[0]) !== -1; }).map(function (x) { return x[2] + '。'; }).join('');
@@ -168,7 +172,8 @@
       var resp = RESP.filter(function (x) { return v.resp.indexOf(x[0]) !== -1; }).map(function (x) { return x[2]; }).join('');
       return {
         title: 'ヒヤリハット報告書',
-        right: '報告日：' + H.date(v.date) + '\n報告者：',
+        left: H.blank(v.office, '事業所名：'),
+        right: '報告日：' + H.date(v.date) + '\n報告者：' + H.blank(v.writer),
         sections: [
           { h: '発生状況', rows: [['発生日時', 'when', H.date(v.date) + '　' + H.time(v.time)], ['場所・場面', 'place', v.place + '（' + v.scene + '）'], ['種類', 'type', H.label(TYPES, v.type)], ['対象の方', 'person', '', '（イニシャル・居室番号など、事業所の決まりに沿って記入）']] },
           { h: '内容', rows: [['何が起きそうだったか', 'summary', summary], ['気づいたきっかけ', 'found', v.found + '。'], ['その場の対応', 'resp', resp, '（対応を記入）'], ['結果', 'result', '事故には至らず、けが・体調の変化はなかった。']] },

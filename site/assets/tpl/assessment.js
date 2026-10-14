@@ -101,6 +101,8 @@
         { id: 'kind', type: 'seg', label: 'アセスメントの種類', options: KIND },
         { id: 'date', type: 'date', label: '実施日', today: true, half: true },
         { id: 'place', type: 'select', label: '面談の場所', options: PLACE, half: true },
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '実施者（職種）', hint: '空欄なら職種だけ入ります', ph: '例：サービス管理責任者 〇〇', half: true, profile: 'writer' },
         { id: 'attend', type: 'chips', label: '面談に同席した人', options: function (v) { return ATTEND[sector(v)]; }, def: ['honnin', 'kazoku'] },
         { id: 'info', type: 'chips', label: '参考にした情報', options: function (v) { return INFO[sector(v)]; }, def: ['jukyu', 'keikaku'] },
       ] },
@@ -162,8 +164,8 @@
 
       return {
         title: 'アセスメントシート',
-        left: svcName + '\n' + (v.kind === 'shokai' ? '初回アセスメント' : '見直し（再アセスメント）'),
-        right: '実施日：' + H.date(v.date) + '\n実施者：' + (jido ? '児童発達支援管理責任者' : 'サービス管理責任者') + '　　　　',
+        left: H.blank(v.office, '事業所名：') + '\n' + svcName + '\n' + (v.kind === 'shokai' ? '初回アセスメント' : '見直し（再アセスメント）'),
+        right: '実施日：' + H.date(v.date) + '\n実施者：' + (v.writer.trim() || (jido ? '児童発達支援管理責任者' : 'サービス管理責任者') + '　　　　'),
         sections: [
           { h: '基本情報', rows: [
             ['氏名', 'name', '', jido ? '（〇〇さん・年齢・学年）' : '（〇〇さん・年齢）'],

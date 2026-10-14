@@ -2,10 +2,6 @@
 // 項目は老企第29号の第4表と記載要領（利用者名・作成者・開催日/場所/時間/回数・出席者・検討した項目・検討内容・結論・残された課題）。
 (function () {
   'use strict';
-  // 第4表は横長の様式なので、この書類だけ印刷をA4横にする（style.css の @page の既定値）
-  var docEl = document.getElementById('fdDoc');
-  if (docEl) docEl.classList.remove('doc-portrait');
-
   // [id, 選択肢, 開催の理由（書類に入る文）]
   var REASONS = [
     ['new', '新規（初めてケアプランを作る）', '新しく居宅サービス計画（ケアプラン）を作るため、原案について担当者から意見を聞いた。'],
@@ -82,6 +78,7 @@
 
   Formdoc.run({
     title: 'サービス担当者会議の要点',
+    landscape: true, // 第4表は横長の様式なので、印刷をA4横にする
     ai: {
       role: '居宅介護支援事業所のケアマネジャー（介護支援専門員）',
       doc: '居宅サービス計画書 第4表「サービス担当者会議の要点」',

@@ -68,6 +68,10 @@
       { title: '個別支援計画とのつながり', fields: [
         { id: 'goal', type: 'textarea', label: '関係する目標', hint: '計画の短期目標を貼り付け', ph: '例：困ったときに、自分から職員に伝えることができる。' },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：生活支援員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var svcName = SVC.filter(function (x) { return x[0] === v.svc; })[0][1];
@@ -78,8 +82,8 @@
       var goal = v.goal.trim();
       return {
         title: '支援記録',
-        left: svcName,
-        right: H.date(v.date) + '\n記録者：',
+        left: H.blank(v.office, '事業所名：') + '\n' + svcName,
+        right: H.date(v.date) + '\n記録者：' + H.blank(v.writer),
         sections: [
           { h: '記録', w2: '120px', rows: [
             ['通所の状況', 'attend', attend],

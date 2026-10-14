@@ -55,6 +55,10 @@
       { title: 'そのほか', fields: [
         { id: 'extra', type: 'textarea', label: '書き足したいこと', ph: '例：午後から娘さんが面会予定。' },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記入者（職種）', ph: '例：介護職員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var rows = [];
@@ -65,8 +69,8 @@
       if (!rows.length) rows.push(['', '', '']);
       return {
         title: '申し送り',
-        left: v.who ? '対象：' + v.who : '対象：',
-        right: H.date(v.date) + '\n' + v.shift,
+        left: (v.office.trim() ? v.office.trim() + '\n' : '') + (v.who ? '対象：' + v.who : '対象：'),
+        right: H.date(v.date) + '\n' + v.shift + '\n記入者：' + H.blank(v.writer),
         sections: [
           { key: 'g', grid: { head: ['項目', '状況', '次の勤務へのお願い'], widths: ['90px', '', ''], rows: rows, ph: '（記入）' } },
         ],

@@ -56,6 +56,10 @@
         { id: 'next', type: 'date', label: '次回の利用予定日', half: true },
         { id: 'count', type: 'text', label: '今月の算定回数（今回を含む）', ph: '例：2', half: true },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '対応者（職種）', ph: '例：児童指導員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var d = days(v.plan, v.cdate);
@@ -66,7 +70,8 @@
       var ok = d != null && d >= 0 && d <= 2;
       return {
         title: '欠席時対応記録',
-        right: '対応者：',
+        left: H.blank(v.office, '事業所名：'),
+        right: '対応者：' + H.blank(v.writer),
         sections: [
           { h: '連絡', rows: [
             ['利用予定日', 'plan', H.date(v.plan)],

@@ -211,6 +211,10 @@
       { title: '申し送り・連絡', fields: [
         { id: 'next', type: 'chips', options: NEXT },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '記録者（職種）', ph: '例：介護職員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var fact = chosen(v, 'facts', 'facts').join('');
@@ -219,7 +223,8 @@
       var body = [fact, words ? '「' + words + '」と話された。' : '', chosen(v, 'resp', 'resp').join(''), chosen(v, 'result', 'result').join('')].filter(Boolean).join('\n');
       return {
         title: '介護記録（経過記録）',
-        right: '記録者：',
+        left: H.blank(v.office, '事業所名：'),
+        right: '記録者：' + H.blank(v.writer),
         sections: [
           { h: '記録', w2: '110px', rows: [
             ['日時', 'when', H.date(v.date) + '　' + H.time(v.time)],

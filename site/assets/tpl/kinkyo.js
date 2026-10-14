@@ -71,6 +71,10 @@
         { id: 'healthNote', type: 'textarea', label: '体調のくわしい内容', hint: '何があったか・いまどうしているか・これからの対応', ph: '例：9月10日に微熱があり、受診しました。現在は熱も下がり、食事もいつも通り召し上がっています。', show: function (v) { return v.health === 'henka'; } },
         { id: 'ask', type: 'chips', label: 'ご家族へのお願い', options: ASK.map(function (x) { return [x[0], x[1]]; }) },
       ] },
+      { title: '差出人', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '担当者（職種）', ph: '例：生活相談員 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var m = H.month(v.date);
@@ -86,7 +90,7 @@
       return {
         title: '近況のご報告',
         left: name + 'のご家族様',
-        right: H.date(v.date) + '\n（事業所名）',
+        right: H.date(v.date) + '\n' + (v.office.trim() || '（事業所名）') + (v.writer.trim() ? '\n担当：' + v.writer.trim() : ''),
         sections: [
           { h: 'お便り', rows: [
             ['', 'greet', 'いつも大変お世話になっております。' + GREET[m] + name + 'の' + m + '月のご様子をお知らせいたします。'],

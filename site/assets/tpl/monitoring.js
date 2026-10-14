@@ -71,6 +71,10 @@
         { id: 'hvoice', type: 'text', label: '本人の言葉', ph: '例：もっと早くできるようになりたい' },
         { id: 'kazoku', type: 'chips', label: '家族の意見', options: KAZOKU.map(function (x) { return [x[0], x[1]]; }) },
       ] },
+      { title: '事業所と記入者', small: 'ほかの書類にも入ります', fields: [
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇事業所', half: true, profile: 'office' },
+        { id: 'writer', type: 'text', label: '実施者（職種）', ph: '例：サービス管理責任者 〇〇', half: true, profile: 'writer' },
+      ] },
     ],
     build: function (v, H) {
       var svc = SVC.filter(function (x) { return x[0] === v.svc; })[0];
@@ -92,8 +96,8 @@
       if (m) { var y = Number(m[1]), mo = Number(m[2]) + svc[2]; while (mo > 12) { mo -= 12; y++; } next = y + '年' + mo + '月ごろまでに実施する（' + svc[1] + '：' + svc[2] + 'か月に1回以上）。'; }
       return {
         title: 'モニタリング記録',
-        left: svc[1],
-        right: '実施日：' + H.date(v.date) + '\n実施者：',
+        left: H.blank(v.office, '事業所名：') + '\n' + svc[1],
+        right: '実施日：' + H.date(v.date) + '\n実施者：' + H.blank(v.writer),
         sections: [
           { h: '実施の概要', rows: [['方法', 'how', v.how], ['対象期間', 'period', '', '（前回の計画作成日〜今回）']] },
           { key: 'goals', h: '目標ごとの評価', grid: { head: ['', '目標', '達成度', '評価（見られた変化）', 'これから'], widths: ['52px', '', '72px', '', ''], rowHead: true, rows: rows, ph: '（記入）' } },
