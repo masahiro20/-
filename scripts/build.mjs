@@ -15,6 +15,7 @@ import { flyerPage } from './flyer-page.mjs';
 import { formdocPages } from './formdoc-pages.mjs';
 import { ikenPage } from './iken-page.mjs';
 import { startPage } from './start-page.mjs';
+import { buildVersion, manifestJson, swSource } from './pwa.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -91,6 +92,10 @@ ${noindex ? '' : `<link rel="canonical" href="${esc(canonical)}">`}
 <meta name="twitter:card" content="summary_large_image">
 ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta name="theme-color" content="#1f5c4a">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="おたすけ帳">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f5c4a'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='serif'%3E%E5%B8%B3%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,6 +143,7 @@ ${body}
   </div>
 </footer>
 <script src="${r}assets/common.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){})}catch(e){}})}</script>
 ${scripts.map((s) => (typeof s === 'object'
     ? `<script src="${s.src}" integrity="${s.integrity}" crossorigin="anonymous" referrerpolicy="no-referrer"></script>`
     : `<script src="${/^https?:/.test(s) ? s : r + s}"></script>`)).join('\n')}
@@ -633,6 +639,12 @@ function buildAbout() {
   ${CONFIG.contactUrl ? `<p><a href="${esc(CONFIG.contactUrl)}" target="_blank" rel="noopener">お問い合わせフォーム</a></p>` : ''}
   <h2>このサイトについて</h2>
   <p>${esc(CONFIG.siteName)}は、介護・障害福祉・児童支援の現場で働く方の書類づくりの負担を減らすための、無料ツール集です。サイトの運営費は、サイト内の広告（「PR」と表示しています）でまかなっています。</p>
+  <h2 id="app">ホーム画面に追加して使う</h2>
+  <p>ホーム画面に追加すると、アプリのようにすぐ開けます。一度開いたページは、電波が弱い場所でも開けます。</p>
+  <ul class="plain">
+    <li><b>iPhone（Safari）</b>：共有ボタン → 「ホーム画面に追加」</li>
+    <li><b>Android（Chrome）</b>：右上のメニュー → 「ホーム画面に追加」（または「アプリをインストール」）</li>
+  </ul>
   <h2>免責事項</h2>
   <ul class="plain">
     <li>掲載している文例・下書きは、書類を書き始めるためのものです。実際の書類は、ご本人のアセスメントと意向、事実に基づいて作成してください。</li>
@@ -643,6 +655,7 @@ function buildAbout() {
   <ul class="plain">
     <li>下書きづくりの画面に入力した内容は、お使いのブラウザの中でのみ処理され、当サイトのサーバーに送信・保存されることはありません。</li>
     <li><b>端末内の保存（localStorage）</b>：下書きツールの入力途中の内容、最近使ったツールの一覧、チェックリストのチェック状態、支援プログラムの入力内容は、続きから使えるように、お使いの端末のブラウザ（localStorage）にのみ保存します。<b>サーバーには送信しません。</b>下書きツールの入力途中の内容は、最後に入力してから7日たつと自動的に消えます。共有の端末では、各ツールの「リセット」で消してください（最近使ったツールは、トップページの「履歴を消す」で消せます）。また、毎回入れる手間をはぶくため、下書きツールで入力した<b>事業所名・記入者・責任者・サービスの種類</b>を1組だけ覚え、ほかのツールを初めて開いたときに空の欄へ入れます（入力途中の下書きや共有リンクの内容があるときは、そちらを優先します）。これは最後に使ってから90日たつと自動的に消えます。すぐに消すときは、ツールの保存の案内かトップページの「覚えている入力を消す」を押してください。ブラウザの設定で、サイトのデータを消すこともできます。</li>
+    <li><b>ページの写しの保存</b>：電波が弱いときも開けるように、開いたページとその部品（文字・画像など）の写しを、お使いの端末のブラウザ（キャッシュ）に保存します。写しに個人情報は含まれません（入力した内容は写しに入りません）。サイトが更新されると、古い写しは自動的に消えます。ブラウザの設定で、サイトのデータを消すこともできます。</li>
     <li>意見箱に送っていただいた内容（ご意見・任意のメールアドレス）は、ツールの改善と、ご希望の場合の返信のためだけに使い、第三者に提供しません。</li>
     <li>当サイトは、アフィリエイトプログラム（A8.net などの広告配信サービス）を利用することがあります。広告の成果を計測するため、広告配信事業者がCookieを使用する場合があります。Cookieはブラウザの設定で無効にできます。</li>
     ${CONFIG.gaId ? '<li>サイトの改善のため、Google アナリティクスでアクセス情報を収集しています。個人を特定する情報は含みません。</li>' : ''}
@@ -671,6 +684,8 @@ ${pages.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${BUILD_DATE}</lastmod><
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https:",
+    "manifest-src 'self'",
+    "worker-src 'self'",
     `connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com${feedbackHost && !feedbackHost.includes('script.google') ? ' ' + feedbackHost : ''}`,
     "object-src 'none'",
     "base-uri 'self'",
@@ -691,6 +706,8 @@ ${pages.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${BUILD_DATE}</lastmod><
     framework: null,
     headers: [
       { source: '/(.*)', headers: security },
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }, { key: 'Service-Worker-Allowed', value: '/' }] },
+      { source: '/manifest.webmanifest', headers: [{ key: 'Cache-Control', value: 'no-cache' }, { key: 'Content-Type', value: 'application/manifest+json' }] },
       { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }] },
       { source: '/assets/img/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800' }] },
       { source: '/files/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }] },
@@ -702,6 +719,14 @@ ${pages.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${BUILD_DATE}</lastmod><
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: SAMEORIGIN
   Content-Security-Policy: ${csp}
+
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json
 
 /assets/*
   Cache-Control: public, max-age=3600
@@ -770,4 +795,20 @@ if (!CONFIG.feedbackEndpoint && !CONFIG.feedbackEmail) console.warn('[公開前�
 const salesMissing = ['sellerName', 'supportEmail', 'productUrl'].filter((k) => !CONFIG[k]);
 if (salesMissing.length) console.warn(`[有料販売を始めるときに] data/config.mjs: ${salesMissing.join(', ')}`);
 buildSeoFiles();
+write('manifest.webmanifest', manifestJson(CONFIG));
+write('offline.html', layout({
+  path: 'offline.html', root: '/', noindex: true,
+  title: `いまは開けません｜${CONFIG.siteName}`,
+  description: '電波が弱いため、このページはまだ開けません。',
+  body: `
+<section class="section">
+  <div class="wrap narrow article">
+    <h1>電波が戻ったら開けます</h1>
+    <p class="lead">このページは、まだ一度も開いたことがないため、電波がないと表示できません。電波のよい場所で、もう一度お試しください。</p>
+    <p>一度開いたページは、電波が弱くても開けます。</p>
+    <p style="margin-top:24px"><a class="btn" href="/">トップページへ</a> <button class="btn btn-line" type="button" onclick="location.reload()">もう一度ためす</button></p>
+  </div>
+</section>`,
+}));
+write('sw.js', swSource(buildVersion(OUT)));
 console.log(`built ${pages.length} pages into site/`);

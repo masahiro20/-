@@ -179,6 +179,12 @@ export function portalPages({ esc, CONFIG }) {
   </div>
 </section>
 
+<section class="section" id="add-home">
+  <div class="wrap narrow">
+    <div class="ask-box"><p><b>ホーム画面に追加すると、アプリのように開けます</b><br>一度開いたページは、電波が弱い場所でも開けます。<br>iPhone：共有ボタン → 「ホーム画面に追加」／Android：メニュー → 「ホーム画面に追加」</p></div>
+  </div>
+</section>
+
 <section class="section">
   <div class="wrap">
     <div class="section-head"><h2>よくある質問</h2></div>
