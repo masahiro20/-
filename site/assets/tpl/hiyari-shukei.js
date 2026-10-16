@@ -205,6 +205,14 @@
     document.head.appendChild(el);
   })();
 
+  // 印刷の2枚目の先頭に「〇年〇月 ヒヤリハットの月別集計（つづき）事業所名」を出す（書類を作り直すたびに更新）
+  function printCont(month, office) {
+    var el = document.getElementById('hiyariCont');
+    if (!el) { el = document.createElement('style'); el.id = 'hiyariCont'; document.head.appendChild(el); }
+    var txt = (month + ' ヒヤリハットの月別集計（つづき）' + (office ? ' ' + office : '')).replace(/[\\"\r\n]/g, ' ');
+    el.textContent = '@media print { #fdDoc > table:nth-of-type(5)::before { content: "' + txt + '"; display: table-caption; caption-side: top; text-align: left; font-size: 10px; padding: 0 0 6px; color: #444; } }';
+  }
+
   function countFields(g) {
     return g.list.map(function (x) { return { id: g.prefix + x[0], type: 'text', label: x[1], ph: '0', half: true }; });
   }
@@ -248,6 +256,7 @@
       var t = tally(v);
       var total = t.total;
       var month = ymText(v.month);
+      printCont(month, String(v.office || '').trim());
 
       // 1. 今月のまとめ
       var summary = [

@@ -82,7 +82,7 @@
         { id: 'bin', type: 'seg', label: '記録する便', hint: '「迎え・送り」は2便を1枚に', options: BIN },
         { id: 'date', type: 'date', label: '日付', today: true, half: true },
         { id: 'car', type: 'text', label: '車両', ph: '例：1号車（白のワゴン）', half: true },
-        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇こどもクラブ', half: true, profile: 'office' },
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇子どもクラブ', half: true, profile: 'office' },
         { id: 'writer', type: 'text', label: '記入者', ph: '例：〇〇', half: true, profile: 'writer' },
       ] },
       { title: '乗った職員と出発前の確認', fields: [

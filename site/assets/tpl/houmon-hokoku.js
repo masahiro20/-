@@ -141,7 +141,7 @@
     blocks: [
       { title: '報告先と訪問の概要', fields: [
         { id: 'to', type: 'seg', label: '報告先', options: TO, def: 'hogo' },
-        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇保育所等訪問支援事業所', half: true },
+        { id: 'office', type: 'text', label: '事業所名', ph: '例：〇〇保育所等訪問支援事業所', half: true, profile: 'office' },
         { id: 'staff', type: 'text', label: '訪問支援員（名前）', ph: '例：福祉 花子', profile: 'writer', half: true },
         { id: 'place', type: 'select', label: '訪問先の種類', hint: '※の施設（中学校・高等学校・放課後児童クラブ・児童館）は、法令（施行規則）に名前が出ていない施設で、「市町村が認める施設」として訪問先になります。訪問先にできるかは、支給を決める市町村に確かめましょう。', options: PLACE.map(function (x) { return [x[0], x[1] + (x[3] ? ' ※' : '')]; }) },
         { id: 'date', type: 'date', label: '訪問日', today: true, half: true },

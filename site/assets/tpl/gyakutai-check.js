@@ -250,6 +250,8 @@
         { id: 'sector', type: 'seg', label: '業種', options: SECTOR, profile: 'svc' },
         { id: 'role', type: 'select', label: 'チェックする人（職員の立場）', hint: '名前は書かなくてかまいません', options: function (v) { return ROLE[sec(v)]; } },
         { id: 'date', type: 'date', label: '実施日', today: true },
+        { id: 'office', type: 'text', label: '事業所名（任意）', ph: '例：〇〇デイサービス', profile: 'office', half: true },
+        { id: 'doer', type: 'text', label: '実施者（任意）', hint: '集計して使うときは、名前を書かなくてもかまいません', ph: '例：虐待防止担当 〇〇', profile: 'writer', half: true },
       ] },
     ].concat(itemBlocks, [
       { title: '気づいたこと・相談したいこと', fields: [
@@ -285,8 +287,8 @@
       var law = s === 'kaigo' ? '高齢者虐待防止法 第21条' : s === 'jido' ? '障害者虐待防止法 第16条。児童発達支援・放課後等デイサービスなどの障害児通所支援も対象です。障害児入所施設などでは児童福祉法 第33条の12' : '障害者虐待防止法 第16条';
       return {
         title: '虐待防止のセルフチェック表',
-        left: '業種：' + H.label(SECTOR, s) + '\n立場：' + (H.label(ROLE[s], v.role) || ''),
-        right: '実施日：' + H.date(v.date) + '\n項目数：' + n,
+        left: (v.office.trim() ? v.office.trim() + '\n' : '') + '業種：' + H.label(SECTOR, s) + '\n立場：' + (H.label(ROLE[s], v.role) || ''),
+        right: '実施日：' + H.date(v.date) + (v.doer.trim() ? '\n実施者：' + v.doer.trim() : '') + '\n項目数：' + n,
         sections: [
           { h: 'この表について', w1: '96px', rows: [
             ['', 'about', 'このチェック表は、職場で話し合うためのものです。点数で人を評価したり、個人を責めたりするためには使いません。「ときどき気になる」「できていない」に印がついたのは、ふり返りができている証拠です。気になった項目を持ち寄り、職場の仕組みで減らす方法を一緒に考えましょう。'],

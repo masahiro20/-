@@ -94,6 +94,8 @@
     return /^[「『]/.test(t) ? t : '「' + t + '」';
   }
   function answered(v) { return v.status === 'kaito'; }
+  // 匿名の申出は、申出人の意向を確かめられない。「報告を望まない」と矛盾するので、報告するものとして扱う
+  function tpEff(v) { return v.from === 'tokumei' && v.tp === 'kyohi' ? 'yes' : v.tp; }
 
   Formdoc.run({
     title: '苦情受付・対応記録',
@@ -129,7 +131,7 @@
       ] },
       { title: '第三者委員への報告', note: '受け付けた苦情は、苦情解決責任者と第三者委員にすべて報告します（申出人がはっきり断った場合を除く）。', fields: [
         { id: 'tp', type: 'seg', label: '第三者委員への報告', options: TP },
-        { id: 'tachiai', type: 'seg', label: '話し合いへの第三者委員の立ち会い', options: TACHIAI, show: function (v) { return v.tp === 'yes'; } },
+        { id: 'tachiai', type: 'seg', label: '話し合いへの第三者委員の立ち会い', options: TACHIAI, show: function (v) { return tpEff(v) === 'yes' && v.from !== 'tokumei'; } },
       ] },
       { title: '事実の確認', fields: [
         { id: 'checkHow', type: 'chips', list: true, label: '確かめた方法', options: CHECK.map(function (x) { return [x[0], x[1]]; }) },
@@ -167,28 +169,37 @@
       if (v.measureText.trim()) measures.push(v.measureText.trim());
       var share = texts(SHARE, v.share).map(function (x) { return x[2]; });
 
-      var tpText = v.tp === 'yes'
-        ? '報告する（報告日：　　年　　月　　日）。話し合いへの立ち会い：' + (v.tachiai === 'yes' ? '希望あり' : '不要')
-        : v.tp === 'kyohi' ? '申出人が第三者委員への報告を望まないため、報告しない。'
-          : '第三者委員を置いていない。';
-      if (tokumei && v.tp !== 'yes') tpText += '（匿名の苦情も、第三者委員に報告して対応します）';
+      var tp = tpEff(v);
+      var tpText = tokumei && tp === 'yes'
+        ? '報告する（報告日：　　年　　月　　日）。' + (v.tp === 'kyohi' ? '匿名の申出で、申出人の意向を確かめられないため、報告して対応する。' : '') + '匿名のため、話し合いは行わない。'
+        : tp === 'yes'
+          ? '報告する（報告日：　　年　　月　　日）。話し合いへの立ち会い：' + (v.tachiai === 'yes' ? '希望あり' : '不要')
+          : tp === 'kyohi' ? '申出人が第三者委員への報告を望まないため、報告しない。'
+            : '第三者委員を置いていない。';
+      if (tokumei && tp === 'none') tpText += '（匿名の苦情も、第三者委員に報告して対応します）';
 
+      var checked = !!v.checkText.trim();
+      var hasMeasure = measures.length > 0;
       var ans;
       if (answered(v)) {
         ans = [
           ['回答日・方法', 'ansWhen', H.date(v.ansDate) + '　' + v.ansHow],
           ['回答した内容', 'ansText', v.ansText.trim() || (tokumei
-            ? '匿名のため、受け付けたことと対応・改善策を、掲示（おたより）で知らせた。'
-            : 'お申し出いただいたことへのお礼と、ご心配・ご不便をおかけしたことへのお詫びを伝えた。確認した事実と、対応・改善策を説明した。')],
+            ? (checked ? '匿名のため、連絡先が分からない。受け付けたことと対応・改善策を、掲示（おたより）で知らせた。' : '匿名のため、連絡先が分からない。事実を確かめたあとに、対応・改善策を掲示（おたより）で知らせる。')
+            : checked
+              ? 'お申し出いただいたことへのお礼と、ご心配・ご不便をおかけしたことへのお詫びを伝えた。確認した事実と、' + (hasMeasure ? '対応・改善策' : '今後の対応') + 'を説明した。'
+              : 'お申し出いただいたことへのお礼を伝えた。事実を確かめたあとに、確認した事実と対応・改善策を説明する。')],
           ['申出人の反応', 'react', H.label(REACT, v.react) + '。' + (v.reactText.trim() ? '\n' + quote(v.reactText) : '')],
         ];
       } else {
-        ans = [['回答', 'ansWhen', '未回答（回答の予定日：' + H.date(v.ansPlan) + '）。受け付けたことと、回答の予定を申出人に伝える。']];
+        ans = [['回答', 'ansWhen', tokumei
+          ? '未回答。匿名のため連絡先がない。受け付けたことと対応・改善策は、掲示（おたより）で知らせる（予定日：' + H.date(v.ansPlan) + '）。'
+          : '未回答（回答の予定日：' + H.date(v.ansPlan) + '）。受け付けたことと、回答の予定を申出人に伝える。']];
       }
 
       var followDate = v.follow !== 'none' ? addMonths(answered(v) && v.ansDate ? v.ansDate : v.date, Number(v.follow)) : '';
       var followText = v.follow === 'none' ? '改善を約束した事項がないため、報告は行わない。'
-        : (followDate ? H.date(followDate) : '　　年　　月　　日') + 'ごろ（' + H.label(FOLLOW, v.follow) + '）に、改善の状況を申出人' + (v.tp === 'yes' ? 'と第三者委員' : '') + 'に報告する。';
+        : (followDate ? H.date(followDate) : '　　年　　月　　日') + 'ごろ（' + H.label(FOLLOW, v.follow) + '）に、改善の状況を' + (tokumei ? '掲示（おたより）で知らせ' : '申出人' + (tp === 'yes' ? 'と第三者委員' : '') + 'に報告す') + (tokumei && tp === 'yes' ? '、第三者委員に報告す' : '') + 'る。';
       var closeText = v.closeDate ? H.date(v.closeDate)
         : answered(v) && v.react === 'ng' ? '未完了（申出人が納得されていないため、話し合いを続ける）'
           : '';
@@ -248,11 +259,14 @@
       if (b) return '「' + b + '」のように、申出人を責めたり決めつけたりする言葉が入っています。記録は、申出人や第三者委員、市町村が読むこともあります。「〇〇と話された」「〇〇を確かめた」のように、言葉と事実をそのまま書きましょう。';
       var e = found(v, EXCUSE);
       if (e) return '「' + e + '」のような書き方は、言い訳に読まれやすくなります。理由を書くときは、事実（その時間の職員の人数・何があったか）と、事業所として何を変えるかを一緒に書きましょう。';
+      if (v.from === 'tokumei' && v.tp === 'kyohi') return '匿名の申出では、申出人の「報告を望まない」という意向を確かめられません。匿名の苦情も、第三者委員に報告して対応します（書類では「報告する」として整えています）。回答は、連絡先がないので掲示（おたより）などで知らせましょう。';
+      if (answered(v) && !v.checkText.trim()) return '事実確認の欄が空のまま「回答した」になっています。回答は、事実を確かめたあとに行います。「確認した事実を説明した」「お詫びした」と書く前に、確認できたことを書きましょう。';
+      if (v.from === 'tokumei' && answered(v) && v.ansHow && v.ansHow.indexOf('掲示') === -1) return '匿名の申出は連絡先が分からないため、電話・面談・書面・メールでは回答できません。回答の方法は、掲示・おたよりなどにしましょう。';
       if (!answered(v)) return '申出人への回答が「未回答」のままです。すぐに答えられないときも、まず「受け付けたこと」と「いつまでに・誰が回答するか」を伝え、回答の予定日を入れましょう。回答が済むまでは、対応は終わっていません。';
       if (!v.cats.length) return '「苦情の内容」で、苦情の分類を選んでください。分類ごとに改善策の文例が出ます。';
       if (!v.fact.trim() && !v.words.trim()) return '「苦情の内容」に、申出の内容（出来事）と申出人の言葉を分けて書きましょう。';
       if (v.tp === 'none') return '国の指針では、苦情解決に客観性を持たせるため、第三者委員を置くこととされています（社会福祉事業を行う事業者が対象。ほかの事業者も参考にすることが望まれています）。置いていない場合は、法人で検討しましょう。';
-      if (v.from === 'tokumei' && v.tp !== 'yes') return '匿名の苦情（意見箱など）も、第三者委員に報告して対応します。';
+      if (v.from === 'tokumei' && v.tp === 'none') return '匿名の苦情（意見箱など）も、第三者委員に報告して対応します。';
       if (!v.checkHow.length && !v.checkText.trim()) return '「事実の確認」で、事実をどうやって確かめたかを選びましょう。申出人の話だけで結論を出さず、記録や職員の話も確かめます。';
       if (v.react === 'ng') return '申出人が納得されていません。話し合いを続け、必要に応じて第三者委員の助言や立ち会いを求めましょう。事業所のほかに相談できる窓口（市町村・運営適正化委員会など）があることも伝えます。';
       if (v.gaibu !== 'yes') return '申出人には、事業所のほかに相談できる窓口（市町村' + (sec(v) === 'kaigo' ? '・国保連' : '') + '・運営適正化委員会）があることも伝えましょう。';
