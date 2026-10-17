@@ -105,7 +105,7 @@
       if (p.bad) (p.big ? big : bad).push(label + 'の単価');
       var amount = null;
       if (!q.empty && !p.empty) {
-        amount = Math.round(q.n * p.n);
+        amount = Math.round(Number((q.n * p.n).toPrecision(12))); // 浮動小数の誤差で .5 が落ちないようにする
         if (!isFinite(amount)) amount = 0;
         total += amount;
       } else if ((!q.empty || !p.empty) && !q.bad && !p.bad) {
@@ -234,7 +234,7 @@
 
       // 出来高の表
       var rows = p.rows.map(function (r) {
-        return [r.name, r.q.empty || r.q.bad ? '' : fmt(r.q.n, 2), r.p.empty || r.p.bad ? '' : fmt(r.p.n, 2), r.amount == null ? '' : fmt(r.amount)];
+        return [r.name, r.q.empty || r.q.bad ? '' : fmt(r.q.n, 4), r.p.empty || r.p.bad ? '' : fmt(r.p.n, 4), r.amount == null ? '' : fmt(r.amount)];
       });
       rows.push(['合計', '', '', p.any || p.total ? fmt(p.total) + '円' : '']);
 

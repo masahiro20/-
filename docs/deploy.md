@@ -160,3 +160,26 @@ ASP（広告の仲介会社）の審査は、**サイトが公開されていて
 3. `node scripts/build.mjs` で、ページ・業種ページの一覧・フッター・サイトマップに自動で入ります。
 4. 確認：サーバーを起動して `node tools/qa/formdoc-check.cjs <id>`（入力欄を一通り操作して、下書きの抜け・エラーを確認）。
 5. チームでの進め方は `docs/team.md`、やることの一覧は `docs/team/backlog.md`。
+
+## 10. Service Worker に問題が出たとき（古い表示が直らない・開けない）
+
+「ホーム画面に追加」と、電波が弱くても開ける仕組みは `sw.js`（Service Worker）が担当しています。公開後に「更新したのに古いまま」「ページが開けない」などが起きたら、`sw.js` を **自分を登録解除してキャッシュ（写し）を全部消すだけの内容** に差し替えて公開します。入力した下書き・プロフィールはブラウザの localStorage にあり、Service Worker は触らないので消えません。
+
+1. Vercel の「Settings → Environment Variables」で `SW_KILL` = `1` を追加する（Production）。
+2. 「Deployments」から最新のデプロイを **Redeploy**（ビルドし直し）する。
+   - `SW_KILL` があるとき `scripts/build.mjs` は、`sw.js` を自己解除版（`scripts/pwa.mjs` の `swKillSource`）にし、各ページから登録のスクリプトも外します。
+   - ローカルで試すとき：`SW_KILL=1 node scripts/build.mjs`
+3. 利用者のブラウザは、次にページを開いたとき（長くても24時間以内）に新しい `sw.js` を受け取り、古い写しを消して自分を解除します。1〜2回開き直すと元の表示に戻ります。
+4. 原因を直したら `SW_KILL` を削除して再デプロイ。通常の `sw.js` が戻ります。
+5. 緊急で手早く直したいとき（Cloudflare Pages など環境変数を使わない場合）は、公開する `site/sw.js` を次の内容に置き換えて公開しても同じです（`site/index.html` などの登録スクリプトは、あっても害はありません）。
+
+```js
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(caches.keys()
+    .then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); })
+    .then(function () { return self.registration.unregister(); }));
+});
+```
+
+注意：`sw.js` と `manifest.webmanifest` は `Cache-Control: no-cache` にしてあります（`vercel.json` / `_headers`）。この設定を外さないでください。外すと、差し替えた `sw.js` が利用者に届くのが遅れます。

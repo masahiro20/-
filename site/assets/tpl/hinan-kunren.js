@@ -1,7 +1,7 @@
 // 避難訓練・BCP訓練の記録。種類ごとに、根拠・訓練の流れの例・役割の説明を入れ、課題には改善の案を添える。
 (function () {
   'use strict';
-  var SECTOR = [['kaigo', '介護'], ['shogai', '障害福祉'], ['jido', '児童（こども）']];
+  var SECTOR = [['kaigo', '介護'], ['shogai', '障害福祉'], ['jido', '児童（子ども）']];
   // id: [名前, 根拠の文（業種ごとに足す）, 訓練の流れの例[], 避難などで時間を測るか]
   var KIND = [
     ['kasai', '火災の避難・消火', true],
@@ -66,9 +66,9 @@
         { id: 'flow', type: 'textarea', label: '想定のつけたし', ph: '例：エレベーターは使えない。夜勤2名だけの時間帯。', rows: 2 },
       ] },
       { title: '参加した人', fields: [
-        { id: 'who', type: 'chips', options: [['staff', '職員'], ['user', '利用者・こども'], ['shobo', '消防署の方'], ['chiiki', '地域の方'], ['family', '家族']], def: ['staff', 'user'] },
+        { id: 'who', type: 'chips', options: [['staff', '職員'], ['user', '利用者・子ども'], ['shobo', '消防署の方'], ['chiiki', '地域の方'], ['family', '家族']], def: ['staff', 'user'] },
         { id: 'nstaff', type: 'text', label: '職員の人数', ph: '例：8', half: true },
-        { id: 'nuser', type: 'text', label: '利用者・こどもの人数', ph: '例：20', half: true },
+        { id: 'nuser', type: 'text', label: '利用者・子どもの人数', ph: '例：20', half: true },
         { id: 'nother', type: 'text', label: 'ほかの参加者', ph: '例：消防署 2名、地域の方 3名' },
       ] },
       { title: '役割分担と実施内容', fields: [
@@ -94,7 +94,7 @@
     ],
     build: function (v, H) {
       var kname = H.label(KIND, v.kind);
-      var user = v.sector === 'jido' ? 'こども' : '利用者';
+      var user = v.sector === 'jido' ? '子ども' : '利用者';
       var mins = v.mins && isMove(v) ? Number(String(v.mins).replace(/[^0-9.]/g, '')) : 0;
       var total = minutesBetween(v.start, v.end);
       var when = H.date(v.date) + '　' + (v.start ? H.time(v.start) : '　　時　　分') + '〜' + (v.end ? H.time(v.end) : '　　時　　分') + (total ? '（' + total + '分間）' : '');
@@ -115,12 +115,12 @@
       var basis = [];
       if (v.kind === 'bcp' || v.kind === 'kansen') {
         basis.push('業務継続計画（BCP）に基づく訓練（シミュレーション）。運営基準の「業務継続計画の策定等」で、職員への周知と、研修・訓練を定期的に行うことが決まっています。');
-        if (v.sector === 'kaigo') basis.push('回数の目安：入所系は年2回以上、通所・訪問系は年1回以上（厚生労働省のBCP研修資料）。');
+        if (v.sector === 'kaigo') basis.push('回数の目安：介護サービスでは、入所系は年2回以上、通所・訪問系は年1回以上と、運営基準の解釈通知に示されています（感染症の数え方など、細かい点は指定権者に確認してください）。');
         else basis.push('回数は、サービスの種類や自治体で異なります。指定権者の資料で確認してください。');
       } else {
         basis.push('運営基準の「非常災害対策」で、避難、救出その他必要な訓練を定期的に行うことが決まっています。');
-        if (v.kind === 'suigai') basis.push('避難確保計画の対象の施設は、計画に基づく訓練を行い、結果を市町村長に報告します（水防法第15条の3第5項、土砂災害防止法第8条の2第5項）。');
-        else basis.push('消防法の対象の建物は、消火訓練と避難訓練を年2回以上行い、あらかじめ消防機関へ通報します（消防法施行規則第3条第10項・第11項）。建物が対象かは消防署に確認しましょう。');
+        if (v.kind === 'suigai') basis.push('市町村の地域防災計画に名称と所在地が定められた施設は、避難確保計画に基づく訓練を行い、結果を市町村長に報告します（水防法第15条の3第5項、土砂災害防止法第8条の2第5項）。');
+        else basis.push('消防法施行規則で定める福祉施設などの防火対象物では、防火管理者が消火訓練と避難訓練を年2回以上行い、行うときはあらかじめ消防機関へ通報します（第3条第10項・第11項）。建物が対象かどうかは、消防署または消防計画で確認しましょう。');
       }
       law = basis.join('\n');
 

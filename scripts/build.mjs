@@ -15,7 +15,7 @@ import { flyerPage } from './flyer-page.mjs';
 import { formdocPages } from './formdoc-pages.mjs';
 import { ikenPage } from './iken-page.mjs';
 import { startPage } from './start-page.mjs';
-import { buildVersion, manifestJson, swSource } from './pwa.mjs';
+import { buildVersion, manifestJson, swSource, swKillSource } from './pwa.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'site');
@@ -143,7 +143,7 @@ ${body}
   </div>
 </footer>
 <script src="${r}assets/common.js"></script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){})}catch(e){}})}</script>
+${process.env.SW_KILL ? '' : `<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){})}catch(e){}})}</script>`}
 ${scripts.map((s) => (typeof s === 'object'
     ? `<script src="${s.src}" integrity="${s.integrity}" crossorigin="anonymous" referrerpolicy="no-referrer"></script>`
     : `<script src="${/^https?:/.test(s) ? s : r + s}"></script>`)).join('\n')}
@@ -810,5 +810,6 @@ write('offline.html', layout({
   </div>
 </section>`,
 }));
-write('sw.js', swSource(buildVersion(OUT)));
+// 環境変数 SW_KILL=1 でビルドすると、自分を登録解除してキャッシュを全部消すだけの sw.js になる（docs/deploy.md「Service Worker に問題が出たとき」）
+write('sw.js', process.env.SW_KILL ? swKillSource() : swSource(buildVersion(OUT)));
 console.log(`built ${pages.length} pages into site/`);

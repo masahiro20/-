@@ -118,3 +118,18 @@ self.addEventListener('fetch', function (e) {
 });
 `;
 }
+
+// 緊急用：自分を登録解除し、写し（キャッシュ）をすべて消すだけの Service Worker。build.mjs が SW_KILL=1 のときに使う
+export function swKillSource() {
+  return `// ふくしのおたすけ帳 Service Worker（自己解除版。build.mjs が作る）
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys()
+      .then(function (keys) { return Promise.all(keys.map(function (k) { return caches.delete(k); })); })
+      .then(function () { return self.registration.unregister(); })
+  );
+});
+// fetch は処理しない（すべてネットワークへ素通し）
+`;
+}
