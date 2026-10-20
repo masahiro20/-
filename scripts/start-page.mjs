@@ -84,7 +84,7 @@ export function startPage({ esc, CONFIG, OUT }) {
   return {
     path: 'start.html',
     body,
-    title: `はじめての方へ｜${CONFIG.siteName}（介護・障害福祉・児童支援の書類を無料で）`,
+    title: `はじめての方へ｜${CONFIG.siteName}`,
     description: '介護・障害福祉・児童支援の書類を、選ぶだけで下書きできる無料ツール集。リールで紹介したツールの一覧と、使い方の案内です。',
   };
 }

@@ -79,7 +79,7 @@ export function programPage({ esc }) {
   return {
     path: 'program.html',
     body,
-    title: '支援プログラムの作り方と下書きツール【放デイ・児発／5領域】無料｜個別支援計画 文例帳',
+    title: '支援プログラムの作り方【放デイ・児発】無料｜ふくしのおたすけ帳',
     description: '児童発達支援・放課後等デイサービスの「支援プログラム」を、こども家庭庁の手引きの①〜⑫の項目どおりに無料で作成。5領域ごとの支援内容、家族支援・移行支援・地域支援・職員研修・行事の文例つき。ホームページ掲載用のHTMLもコピーできます。',
     scripts: ['assets/program-data.js', 'assets/program.js'],
   };

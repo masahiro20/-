@@ -90,13 +90,16 @@ export function affiliateBlock({ esc, CONFIG, sector }) {
 
 // 業種ページのカード。ほかの業種と共有しているツールには、業種の小さなバッジ（secTags）を名前の前に付ける
 const TOOL_BY_PATH = Object.fromEntries(TOOLS.map((t) => [t.path, t]));
-function toolCard(t, esc) {
+export function toolCard(t, esc) {
   const all = TOOL_BY_PATH[t.path];
   const tags = all && all.sectors.length > 1 ? secTags(all.sectors) : '';
   return `<a class="tool-card" href="${esc(t.path)}">
     ${t.tag ? `<span class="pill pill-shu">${esc(t.tag)}</span>` : ''}
     <b>${tags}${esc(t.name)}</b><span>${esc(t.desc)}</span><em>使ってみる →</em></a>`;
 }
+
+// 業種ページの説明文に入れる代表的なツール名（先頭から4件）
+const hubExamples = (s) => s.tools.slice(0, 4).map((t) => t.name.replace(/の下書き$/, '')).join('、');
 
 export function portalPages({ esc, CONFIG }) {
   const home = `
@@ -124,7 +127,7 @@ export function portalPages({ esc, CONFIG }) {
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head"><h2>業種ごとのツール</h2></div>
+    <div class="section-head"><h2>業種ごとのツール</h2><a class="text-link" href="tools.html">ツール一覧（${TOOLS.length}）を見る</a></div>
     <div class="sector-grid">
       ${SECTORS.map((s) => `<div class="sector-card sector-${s.id}">
         <a class="sector-head" href="${s.path}"><b>${esc(s.name)}</b><span>${esc(s.sub)}</span></a>
@@ -200,8 +203,8 @@ export function portalPages({ esc, CONFIG }) {
 
   const hubs = SECTORS.map((s) => ({
     path: s.path,
-    title: `${s.name}（${s.sub}）の書類ツール【無料】｜${CONFIG.siteName}`,
-    description: `${s.sub}で働く方のための無料ツール。${s.tools.map((t) => t.name).join('・')}。登録不要・入力内容は送信されません。`,
+    title: `${s.name}の書類テンプレート【無料】｜${CONFIG.siteName}`,
+    description: `${s.sub}で働く方のための無料ツール${s.tools.length}件。${hubExamples(s)}など。登録不要・入力内容は送信されません。`,
     sector: s.id,
     scripts: ['assets/tools-data.js'],
     body: `
@@ -219,6 +222,7 @@ export function portalPages({ esc, CONFIG }) {
     ${searchBox({ esc, tools: TOOLS, mode: 'hub', sector: s.id, hints: HINTS[s.id] })}
     <div class="tool-grid">${s.tools.map((t) => toolCard(t, esc)).join('')}</div>
     ${s.upcoming && s.upcoming.length ? `<div class="upcoming"><p>準備中のツール</p><ul>${s.upcoming.map((u) => `<li>${esc(u)}</li>`).join('')}</ul></div>` : ''}
+    <p style="margin-top:24px"><a class="text-link" href="tools.html">ほかの業種を含む、ツール一覧を見る</a></p>
     ${s.guides.length ? `<h2 style="margin-top:40px;font-size:20px">読みもの</h2><ul class="plain">${s.guides.map((g) => `<li><a href="${esc(g.path)}">${esc(g.name)}</a></li>`).join('')}</ul>` : ''}
   </div>
 </section>
@@ -233,7 +237,7 @@ export function portalPages({ esc, CONFIG }) {
   return [
     {
       path: 'index.html', body: home, scripts: ['assets/tools-data.js'],
-      title: `${CONFIG.siteName}｜介護・障害福祉・児童支援の計画書・報告書を無料でかんたんに`,
+      title: `${CONFIG.siteName}｜介護・障害福祉・児童支援の書類を無料で`,
       description: '介護・障害福祉・児童支援（放デイ・児発）で働く方のための無料ツール集。個別支援計画、モニタリング、支援記録、介護記録、事故報告・ヒヤリハット、委員会の議事録、研修計画などの下書きを、選ぶだけで作れます。登録不要・入力内容は送信されません。',
     },
     ...hubs,

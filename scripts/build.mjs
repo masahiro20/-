@@ -6,13 +6,15 @@ import { DOMAINS, AGES, ISSUES, TRAITS } from '../data/issues.mjs';
 import { CONFIG } from '../data/config.mjs';
 import { salesPages } from './sales-pages.mjs';
 import { programPage, programData } from './program-page.mjs';
-import { SECTORS, TOOLS, portalPages, shareBlock, affiliateBlock } from './portal.mjs';
+import { SECTORS, TOOLS, portalPages, shareBlock, affiliateBlock, toolCard } from './portal.mjs';
 import { toolsDataJs } from './tool-search.mjs';
 import { shogaiPage, shogaiData } from './shogai-page.mjs';
 import { jikoPage, jikoData } from './jiko-page.mjs';
 import { renrakuchoPage, renrakuchoData } from './renrakucho-page.mjs';
 import { flyerPage } from './flyer-page.mjs';
 import { formdocPages } from './formdoc-pages.mjs';
+import { toolsPage } from './tools-page.mjs';
+import { breadcrumbLd, webAppLd, relatedTools, seoChecks, SECTOR_LABEL } from './seo.mjs';
 import { ikenPage } from './iken-page.mjs';
 import { startPage } from './start-page.mjs';
 import { buildVersion, manifestJson, swSource, swKillSource } from './pwa.mjs';
@@ -27,6 +29,7 @@ const esc = (s) =>
 const domainById = Object.fromEntries(DOMAINS.map((d) => [d.id, d]));
 const domainNames = (ids) => ids.map((id) => domainById[id].name).join('／');
 const pages = [];
+const seoEntries = [];
 // ツールのページ（開くと「最近使ったツール」に記録する。site/assets/common.js）
 const TOOL_BY_PATH = Object.fromEntries(TOOLS.map((t) => [t.path, t]));
 
@@ -38,12 +41,19 @@ function write(path, html) {
 
 const sq = (id) => `<span class="sq c-${id}" aria-hidden="true"></span>`;
 
+// 「関連するツール」（同じ業種のツール3件）。本文にすでにあるリンクは除く
+function relatedBlock(path, body) {
+  const items = relatedTools(TOOLS, path, body, 3);
+  if (!items.length) return '';
+  return `<section class="section"><div class="wrap"><div class="section-head"><h2 style="font-size:20px">関連するツール</h2><a class="text-link" href="tools.html">ツール一覧を見る</a></div><div class="tool-grid">${items.map((t) => toolCard(t, esc)).join('')}</div></div></section>`;
+}
+
 // ツールページの下に置く共有ボタンとPR枠
-function toolFooter(sector, path) {
+function toolFooter(sector, path, body = '') {
   // 選ぶだけの下書き（formdoc）のページは本文に意見箱の案内があるので、それ以外のツールにだけ足す
   const ask = !['jido-keikaku.html', 'shogai-keikaku.html', 'jiko.html', 'renrakucho.html', 'program.html'].includes(path) ? ''
     : `<div class="ask-box" style="margin:0 0 24px"><p><b>「この項目もほしい」「この書類も作ってほしい」</b><br>現場の声でツールを増やしています。意見箱からお気軽にどうぞ。</p><a class="btn btn-line btn-sm" href="iken.html">意見箱に送る</a></div>`;
-  return `<section class="section"><div class="wrap narrow">${ask}${shareBlock({ esc, url: `${CONFIG.siteUrl}/${path}`, title: `${CONFIG.siteName}｜無料で使える書類の下書きツール` })}${affiliateBlock({ esc, CONFIG, sector })}</div></section>`;
+  return `${relatedBlock(path, body)}<section class="section"><div class="wrap narrow">${ask}${shareBlock({ esc, url: `${CONFIG.siteUrl}/${path}`, title: `${CONFIG.siteName}｜無料で使える書類の下書きツール` })}${affiliateBlock({ esc, CONFIG, sector })}</div></section>`;
 }
 const yen = (n) => `${n.toLocaleString('ja-JP')}円`;
 const TODO = (label) => `<span class="todo">【公開前に記入：${esc(label)}】</span>`;
@@ -57,11 +67,17 @@ function buyButton(extraClass = '') {
 
 // root：相対パスの起点を上書きする（404ページはどの階層でも表示されるので '/' にする）
 // noindex：検索結果に出さず、sitemap.xml にも入れない
-function layout({ path, title, description, body, scripts = [], jsonLd, root, noindex }) {
+function layout({ path, title, description, body, scripts = [], jsonLd, root, noindex, crumbs, app }) {
   const depth = path.split('/').length - 1;
   const r = root || (depth ? '../'.repeat(depth) : './');
   const canonical = `${CONFIG.siteUrl}/${path === 'index.html' ? '' : path}`;
-  if (!noindex) pages.push(canonical);
+  if (!noindex) { pages.push(canonical); seoEntries.push({ path, title, description, tool: !!TOOL_BY_PATH[path] }); }
+  // 構造化データ：パンくず（トップ › 業種 › ツール）と、ツールページの WebApplication。FAQ などは呼び出し側が jsonLd で渡す
+  const ld = [
+    ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
+    ...(app ? [webAppLd(CONFIG.siteUrl, { name: app.name, desc: app.desc, path })] : []),
+    ...(crumbs ? [breadcrumbLd(CONFIG.siteUrl, [['トップ', 'index.html'], ...crumbs])] : []),
+  ];
   const ga = CONFIG.gaId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(CONFIG.gaId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(CONFIG.gaId)}');</script>`
@@ -101,7 +117,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDPMincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
 <link rel="stylesheet" href="${r}assets/style.css">
-${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
+${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
 ${gsc}
 ${ga}
 ${va}
@@ -130,6 +146,7 @@ ${body}
       <div><p class="brand-name" style="margin:0 0 6px">${esc(CONFIG.siteName)}</p><p class="small muted" style="margin:0">${esc(CONFIG.tagline)}</p></div>
       ${SECTORS.map((sec) => `<div><p class="footer-h"><a href="${r}${sec.path}">${esc(sec.name)}</a></p><ul class="footer-list">${sec.tools.slice(0, 6).map((t) => `<li><a href="${r}${t.path}">${esc(t.name)}</a></li>`).join('')}<li><a class="footer-more" href="${r}${sec.path}">${esc(sec.name)}のツールをすべて見る（${sec.tools.length}）</a></li></ul></div>`).join('')}
       <div><p class="footer-h">このサイトについて</p><ul class="footer-list">
+        <li><a href="${r}tools.html">福祉の書類テンプレート一覧</a></li>
         <li><a href="${r}iken.html">意見箱（ほしい書類・ご要望）</a></li>
         <li><a href="${r}flyer.html">職場で紹介するチラシ（印刷用）</a></li>
         <li><a href="${r}about.html">運営者情報・プライバシー</a></li>
@@ -342,11 +359,13 @@ function buildIndex() {
     'jido-keikaku.html',
     layout({
       path: 'jido-keikaku.html',
-      title: `個別支援計画の文例と下書き作成【5領域対応・無料】放デイ・児発｜${CONFIG.siteName}`,
+      title: `個別支援計画の文例と下書き【放デイ・児発】｜${CONFIG.siteName}`,
       description:
         '放課後等デイサービス・児童発達支援の個別支援計画を、こども家庭庁の参考様式と同じ項目で下書き。5領域との関連性、家族支援・移行支援、モニタリングの文例まで。無料・登録不要、入力内容は送信されません。',
-      body: body + toolFooter('jido', 'jido-keikaku.html'),
+      body: body + toolFooter('jido', 'jido-keikaku.html', body),
       scripts: ['assets/data.js', 'assets/app.js'],
+      crumbs: [['児童支援', 'jido.html'], ['個別支援計画の下書き', 'jido-keikaku.html']],
+      app: { name: '個別支援計画の下書き（放デイ・児発）', desc: '放課後等デイサービス・児童発達支援の個別支援計画を、課題を選ぶだけで国の参考様式と同じ項目で下書きにする無料ツール。' },
       jsonLd: {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -491,7 +510,7 @@ function buildBunreiIndex() {
     'bunrei/index.html',
     layout({
       path: 'bunrei/index.html',
-      title: `個別支援計画の文例集｜5領域・課題別【放デイ・児発】｜${CONFIG.siteName}`,
+      title: `個別支援計画の文例集【5領域・課題別】｜${CONFIG.siteName}`,
       description: `放デイ・児発の個別支援計画の文例を、5領域（健康・生活／運動・感覚／認知・行動／言語・コミュニケーション／人間関係・社会性）と${ISSUES.length}の課題別に掲載。モニタリングの文例つき。`,
       body,
     }),
@@ -557,7 +576,7 @@ function buildGuide() {
     'kakikata.html',
     layout({
       path: 'kakikata.html',
-      title: `個別支援計画の書き方｜令和6年度改定の記載のポイント・5領域【放デイ・児発】｜${CONFIG.siteName}`,
+      title: `個別支援計画の書き方【令和6年度改定・5領域】｜${CONFIG.siteName}`,
       description:
         '放課後等デイサービス・児童発達支援の個別支援計画の書き方を、国の「記載のポイント」に沿って項目ごとに解説。5領域との関連性、達成時期、優先順位、担当者の書き方まで。',
       body,
@@ -620,7 +639,7 @@ function buildChecklist() {
     'checklist.html',
     layout({
       path: 'checklist.html',
-      title: `個別支援計画の運営指導前チェックリスト【放デイ・児発】｜${CONFIG.siteName}`,
+      title: `運営指導前チェックリスト【放デイ・児発】｜${CONFIG.siteName}`,
       description: `放課後等デイサービス・児童発達支援の運営指導（実地指導）前に、個別支援計画・モニタリング・支援プログラムの書類を${total}項目で確認できる無料チェックリスト。`,
       body,
       scripts: ['assets/checklist.js'],
@@ -748,8 +767,10 @@ buildIssuePages();
 buildGuide();
 buildChecklist();
 buildAbout();
-for (const pg of portalPages({ esc, CONFIG })) {
-  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
+for (const pg of [...portalPages({ esc, CONFIG }), toolsPage({ esc, CONFIG })]) {
+  const sec = SECTORS.find((s) => s.path === pg.path);
+  const crumbs = pg.path === 'index.html' ? [] : sec ? [[sec.name, sec.path]] : [['ツール一覧', pg.path]];
+  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts, crumbs }));
 }
 write('assets/tools-data.js', toolsDataJs(TOOLS));
 write('assets/program-data.js', programData());
@@ -759,12 +780,22 @@ write('assets/renrakucho-data.js', renrakuchoData());
 for (const pg of [flyerPage({ esc, CONFIG }), ikenPage({ esc, CONFIG }), startPage({ esc, CONFIG, OUT })]) {
   write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body, scripts: pg.scripts }));
 }
-for (const pg of [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc }), ...formdocPages({ esc, CONFIG })]) {
-  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter(pg.sector || 'shogai', pg.path), scripts: pg.scripts }));
-}
+// ツールページ。pg.crumbParent：パンくずの親になる業種、pg.app：WebApplication に使う名前と説明
 {
-  const pg = programPage({ esc });
-  write(pg.path, layout({ path: pg.path, title: pg.title, description: pg.description, body: pg.body + toolFooter('jido', pg.path), scripts: pg.scripts }));
+  const sectorOf = { 'shogai-keikaku.html': 'shogai', 'jiko.html': 'kaigo', 'renrakucho.html': 'jido', 'program.html': 'jido' };
+  const toolPages = [shogaiPage({ esc }), jikoPage({ esc }), renrakuchoPage({ esc }), programPage({ esc }), ...formdocPages({ esc, CONFIG })];
+  for (const pg of toolPages) {
+    const parent = pg.sector || sectorOf[pg.path];
+    const tool = TOOL_BY_PATH[pg.path];
+    const app = pg.app || (tool && { name: tool.name, desc: tool.desc });
+    write(pg.path, layout({
+      path: pg.path, title: pg.title, description: pg.description,
+      body: pg.body + toolFooter(pg.sector || (pg.path === 'program.html' ? 'jido' : 'shogai'), pg.path, pg.body),
+      scripts: pg.scripts,
+      crumbs: [[SECTOR_LABEL[parent], `${parent}.html`], [(app && app.name) || pg.title, pg.path]],
+      app,
+    }));
+  }
 }
 for (const pg of salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton })) {
   write(pg.path, layout({
@@ -794,6 +825,7 @@ if (!CONFIG.siteUrl || CONFIG.siteUrl === 'https://example.com') console.warn('[
 if (!CONFIG.feedbackEndpoint && !CONFIG.feedbackEmail) console.warn('[公開前に推奨] data/config.mjs: feedbackEndpoint（意見箱の送り先。docs/deploy.md の「5. 意見箱」）');
 const salesMissing = ['sellerName', 'supportEmail', 'productUrl'].filter((k) => !CONFIG[k]);
 if (salesMissing.length) console.warn(`[有料販売を始めるときに] data/config.mjs: ${salesMissing.join(', ')}`);
+for (const w of seoChecks(seoEntries)) console.warn(w);
 buildSeoFiles();
 write('manifest.webmanifest', manifestJson(CONFIG));
 write('offline.html', layout({

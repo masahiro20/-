@@ -86,7 +86,7 @@ export function jikoPage({ esc }) {
     path: 'jiko.html',
     sector: 'kaigo',
     body,
-    title: '介護の事故報告書の書き方・例文と下書きツール【厚労省の標準様式】無料｜ふくしのおたすけ帳',
+    title: '介護の事故報告書の書き方・例文【無料】｜ふくしのおたすけ帳',
     description: '介護の事故報告書を、厚生労働省の標準様式の項目どおりに無料で下書き。転倒・転落・誤嚥・誤薬・異食など種別ごとに、本人・職員・環境の要因分析と再発防止策の例文が入ります。登録不要・入力内容は送信されません。',
     scripts: ['assets/jiko-data.js', 'assets/jiko.js'],
   };

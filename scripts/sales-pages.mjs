@@ -280,7 +280,7 @@ export function salesPages({ CONFIG, ISSUES, esc, yen, TODO, buyButton }) {
     { path: 'template.html', body: template, title: `課題を選ぶと文例が入る 個別支援計画のExcel【5領域対応】｜${CONFIG.siteName}`,
       description: `放デイ・児発の個別支援計画をExcelで。課題を選ぶだけで、支援目標・支援内容（5領域つき）・家族支援・移行支援に文例が入ります。モニタリング記録・記入例・文例全集PDFつき。${price}（税込）・買い切り。`,
       faq },
-    { path: 'download.html', body: download, title: `個別支援計画書の様式ダウンロード（Excel・無料）【令和6年度・5領域対応】｜${CONFIG.siteName}`,
+    { path: 'download.html', body: download, title: `個別支援計画書のExcel様式【無料】｜${CONFIG.siteName}`,
       description: 'こども家庭庁の参考様式と同じ項目の、個別支援計画書とモニタリング記録のExcel様式を無料でダウンロードできます。放課後等デイサービス・児童発達支援向け。登録不要。' },
     { path: 'tokushoho.html', body: tokushoho, title: `特定商取引法に基づく表記｜${CONFIG.siteName}`, description: `${CONFIG.siteName}の特定商取引法に基づく表記。` },
     { path: 'terms.html', body: terms, title: `利用規約｜${CONFIG.siteName}`, description: `${CONFIG.siteName}の利用規約。` },

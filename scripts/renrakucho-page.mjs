@@ -68,7 +68,7 @@ export function renrakuchoPage({ esc }) {
     path: 'renrakucho.html',
     sector: 'jido',
     body,
-    title: '連絡帳の文例メーカー【放デイ・児発】保護者に伝わる書き方・例文｜ふくしのおたすけ帳',
+    title: '連絡帳の例文メーカー【放デイ・児発】｜ふくしのおたすけ帳',
     description: '放課後等デイサービス・児童発達支援の連絡帳を、今日の活動と様子を選ぶだけで作れる無料の文例メーカー。できたことが伝わる例文、体調・おやつ・トイレの書き方も。登録不要。',
     scripts: ['assets/renrakucho-data.js', 'assets/renrakucho.js'],
   };

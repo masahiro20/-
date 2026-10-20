@@ -1,6 +1,7 @@
 // 「選ぶだけの下書き」テンプレートのページ。本体は site/assets/formdoc.js と site/assets/tpl/<id>.js。
 import { readFileSync } from 'node:fs';
 import { TEMPLATES } from '../data/templates.mjs';
+import { toolTitle, toolDescription } from './seo.mjs';
 
 // 印刷の向き。tpl の Formdoc.run({ landscape: true }) ならA4横、それ以外はA4縦（.doc-portrait）。
 // 向きを決めるのは formdoc.js（実行時）。ここは、最初に表示される形を同じにするために tpl の設定を読むだけ。
@@ -66,8 +67,9 @@ export function formdocPages({ esc, CONFIG }) {
       path: t.path,
       sector: parent,
       body,
-      title: `${t.name}【無料・${t.sectors.map((s) => SECTOR_NAMES[s]).join('・')}】｜${CONFIG.siteName}`,
-      description: `${t.desc} 登録不要・無料。入力した内容は送信されません。`,
+      title: toolTitle(t, CONFIG.siteName),
+      description: toolDescription(t),
+      app: { name: t.name, desc: t.desc },
       scripts: ['assets/formdoc.js', `assets/tpl/${t.id}.js`],
     };
   });

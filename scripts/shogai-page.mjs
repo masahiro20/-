@@ -84,7 +84,7 @@ export function shogaiPage({ esc }) {
   return {
     path: 'shogai-keikaku.html',
     body,
-    title: '個別支援計画の書き方・文例と下書きツール【就労B・A・移行・生活介護・GH】無料｜ふくしのおたすけ帳',
+    title: '個別支援計画の文例・下書き【障害福祉】｜ふくしのおたすけ帳',
     description: '就労継続支援B型・A型、就労移行支援、生活介護、グループホームの個別支援計画を無料で下書き。課題（ニーズ）を選ぶと、支援目標・支援内容（本人の役割を含む）・留意事項まで入ります。登録不要・入力内容は送信されません。',
     scripts: ['assets/shogai-data.js', 'assets/shogai.js'],
   };
