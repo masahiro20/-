@@ -5,6 +5,8 @@ export const SECTOR_LABEL = { jido: '児童支援', shogai: '障害福祉', kaig
 
 // パンくず（トップ › 業種 › ツール）。crumbs: [[名前, 'path.html'], …]（先頭は呼び出し側でトップを入れる）
 export function breadcrumbLd(siteUrl, crumbs) {
+  // Google の仕様：パンくずは2項目以上が必要（トップページだけのときは出さない）
+  if (crumbs.length < 2) return null;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

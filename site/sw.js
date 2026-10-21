@@ -1,7 +1,7 @@
 // ふくしのおたすけ帳 Service Worker（build.mjs が作る。手で直さない）
 // ページ：ネットワーク優先（3.5秒で返事がなければ、前に開いたときの写し）。部品（CSS/JS/画像）：写し優先＋裏で更新。
 // 版（VERSION）はビルドごとに変わる。新しい版が動き出すと、古い版の写しはすべて消える。
-var VERSION = '099647b21152';
+var VERSION = '7cdb5f0c9a90';
 var CACHE = 'otasuke-' + VERSION;
 var PRECACHE = ['/offline.html', '/manifest.webmanifest', '/assets/style.css', '/assets/common.js', '/assets/img/icon-192.png'];
 var STATIC_RE = /\.(?:css|js|png|jpe?g|gif|webp|svg|ico|woff2?|webmanifest)$/i;

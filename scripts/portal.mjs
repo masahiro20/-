@@ -12,12 +12,12 @@ export const SECTORS = [
       { path: 'renrakucho.html', name: '連絡帳の文例メーカー', desc: '今日の活動と様子を選ぶだけで、保護者に伝わる連絡帳の文章に。毎日使えます。', tag: '新着' },
       { path: 'program.html', name: '支援プログラムの下書き', desc: '作成・公表が必要な支援プログラムを、手引きの①〜⑫どおりに。ホームページ掲載用HTMLも。' },
       { path: 'bunrei/index.html', name: '個別支援計画の文例集', desc: '31課題の支援目標・支援内容・モニタリングの文例。' },
-      { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
+      { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '事故報告の標準的な項目で、原因分析と再発防止策まで。' },
       { path: 'checklist.html', name: '運営指導前チェックリスト', desc: '個別支援計画まわりの書類を21項目で確認。' },
       { path: 'download.html', name: '白紙の計画書様式（Excel）', desc: '参考様式と同じ項目のExcel様式を無料でダウンロード。' },
     ],
     guides: [{ path: 'kakikata.html', name: '個別支援計画の書き方（令和6年度改定・5領域）' }],
-    upcoming: ['日々のバイタル・健康観察の記録', '食事・入浴などの介助記録'],
+    upcoming: ['食事・入浴などの介助記録', '褥瘡（じょくそう）予防・皮膚観察の記録'],
   },
   {
     id: 'shogai', path: 'shogai.html', name: '障害福祉', sub: '就労継続支援・就労移行支援・生活介護・グループホーム',
@@ -25,10 +25,10 @@ export const SECTORS = [
     lead: '個別支援計画・モニタリング・日々の支援記録から、欠席時対応、個別支援会議、委員会や研修の記録まで。希望や様子を選ぶだけで、記載事項のそろった下書きを作れます。',
     tools: [
       { path: 'shogai-keikaku.html', name: '個別支援計画の下書き', desc: '就労B・A・移行・生活介護・GHに対応。希望と課題を選ぶと、目標と支援内容の下書きに。', tag: '新着' },
-      { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '国の標準様式の項目で、原因分析と再発防止策まで。' },
+      { path: 'jiko.html', name: '事故・ヒヤリハット報告の下書き', desc: '事故報告の標準的な項目で、原因分析と再発防止策まで。' },
     ],
     guides: [],
-    upcoming: ['就労移行の実習記録・振り返り', '就職後の定着支援の記録'],
+    upcoming: ['就職後の定着支援の記録', '就労B型の利用者面談の記録'],
   },
   {
     id: 'kaigo', path: 'kaigo.html', name: '介護', sub: '特養・老健・グループホーム・デイサービス・訪問介護',
@@ -38,7 +38,7 @@ export const SECTORS = [
       { path: 'jiko.html', name: '事故報告書の下書き', desc: '厚生労働省の標準様式の項目で。転倒・転落・誤嚥・誤薬など種別ごとの文例つき。', tag: '新着' },
     ],
     guides: [],
-    upcoming: ['日々のバイタル・健康観察の記録', '食事・入浴などの介助記録'],
+    upcoming: ['食事・入浴などの介助記録', '褥瘡（じょくそう）予防・皮膚観察の記録'],
   },
 ];
 
@@ -118,7 +118,7 @@ export function portalPages({ esc, CONFIG }) {
       ${SECTORS.map((s) => `<a class="jump jump-${s.id}" href="${s.path}"><b>${esc(s.name)}</b><span>${esc(s.sub)}</span></a>`).join('')}
     </div>
     <ul class="portal-points">
-      <li><b>国の様式どおり</b>の項目で下書き</li>
+      <li><b>国の参考様式に沿った</b>項目で下書き</li>
       <li>文章は<b>その場で書き換え</b>、コピーして使える</li>
       <li><b>AIに頼む文章</b>もワンクリックで</li>
     </ul>
@@ -157,7 +157,7 @@ export function portalPages({ esc, CONFIG }) {
     <div class="section-head"><h2>使い方は、どのツールも同じです</h2></div>
     <div class="steps3 steps-mini">
       <div><span class="num">1</span><h3>選ぶ</h3><p>対象・課題・状況を選びます。個人名などは入力しません。</p></div>
-      <div><span class="num">2</span><h3>直す</h3><p>国の様式どおりに並んだ下書きを、その子・その方に合わせて書き換えます。</p></div>
+      <div><span class="num">2</span><h3>直す</h3><p>国の参考様式に沿って並んだ下書きを、その子・その方に合わせて書き換えます。</p></div>
       <div><span class="num">3</span><h3>使う</h3><p>コピーして事業所の様式やソフトに貼り付け。AIに整えてもらうこともできます。</p></div>
     </div>
   </div>

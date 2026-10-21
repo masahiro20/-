@@ -77,7 +77,7 @@ function layout({ path, title, description, body, scripts = [], jsonLd, root, no
     ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
     ...(app ? [webAppLd(CONFIG.siteUrl, { name: app.name, desc: app.desc, path })] : []),
     ...(crumbs ? [breadcrumbLd(CONFIG.siteUrl, [['トップ', 'index.html'], ...crumbs])] : []),
-  ];
+  ].filter(Boolean);
   const ga = CONFIG.gaId
     ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(CONFIG.gaId)}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${esc(CONFIG.gaId)}');</script>`
