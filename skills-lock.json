@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "copy-editing": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/copy-editing/SKILL.md",
+      "computedHash": "2c98bcf29c1adeac0dc5772a53a97d3b4c0320fd03accfb03a204c84d9a2799b"
+    },
     "copywriting": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
@@ -12,6 +18,12 @@
       "sourceType": "github",
       "skillPath": "skills/cro/SKILL.md",
       "computedHash": "f1974581536c4c860a0f7da4b663e2520dfc79a065327b576b12013dd62ad45e"
+    },
+    "offers": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/offers/SKILL.md",
+      "computedHash": "cf33eff3e0bc6a527d16f00919f8887be47e9f3dae78a0b382b8e6df8f8081cc"
     }
   }
 }
