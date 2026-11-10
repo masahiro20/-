@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ホームランディック PR Movie</title>
+<link rel="stylesheet" href="../node_modules/@fontsource/shippori-mincho/500.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/shippori-mincho/600.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-jp/400.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-jp/500.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/cormorant-garamond/500.css">
+<style>
+:root{
+  --paper:#f2eee6; --ink:#2a2723; --wood:#b0763c; --green:#2f4a3f; --dark:#141312; --glow:#ffd9a0; --mute:#8a8378;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;overflow:hidden}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--dark);
+  font-family:"Shippori Mincho",serif;color:var(--ink);font-feature-settings:"palt"}
+.scene{position:absolute;inset:0;opacity:0;overflow:hidden}
+.scene.paper{background:var(--paper)}
+.scene.paper::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(42,39,35,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(42,39,35,.045) 1px,transparent 1px);
+  background-size:60px 60px;background-position:-1px -1px}
+.scene.paper::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(90,70,40,.13) 100%)}
+.cam{position:absolute;inset:0;transform-origin:60% 55%}
+svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible}
+.copy{position:absolute;left:130px;top:250px;width:720px;z-index:3}
+.label{font-family:"Cormorant Garamond",serif;font-size:27px;letter-spacing:.28em;color:var(--wood);display:flex;align-items:center;gap:18px;white-space:nowrap}
+.label i{display:inline-block;width:56px;height:1px;background:var(--wood)}
+.label b{font-family:"Noto Sans JP",sans-serif;font-weight:500;font-size:19px;letter-spacing:.2em}
+h1{font-weight:600;font-size:58px;line-height:1.5;letter-spacing:.06em;margin-top:40px;white-space:nowrap}
+p.sub{font-family:"Noto Sans JP",sans-serif;font-size:23px;line-height:2.1;letter-spacing:.08em;color:#55504a;margin-top:44px;width:600px}
+p.sub em{font-style:normal;color:var(--ink);font-weight:500;border-bottom:1px solid var(--wood);padding-bottom:3px}
+.note{font-family:"Noto Sans JP",sans-serif;font-size:15px;color:var(--mute);letter-spacing:.06em;margin-top:22px}
+.ch{display:inline-block;will-change:transform,opacity}
+/* svg styles */
+.ln{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.thin{stroke-width:1.5}
+.hair{stroke-width:1;stroke:#9a9286}
+.dash{stroke-dasharray:none}
+.wall{stroke-width:11;stroke-linecap:square}
+.wd{stroke:var(--wood)}
+.tag{font-family:"Noto Sans JP",sans-serif;font-size:19px;letter-spacing:.1em;fill:var(--wood);font-weight:500}
+.room{font-family:"Cormorant Garamond",serif;font-size:21px;letter-spacing:.24em;fill:#7c756a}
+.center{position:absolute;left:0;right:0;text-align:center}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ============ S1 OPENING ============ -->
+<section class="scene" data-from="0" data-to="8.6">
+  <div class="cam">
+  <svg viewBox="0 0 1920 1080">
+    <defs><radialGradient id="g1"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient></defs>
+    <line class="ln draw" data-at="0.3" data-dur="3.2" x1="260" y1="700" x2="1660" y2="700" style="stroke:#cfc6b6;stroke-width:1.5"/>
+    <g style="stroke:#cfc6b6">
+      <path class="ln draw thin" data-at="2.0" data-dur="1.8" style="stroke:#cfc6b6" d="M900 700 V628 L1010 612 V700"/>
+      <path class="ln draw thin" data-at="2.6" data-dur="1.2" style="stroke:#cfc6b6" d="M1010 652 H1068 V700"/>
+    </g>
+    <circle class="fade" data-at="3.6" data-dur="2.2" data-dy="0" cx="954" cy="668" r="90" fill="url(#g1)"/>
+    <rect class="fade" data-at="3.4" data-dur="1.2" data-dy="0" x="938" y="648" width="34" height="38" fill="#ffd9a0"/>
+  </svg>
+  </div>
+  <div class="center chars" data-at="0.9" data-dur="0.9" data-stagger="0.07" data-out="4.3"
+       style="top:380px;font-size:60px;letter-spacing:.16em;color:#efe9dd;font-weight:500">家は、人生でいちばん長く過ごす場所。</div>
+  <div class="center chars" data-at="5.0" data-dur="0.9" data-stagger="0.07"
+       style="top:380px;font-size:60px;letter-spacing:.16em;color:#efe9dd;font-weight:500">だから、<span style="color:#ffd9a0">誰と建てるか</span>で、暮らしは変わる。</div>
+</section>
+
+<!-- ============ S2 CONCEPT ============ -->
+<section class="scene paper" data-from="8" data-to="19.6">
+  <div class="cam">
+  <svg viewBox="0 0 1920 1080"><g transform="translate(612,130) scale(.8)" id="elev"></g></svg>
+  </div>
+  <div class="copy">
+    <div class="label fade" data-at="0.9" data-dur="0.8"><i></i>CONCEPT</div>
+    <h1><span class="chars" data-at="1.4" data-dur="0.8" data-stagger="0.06">建築に携わる自分たちが、</span><br><span class="chars" data-at="2.5" data-dur="0.8" data-stagger="0.06">心から住みたい家をつくる。</span></h1>
+    <p class="sub fade" data-at="4.6" data-dur="1.0">愛知県小牧市の一級建築士事務所、<br><em>ホームランディック</em>。<br>設計士が描き、自分たちの手で建てる。<br>1991年の設立から変わらない、家づくりです。</p>
+  </div>
+</section>
+
+<!-- ============ S3 DESIGN ============ -->
+<section class="scene paper" data-from="19" data-to="31.6">
+  <div class="cam">
+  <svg viewBox="0 0 1920 1080"><g id="plan" transform="translate(44,0)"></g></svg>
+  </div>
+  <div class="copy">
+    <div class="label fade" data-at="0.9" data-dur="0.8"><i></i>01 DESIGN<b>完全自由設計</b></div>
+    <h1><span class="chars" data-at="1.4" data-dur="0.8" data-stagger="0.06">間取りは、</span><br><span class="chars" data-at="2.1" data-dur="0.8" data-stagger="0.06">あなたの暮らしから描く。</span></h1>
+    <p class="sub fade" data-at="4.4" data-dur="1.0">決まったプランは、ありません。<br>朝の過ごし方、帰宅してからの動き、<br>休日の居場所。ご家族の毎日を聞くことから、<br><em>一本目の線</em>がはじまります。</p>
+  </div>
+</section>
+
+<!-- ============ S4 STRUCTURE ============ -->
+<section class="scene paper" data-from="31" data-to="41.6">
+  <div class="cam">
+  <svg viewBox="0 0 1920 1080" id="frame"></svg>
+  </div>
+  <div class="copy">
+    <div class="label fade" data-at="0.9" data-dur="0.8"><i></i>02 STRUCTURE<b>耐震構法 SE構法</b></div>
+    <h1><span class="chars" data-at="1.4" data-dur="0.8" data-stagger="0.06">大空間も、強さも。</span><br><span class="chars" data-at="2.3" data-dur="0.8" data-stagger="0.06">骨組みから、考える。</span></h1>
+    <p class="sub fade" data-at="4.2" data-dur="1.0">ホームランディックは<br><em>耐震構法SE構法</em>の登録施工店。<br>吹き抜けや大きな窓のある開放的な空間を、<br>強い骨組みで支えます。</p>
+  </div>
+</section>
+
+<!-- ============ S5 COMFORT ============ -->
+<section class="scene paper" data-from="41" data-to="51.6">
+  <div class="cam">
+  <svg viewBox="0 0 1920 1080" id="section"></svg>
+  </div>
+  <div class="copy">
+    <div class="label fade" data-at="0.9" data-dur="0.8"><i></i>03 COMFORT<b>高気密・高断熱</b></div>
+    <h1><span class="chars" data-at="1.4" data-dur="0.8" data-stagger="0.06">夏も、冬も。</span><br><span class="chars" data-at="2.1" data-dur="0.8" data-stagger="0.06">家じゅう、心地よく。</span></h1>
+    <p class="sub fade" data-at="4.2" data-dur="1.0">断熱と気密で、外の暑さ寒さを持ち込まない。<br>光と風の入り方まで、設計で整える。<br><em>性能</em>は、毎日の気持ちよさのためにあります。</p>
+    <div class="note fade" data-at="5.4" data-dur="1.0">※最上位グレードでは UA値0.36・C値0.5程度を目指した家づくりに対応</div>
+  </div>
+</section>
+
+<!-- ============ S6 DUSK ============ -->
+<section class="scene" data-from="51" data-to="62.6" id="s6" style="background:#e9e3d6">
+  <div class="cam" style="transform-origin:50% 70%">
+  <svg viewBox="0 0 1920 1080" id="dusk"></svg>
+  </div>
+  <div class="center chars" data-at="3.4" data-dur="0.9" data-stagger="0.07"
+       style="top:120px;font-size:68px;letter-spacing:.14em;color:#f4eee2;font-weight:600">性能とデザイン。</div>
+  <div class="center chars" data-at="4.6" data-dur="0.9" data-stagger="0.07"
+       style="top:228px;font-size:68px;letter-spacing:.14em;color:#f4eee2;font-weight:600">どちらも、あきらめない。</div>
+  <div class="center fade" data-at="6.6" data-dur="1.2"
+       style="top:960px;font-family:'Noto Sans JP',sans-serif;font-size:23px;letter-spacing:.3em;color:#d9cfbd">設計から施工まで、ひとつのチームで。</div>
+</section>
+
+<!-- ============ S7 END CARD ============ -->
+<section class="scene paper" data-from="62" data-to="74" data-hold="1">
+  <svg viewBox="0 0 1920 1080">
+    <g transform="translate(960,205)">
+      <path class="ln draw" data-at="0.8" data-dur="1.6" style="stroke-width:2.5" d="M-62 46 V-22 L28 -40 V46"/>
+      <path class="ln draw" data-at="1.3" data-dur="1.2" style="stroke-width:2.5" d="M28 2 H66 V46"/>
+      <path class="ln draw wd" data-at="1.0" data-dur="1.6" style="stroke-width:2.5" d="M-96 46 H96"/>
+      <rect class="fade" data-at="2.2" data-dur="0.8" data-dy="0" x="-34" y="-2" width="26" height="26" fill="#b0763c"/>
+    </g>
+  </svg>
+  <div class="center chars" data-at="1.2" data-dur="0.9" data-stagger="0.07"
+       style="top:320px;font-size:70px;letter-spacing:.12em;font-weight:600">あなたの<span style="color:var(--wood)">「住みたい」</span>を、聞かせてください。</div>
+  <div class="center fade" data-at="3.3" data-dur="1.0"
+       style="top:462px;font-family:'Noto Sans JP',sans-serif;font-size:25px;letter-spacing:.16em;color:#55504a">土地のこと、資金のこと、間取りのこと。まだ何も決まっていなくて、大丈夫です。</div>
+  <div class="center fade" data-at="4.4" data-dur="1.0" style="top:572px"><span style="display:inline-block;width:1px;height:56px;background:var(--wood)"></span></div>
+  <div class="center fade" data-at="4.9" data-dur="1.1"
+       style="top:660px;font-family:'Cormorant Garamond',serif;font-size:82px;letter-spacing:.34em;padding-left:.34em">HOMELANDICK</div>
+  <div class="center fade" data-at="5.3" data-dur="1.1"
+       style="top:776px;font-size:30px;letter-spacing:.24em;font-weight:500">株式会社ホームランディック 一級建築士事務所</div>
+  <div class="center fade" data-at="5.9" data-dur="1.1"
+       style="top:852px;font-family:'Noto Sans JP',sans-serif;font-size:21px;letter-spacing:.14em;color:#55504a">小牧店　〒485-0041 愛知県小牧市小牧4丁目213　／　名古屋店　名古屋市中区丸の内</div>
+  <div class="center fade" data-at="6.6" data-dur="1.1" style="top:918px">
+    <span style="display:inline-block;font-family:'Noto Sans JP',sans-serif;font-size:23px;letter-spacing:.14em;color:var(--paper);background:var(--ink);padding:16px 44px;border-radius:40px">家づくりのご相談は公式サイトから　<span style="font-family:'Cormorant Garamond',serif;font-size:29px;letter-spacing:.1em;color:#ffd9a0">www.homelandick.com</span></span>
+  </div>
+</section>
+
+<div id="fadeout" style="position:absolute;inset:0;background:#000;opacity:0;pointer-events:none"></div>
+</div>
+
+<script>
+const D = (cls, at, dur, d, extra='') => `<path class="ln draw ${cls}" data-at="${at}" data-dur="${dur}" d="${d}" ${extra}/>`;
+const F = (at, dur, inner, extra='') => `<g class="fade" data-at="${at}" data-dur="${dur}" ${extra}>${inner}</g>`;
+
+/* ---------- S2: elevation, drawn line by line ---------- */
+(function(){
+  let s='';
+  // construction guides
+  s+=D('hair',0.3,1.6,'M300 760 H1640','stroke-dasharray="none"');
+  s+=D('hair',0.5,1.4,'M620 300 V860'); s+=D('hair',0.6,1.4,'M1180 300 V860'); s+=D('hair',0.7,1.4,'M1420 480 V860');
+  s+=D('hair',0.8,1.4,'M520 580 H1520');
+  // ground
+  s+=D('',1.0,1.6,'M360 760 H1560','style="stroke-width:4"');
+  // main volume
+  s+=D('',1.6,2.0,'M620 760 V440 L1180 380 V760');
+  s+=D('',2.6,1.2,'M590 443 L1210 377','style="stroke-width:5"');
+  // side volume
+  s+=D('',3.0,1.4,'M1180 580 H1420 V760');
+  s+=D('',3.4,1.0,'M1180 580 H1446','style="stroke-width:5"');
+  // openings
+  s+=D('thin',3.8,1.2,'M700 500 H860 V600 H700 Z');
+  s+=D('thin',4.2,0.7,'M780 500 V600');
+  s+=D('thin',4.1,1.2,'M1040 470 H1080 V640 H1040 Z');
+  s+=D('thin',4.4,1.2,'M940 760 V620 H1020 V760');
+  s+=D('thin',4.7,1.2,'M680 650 H860 V730 H680 Z');
+  s+=D('thin',5.0,1.4,'M1220 760 V620 H1390 V760');
+  s+=D('thin',5.3,0.7,'M1305 620 V760');
+  // wood cladding on side volume
+  for(let i=0;i<4;i++){ s+=D('hair wd',5.6+i*0.08,0.6,`M${1196+i*8} 584 V${i<3?756:620}`); }
+  for(let x=1398;x<=1414;x+=8) s+=D('hair wd',5.9,0.6,`M${x} 584 V756`);
+  for(let x=1228;x<1390;x+=8) s+=D('hair wd',5.7+(x-1228)/800,0.5,`M${x} 584 V616`);
+  // door wood
+  for(let x=948;x<1020;x+=9) s+=D('hair wd',5.5+(x-948)/300,0.6,`M${x} 624 V756`);
+  // tree
+  s+=D('thin',6.0,1.0,'M470 760 C472 700 466 660 474 610 M472 690 C452 670 440 660 430 640 M473 660 C492 640 500 628 512 612');
+  s+=D('thin',6.4,1.8,'M474 610 C400 620 372 560 410 520 C400 470 460 440 500 468 C548 446 592 494 568 540 C596 588 540 628 474 610 Z');
+  // dimension lines
+  s+=D('hair',6.6,1.0,'M620 830 H1420 M620 818 V842 M1180 818 V842 M1420 818 V842');
+  s+=D('hair',6.9,1.0,'M1500 380 V760 M1488 380 H1512 M1488 760 H1512');
+  // small person for scale
+  s+=F(7.4,0.9,'<circle cx="1110" cy="668" r="11" fill="#2a2723"/><path d="M1110 682 C1096 690 1096 730 1100 760 H1120 C1124 730 1124 690 1110 682Z" fill="#2a2723"/>');
+  // wash fills fade in
+  s=F(6.8,2.4,'<path d="M620 760 V440 L1180 380 V760Z" fill="#2a2723" opacity=".06"/><rect x="1180" y="580" width="240" height="180" fill="#b0763c" opacity=".14"/><rect x="1220" y="620" width="170" height="140" fill="#f2eee6"/><path d="M700 500h160v100h-160z M1040 470h40v170h-40z M680 650h180v80h-180z" fill="#fff" opacity=".7"/>','data-dy="0"')+s;
+  document.getElementById('elev').innerHTML=s;
+})();
+
+/* ---------- S3: floor plan ---------- */
+(function(){
+  let s='';
+  const X0=900,Y0=250,X1=1780,Y1=820, XM=1250;
+  // grid guides
+  s+=D('hair',0.3,1.4,`M${X0-60} ${Y0} H${X1+60} M${X0-60} ${Y1} H${X1+60}`);
+  s+=D('hair',0.4,1.4,`M${X0} ${Y0-60} V${Y1+60} M${X1} ${Y0-60} V${Y1+60}`);
+  // outer walls
+  s+=D('wall',1.0,2.4,`M${X0} ${Y0} H${X1} V${Y1} H${X0} Z`);
+  // partitions
+  s+=D('wall',2.4,1.0,`M${XM} ${Y0} V540`,'style="stroke-width:8"');
+  s+=D('wall',2.7,0.8,`M${XM} 640 V${Y1}`,'style="stroke-width:8"');
+  s+=D('wall',2.9,0.9,`M${X0} 430 H1100 M1180 430 H${XM}`,'style="stroke-width:8"');
+  s+=D('wall',3.1,0.9,`M${X0} 620 H1060 M1140 620 H${XM}`,'style="stroke-width:8"');
+  // openings (paper cut) + windows
+  const cut=(d,at)=>F(at,0.4,`<path d="${d}" stroke="#f2eee6" stroke-width="13" fill="none"/>`,'data-dy="0"')+D('thin',at,0.6,d);
+  s+=cut(`M1010 ${Y0} H1100`,3.4);              // entrance
+  s+=cut(`M1400 ${Y0} H1700`,3.5);              // kitchen window
+  s+=cut(`M${X1} 330 V500`,3.6);                // east window
+  s+=cut(`M1330 ${Y1} H1700`,3.7);              // living big opening
+  s+=cut(`M${X0} 480 V570`,3.8);                // wash window
+  s+=cut(`M${X0} 670 V770`,3.9);                // study window
+  // door swings
+  s+=D('thin',3.9,0.8,`M1010 ${Y0} V340 A90 90 0 0 0 1100 ${Y0}`);
+  s+=D('thin',4.0,0.7,`M1100 430 V510 A80 80 0 0 0 1180 430`);
+  s+=D('thin',4.1,0.7,`M1060 620 V700 A80 80 0 0 0 1140 620`);
+  // furniture
+  s+=D('thin',4.2,1.0,`M1400 270 H1740 V306 H1400 Z M1500 270 V306 M1640 270 V306`);   // kitchen counter
+  s+=D('thin',4.4,1.0,`M1450 360 H1700 V412 H1450 Z`);                                  // island
+  s+=D('thin',4.6,1.0,`M1470 480 H1680 V560 H1470 Z`);                                  // dining table
+  for(const [cx,cy] of [[1510,458],[1575,458],[1640,458],[1510,582],[1575,582],[1640,582]])
+    s+=`<circle class="ln thin draw" data-at="4.9" data-dur="0.6" pathLength="1" cx="${cx}" cy="${cy}" r="14"/>`;
+  s+=D('thin',5.0,1.2,`M1320 660 H1390 V740 H1560 V790 H1320 Z M1390 660 V740`);       // sofa
+  s+=D('hair',5.2,1.0,`M1430 640 H1640 V720 H1560`);                                    // rug
+  s+=D('thin',5.2,0.8,`M1740 640 H1764 V790 H1740 Z`);                                  // tv board
+  s+=D('thin',5.3,0.9,`M920 450 H1010 V600 H920 Z M930 462 H1000 V588 H930 Z`);        // bath
+  s+=D('thin',5.4,0.8,`M1150 540 H1230 V600 H1150 Z`);
+  s+=`<circle class="ln thin draw" data-at="5.5" data-dur="0.5" pathLength="1" cx="1190" cy="570" r="16"/>`;
+  s+=D('thin',5.5,0.9,`M920 640 H990 V800 H920 Z`);                                     // desk
+  s+=`<circle class="ln thin draw" data-at="5.7" data-dur="0.5" pathLength="1" cx="1030" cy="720" r="15"/>`;
+  s+=D('thin',5.6,0.8,`M920 270 H990 V410 H920 Z M920 316 H990 M920 362 H990`);        // shoe storage
+  // void (dashed)
+  s+=F(5.8,0.9,`<rect x="1290" y="620" width="430" height="182" fill="none" stroke="#b0763c" stroke-width="1.5" stroke-dasharray="10 8"/>`,'data-dy="0"');
+  // deck
+  s+=D('thin wd',5.9,1.0,`M1300 ${Y1+6} V930 H1740 V${Y1+6}`);
+  for(let y=Y1+26;y<930;y+=20) s+=D('hair wd',6.1+(y-Y1)/400,0.6,`M1300 ${y} H1740`);
+  // room names
+  const R=(x,y,t,at)=>`<text class="room fade" data-at="${at}" data-dur="0.8" data-dy="6" x="${x}" y="${y}" text-anchor="middle">${t}</text>`;
+  s+=R(1172,318,'ENTRANCE',6.2)+R(1090,535,'WASH',6.3)+R(1140,770,'STUDY',6.4)+R(1345,470,'LDK',6.5)+R(1520,910,'TERRACE',6.6);
+  // lifestyle annotations
+  const A=(x,y,tx,ty,t,at,anchor='start')=>{
+    const w=t.length*21+44, bx=anchor==='start'?tx:tx-w;
+    return F(at,0.7,`<circle cx="${x}" cy="${y}" r="6" fill="#b0763c"/><path d="M${x} ${y} L${anchor==='start'?bx:bx+w} ${ty}" stroke="#b0763c" stroke-width="1.5" fill="none"/>
+      <rect x="${bx}" y="${ty-25}" width="${w}" height="50" rx="25" fill="#f2eee6" stroke="#b0763c" stroke-width="1.5"/>
+      <text class="tag" x="${bx+w/2}" y="${ty+7}" text-anchor="middle">${t}</text>`,'data-dy="10"');
+  };
+  s+=A(1575,288,1500,188,'朝の光が入るキッチン',7.0);
+  s+=A(1190,570,1234,386,'帰ってすぐ、手洗い',7.6,'end');
+  s+=A(1440,720,1530,676,'家族が見えるリビング',8.2);
+  s+=A(1030,720,1010,880,'集中できる書斎',8.8,'end');
+  document.getElementById('plan').innerHTML=s;
+})();
+
+/* ---------- S4: SE frame ---------- */
+(function(){
+  let s='';
+  const G=810;
+  s+=D('hair',0.3,1.4,`M820 ${G} H1840`);
+  // foundation
+  s+=D('',0.9,1.2,`M930 ${G} H1710 V${G+38} H930 Z`);
+  for(let x=950;x<1710;x+=26) s+=D('hair',1.3+(x-950)/1500,0.4,`M${x} ${G+38} L${x+22} ${G}`);
+  // ground waves (quake)
+  s+=`<g id="quake">`;
+  s+=`<path id="wave1" class="ln thin wd" d="" opacity="0"/><path id="wave2" class="ln hair wd" d="" opacity="0"/>`;
+  s+=`</g>`;
+  // columns
+  const col='style="stroke:#b0763c;stroke-width:18;stroke-linecap:butt"';
+  const cols=[[970,352],[1180,334],[1670,292]];
+  cols.forEach(([x,y],i)=> s+=D('',1.8+i*0.25,1.3,`M${x} ${G} V${y}`,col));
+  // beams
+  s+=D('',3.0,1.3,`M961 580 H1679`,col);
+  s+=D('',3.6,1.4,`M940 356 L1700 290`,'style="stroke:#b0763c;stroke-width:20;stroke-linecap:butt"');
+  // 2F joists hint
+  for(let x=1010;x<1170;x+=40) s+=D('hair wd',4.2,0.5,`M${x} 572 V560`);
+  // joints (SE metal)
+  const J=(x,y,at)=>F(at,0.5,`<circle cx="${x}" cy="${y}" r="13" fill="#2a2723"/><circle cx="${x}" cy="${y}" r="4.5" fill="#f2eee6"/>`,'data-dy="0"');
+  [[970,580],[1180,580],[1670,580],[970,353],[1180,335],[1670,293],[970,G],[1180,G],[1670,G]].forEach(([x,y],i)=> s+=J(x,y,4.4+i*0.09));
+  // span arrow
+  s+=D('thin',5.4,1.0,`M1200 700 H1650 M1214 690 L1200 700 L1214 710 M1636 690 L1650 700 L1636 710`);
+  s+=F(5.8,0.8,`<text class="tag" x="1425" y="682" text-anchor="middle" style="font-size:22px">柱のない、大きな空間</text>`,'data-dy="8"');
+  s+=F(6.2,0.8,`<rect x="1200" y="376" width="450" height="186" fill="none" stroke="#b0763c" stroke-width="1.5" stroke-dasharray="10 8"/><text class="tag" x="1425" y="478" text-anchor="middle" style="font-size:22px">吹き抜け</text>`,'data-dy="0"');
+  s+=F(6.6,0.8,`<path d="M1670 580 L1760 520" stroke="#2a2723" stroke-width="1.5"/><text x="1770" y="512" style="font-family:'Noto Sans JP',sans-serif;font-size:19px;letter-spacing:.1em;fill:#2a2723">接合部に</text><text x="1770" y="540" style="font-family:'Noto Sans JP',sans-serif;font-size:19px;letter-spacing:.1em;fill:#2a2723">SE金物</text>`,'data-dy="8"');
+  document.getElementById('frame').innerHTML=s;
+})();
+
+/* ---------- S5: section, sun & insulation ---------- */
+(function(){
+  let s='';
+  const G=800;
+  s+=`<defs><pattern id="ins" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="14" fill="#ead9bd"/><path d="M0 0 V14" stroke="#b0763c" stroke-width="2.4"/></pattern>
+  <linearGradient id="warm" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#ffcf8a" stop-opacity=".55"/><stop offset="1" stop-color="#ffcf8a" stop-opacity="0"/></linearGradient></defs>`;
+  s+=D('hair',0.3,1.4,`M840 ${G} H1860`);
+  s+=D('',0.9,1.2,`M900 ${G} H1820`,'style="stroke-width:4"');
+  // envelope insulation (band)
+  s+=F(3.2,1.6,`<path d="M1000 ${G-12} V412 L1600 352 V${G-12} Z M1026 ${G-36} H1574 V386 L1026 436 Z" fill="url(#ins)" fill-rule="evenodd"/>`,'data-dy="0"');
+  // winter light pool
+  s+=F(6.4,1.4,`<path d="M1574 600 L1574 764 L1180 764 Z" fill="url(#warm)"/>`,'data-dy="0"');
+  // outline
+  s+=D('',1.4,2.0,`M1000 ${G} V412 L1600 352 V${G}`);
+  s+=D('',2.2,1.2,`M960 418 L1720 342`,'style="stroke-width:6"');
+  s+=D('thin',2.6,1.0,`M1026 590 H1330 M1026 578 H1330 V590`);  // 2F floor (partial -> void)
+  s+=D('thin',2.9,0.8,`M1330 578 V530 M1250 578 V530 M1250 530 H1330`); // railing
+  // windows on south wall (cut)
+  s+=F(3.0,0.5,`<path d="M1587 600 V764" stroke="#f2eee6" stroke-width="32"/><path d="M1587 430 V540" stroke="#f2eee6" stroke-width="32"/>`,'data-dy="0"');
+  s+=D('thin',3.1,0.8,`M1587 600 V764 M1587 430 V540`,'style="stroke:#5d7f8f;stroke-width:5"');
+  // interior hints
+  s+=D('thin',3.6,1.0,`M1380 764 V716 H1500 V764 M1380 740 H1500`); // sofa
+  s+=D('thin',3.8,0.8,`M1080 764 V690 H1200 V764`); // table
+  s+=D('thin',3.9,0.8,`M1060 578 V540 H1180 V578`); // bed
+  // suns
+  s+=F(4.4,0.9,`<circle cx="1750" cy="150" r="30" fill="none" stroke="#d8892b" stroke-width="2.5"/><circle cx="1750" cy="150" r="16" fill="#e9a441"/><text class="tag" x="1795" y="140" style="fill:#c9781f">夏</text>`,'data-dy="0"');
+  s+=D('',4.8,1.0,`M1738 190 L1693 335`,'style="stroke:#e9a441;stroke-width:3;stroke-dasharray:none"');
+  s+=D('',4.9,1.0,`M1716 186 L1650 338`,'style="stroke:#e9a441;stroke-width:3"');
+  s+=F(5.4,0.8,`<text class="tag" x="1738" y="300" style="fill:#c9781f;font-size:18px">軒が日差しを</text><text class="tag" x="1738" y="326" style="fill:#c9781f;font-size:18px">さえぎる</text>`,'data-dy="8"');
+  s+=F(5.8,0.9,`<circle cx="1850" cy="470" r="26" fill="none" stroke="#d8892b" stroke-width="2.5"/><circle cx="1850" cy="470" r="13" fill="#f0b765"/><text class="tag" x="1838" y="426" style="fill:#c9781f">冬</text>`,'data-dy="0"');
+  s+=D('',6.2,1.3,`M1822 484 L1200 760`,'style="stroke:#f0b765;stroke-width:3"');
+  s+=D('',6.3,1.3,`M1826 506 L1330 760`,'style="stroke:#f0b765;stroke-width:3"');
+  s+=F(7.2,0.8,`<text class="tag" x="1245" y="652" text-anchor="middle" style="fill:#c9781f;font-size:18px">陽だまりは、部屋の奥まで</text>`,'data-dy="8"');
+  // insulation tag
+  s+=F(4.2,0.8,`<circle cx="1013" cy="500" r="6" fill="#b0763c"/><path d="M1013 500 L930 470" stroke="#b0763c" stroke-width="1.5"/><text class="tag" x="920" y="462" text-anchor="end" style="font-size:18px">家を包む断熱</text>`,'data-dy="8"');
+  // air circulation
+  s+=D('thin',7.0,1.6,`M1480 610 C1540 540 1530 460 1430 448 C1340 440 1290 480 1296 548`,'style="stroke:#5d7f8f;stroke-dasharray:none"');
+  s+=F(8.3,0.5,`<path d="M1283 534 L1296 550 L1310 535" fill="none" stroke="#5d7f8f" stroke-width="1.5" stroke-linecap="round"/>`,'data-dy="0"');
+  document.getElementById('section').innerHTML=s;
+})();
+
+/* ---------- S6: dusk house ---------- */
+(function(){
+  let s=`<defs>
+   <linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdde0"/><stop offset=".75" stop-color="#efe6d6"/></linearGradient>
+   <linearGradient id="skyDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101a33"/><stop offset=".45" stop-color="#2c3558"/><stop offset=".72" stop-color="#a8627a"/><stop offset=".86" stop-color="#eda26b"/></linearGradient>
+   <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b18"/><stop offset=".6" stop-color="#141d38"/><stop offset=".9" stop-color="#3b3350"/></linearGradient>
+   <radialGradient id="spill"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
+   <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9c4"/><stop offset="1" stop-color="#ffc878"/></linearGradient>
+   <pattern id="clad" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#a56b33"/><path d="M0 0V9" stroke="#7d4f23" stroke-width="1.6"/></pattern>
+  </defs>`;
+  s+=`<rect width="1920" height="1080" fill="url(#skyDay)"/><rect id="skyDuskR" width="1920" height="1080" fill="url(#skyDusk)" opacity="0"/><rect id="skyNightR" width="1920" height="1080" fill="url(#skyNight)" opacity="0"/>`;
+  // stars
+  let st='', r=7; const rnd=()=>(r=(r*16807)%2147483647)/2147483647;
+  for(let i=0;i<90;i++){ st+=`<circle cx="${(rnd()*1920).toFixed(0)}" cy="${(rnd()*560).toFixed(0)}" r="${(0.6+rnd()*1.5).toFixed(1)}" fill="#fff" opacity="${(0.3+rnd()*0.7).toFixed(2)}"/>`; }
+  s+=`<g id="stars" opacity="0">${st}</g>`;
+  // distant hills
+  s+=`<path id="hill" d="M0 860 C240 800 420 830 640 812 C900 790 1100 836 1340 808 C1560 784 1760 820 1920 800 V1080 H0Z" fill="#b9b3a4"/>`;
+  s+=`<g transform="translate(0,90)">`;
+  // tree
+  s+=`<g id="tree"><path d="M470 760 C472 700 466 660 474 610" stroke="#2c2a26" stroke-width="7" fill="none"/><path d="M474 620 C396 632 366 566 406 524 C396 470 460 436 502 466 C552 442 598 494 572 542 C602 592 542 636 474 620 Z" fill="#3d5246"/></g>`;
+  // house
+  s+=`<path d="M620 760 V440 L1180 380 V760Z" fill="#35322e"/>`;
+  s+=`<path d="M586 446 L1214 378 L1214 364 L586 432Z" fill="#1f1d1a"/>`;
+  s+=`<rect x="1180" y="580" width="240" height="180" fill="url(#clad)"/><rect x="1176" y="568" width="270" height="14" fill="#1f1d1a"/>`;
+  s+=`<rect x="940" y="620" width="80" height="140" fill="url(#clad)"/>`;
+  // windows: dark base + glow overlay
+  const W=[[700,500,160,100],[1040,470,40,170],[680,650,180,80],[1220,620,170,140]];
+  W.forEach(([x,y,w,h])=> s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#6f8894"/>`);
+  s+=`<g id="glow" opacity="0">`;
+  W.forEach(([x,y,w,h],i)=> s+=`<rect class="gw" data-i="${i}" x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#win)"/>`);
+  // interior silhouettes
+  s+=`<path d="M1250 760 V716 H1330 V760Z M1296 716 a14 14 0 1 1 .1 0" fill="#7a4c1e" opacity=".55"/>`;
+  s+=`<circle cx="760" cy="690" r="10" fill="#7a4c1e" opacity=".5"/><path d="M748 730 C748 706 772 706 772 730Z" fill="#7a4c1e" opacity=".5"/>`;
+  s+=`<path d="M1345 640 V690 M1332 690 H1358" stroke="#7a4c1e" stroke-width="3" opacity=".6"/>`;
+  s+=`</g>`;
+  // mullions
+  s+=`<path d="M780 500V600 M1305 620V760" stroke="#1f1d1a" stroke-width="4"/>`;
+  s+=`</g>`;
+  // ground
+  s+=`<rect id="ground" y="850" width="1920" height="230" fill="#8f8a7c"/><rect id="groundN" y="850" width="1920" height="230" fill="#0d0e14" opacity="0"/>`;
+  s+=`<g id="spillG" opacity="0"><ellipse cx="1305" cy="872" rx="250" ry="34" fill="url(#spill)"/><ellipse cx="770" cy="872" rx="220" ry="26" fill="url(#spill)" opacity=".6"/><ellipse cx="980" cy="866" rx="90" ry="16" fill="url(#spill)" opacity=".5"/></g>`;
+  // path stones
+  s+=`<g opacity=".35">${[0,1].map(i=>`<ellipse cx="${980+i*14}" cy="${880+i*42}" rx="${46+i*12}" ry="${9+i*3}" fill="#d8d2c4"/>`).join('')}</g>`;
+  document.getElementById('dusk').innerHTML=s;
+})();
+
+/* ---------- engine ---------- */
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=p=>1-Math.pow(1-p,3);
+const eio=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const lerp=(a,b,p)=>a+(b-a)*p;
+const TOTAL=74, FADE=0.6;
+const scenes=[...document.querySelectorAll('.scene')].map(el=>{
+  const from=+el.dataset.from,to=+el.dataset.to;
+  // split chars
+  el.querySelectorAll('.chars').forEach(c=>{
+    const walk=n=>{[...n.childNodes].forEach(ch=>{
+      if(ch.nodeType===3){const f=document.createDocumentFragment();[...ch.textContent].forEach(k=>{const sp=document.createElement('span');sp.className='ch';sp.textContent=k;f.appendChild(sp)});n.replaceChild(f,ch)}
+      else walk(ch)})};
+    walk(c); c._ch=[...c.querySelectorAll('.ch')];
+  });
+  el.querySelectorAll('.draw').forEach(d=>{d.setAttribute('pathLength','1');d.style.strokeDasharray='1 1.05'});
+  return {el,from,to,cam:el.querySelector('.cam'),
+    draws:[...el.querySelectorAll('.draw')],fades:[...el.querySelectorAll('.fade')],chars:[...el.querySelectorAll('.chars')]};
+});
+const $=id=>document.getElementById(id);
+function wave(lt,amp,ph){let d='';for(let x=820;x<=1840;x+=12){const y=880+Math.sin(x/38+lt*9+ph)*amp*Math.sin((x-820)/1020*Math.PI);d+=(x===820?'M':'L')+x+' '+y.toFixed(1)}return d}
+
+function render(t){
+  for(const s of scenes){
+    const lt=t-s.from, len=s.to-s.from;
+    let vis=clamp(lt/FADE)*clamp((s.to-t)/FADE);
+    if(s.from===0) vis=clamp((s.to-t)/FADE)*clamp(lt/0.4);
+    if(s.el.dataset.hold) vis=clamp(lt/FADE);
+    if(vis<=0){s.el.style.display='none';continue}
+    s.el.style.display='block'; s.el.style.opacity=vis;
+    if(s.cam) s.cam.style.transform=`scale(${1+0.04*clamp(lt/len)})`;
+    for(const d of s.draws){
+      const p=eio(clamp((lt-(+d.dataset.at))/(+d.dataset.dur)));
+      d.style.strokeDashoffset=1-p; d.style.visibility=p<=0.001?'hidden':'visible';
+    }
+    for(const f of s.fades){
+      const a=lt-(+f.dataset.at); const p=eo(clamp(a/(+f.dataset.dur)));
+      const dy=f.dataset.dy!==undefined?+f.dataset.dy:16;
+      f.style.opacity=p; f.style.transform=dy?`translateY(${(1-p)*dy}px)`:'';
+    }
+    for(const c of s.chars){
+      const at=+c.dataset.at,dur=+c.dataset.dur,sg=+c.dataset.stagger;
+      const out=c.dataset.out?1-clamp((lt-(+c.dataset.out))/0.7):1;
+      c._ch.forEach((ch,i)=>{const p=eo(clamp((lt-at-i*sg)/dur));
+        ch.style.opacity=p*out; ch.style.transform=`translateY(${(1-p)*22}px)`; ch.style.filter=p<1?`blur(${(1-p)*6}px)`:'';});
+    }
+  }
+  // S4 quake: ground waves, frame stands still
+  { const lt=t-31; const a=clamp((lt-7.0)/0.6)*clamp((10.2-lt)/0.8);
+    const w1=$('wave1'),w2=$('wave2'); if(w1){w1.setAttribute('d',wave(lt,16,0));w2.setAttribute('d',wave(lt,10,1.7).replace(/ (\d+\.?\d*)(?=L|$)/g,(m,y)=>' '+(+y+26)));w1.setAttribute('opacity',a);w2.setAttribute('opacity',a*.8);} }
+  // S6 sky
+  { const lt=t-51; const p=eio(clamp((lt-0.8)/3.6)); const n=eio(clamp((lt-5.5)/5));
+    $('skyDuskR').setAttribute('opacity',p); $('skyNightR').setAttribute('opacity',n*0.85);
+    $('stars').setAttribute('opacity',clamp((lt-3)/4));
+    $('glow').setAttribute('opacity',1);
+    document.querySelectorAll('.gw').forEach(g=>{g.setAttribute('opacity',eo(clamp((lt-1.6-(+g.dataset.i)*0.45)/1.0)))});
+    $('glow').querySelectorAll('path,circle').forEach(e=>e.style.opacity=clamp((lt-3)/1.5)*0.55);
+    $('spillG').setAttribute('opacity',clamp((lt-2.4)/2.5));
+    $('groundN').setAttribute('opacity',p*0.92);
+    $('hill').setAttribute('fill',`rgb(${lerp(185,26,p)|0},${lerp(179,28,p)|0},${lerp(164,48,p)|0})`);
+    $('tree').style.filter=`brightness(${lerp(1,0.35,p)})`;
+  }
+  $('fadeout').style.opacity=clamp((t-(TOTAL-1.6))/1.4);
+}
+window.render=render; window.TOTAL=TOTAL;
+if(location.hash==='#play'){const t0=performance.now();(function loop(){const t=((performance.now()-t0)/1000)%TOTAL;render(t);requestAnimationFrame(loop)})()}
+else render(+(location.hash.slice(1)||0));
+</script>
+</body>
+</html>

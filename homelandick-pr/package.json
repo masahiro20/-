@@ -1,0 +1,11 @@
+{
+  "name": "homelandick-pr",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "python3 src/music.py && node src/render.mjs" },
+  "dependencies": {
+    "@fontsource/shippori-mincho": "^5",
+    "@fontsource/noto-sans-jp": "^5",
+    "@fontsource/cormorant-garamond": "^5"
+  }
+}
